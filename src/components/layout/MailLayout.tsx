@@ -100,8 +100,9 @@ export function MailLayout() {
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Drag region spanning the content area */}
         <div
-          className="h-10 shrink-0"
+          className="h-10 shrink-0 bg-bg-primary"
           data-tauri-drag-region
+          style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
         />
         {syncError && (
           <div className="shrink-0 border-b border-danger bg-danger/10 px-4 py-2 text-xs text-danger">

@@ -179,7 +179,7 @@ export function Sidebar() {
       <div
         className="flex h-10 items-center px-5 pt-1 font-bold text-text-primary"
         data-tauri-drag-region
-        style={{ paddingLeft: "76px" }}
+        style={{ paddingLeft: "76px", WebkitAppRegion: "drag" } as React.CSSProperties}
       >
         Fumi
       </div>
