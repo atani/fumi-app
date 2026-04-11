@@ -82,16 +82,18 @@ export function MailLayout() {
   }, [doSync]);
 
   return (
-    <div className="flex h-screen flex-col bg-bg-primary" data-testid="mail-layout">
-      {/* Drag region for window movement */}
-      <div
-        className="h-12 shrink-0 border-b border-border-primary"
-        data-tauri-drag-region
-      />
-      <div className="flex flex-1 overflow-hidden">
-        <Sidebar />
-        <ThreadList onOpenSearch={() => setIsCommandPaletteOpen(true)} />
-        {selectedThreadId && <ReadingPane />}
+    <div className="flex h-screen bg-bg-primary" data-testid="mail-layout">
+      <Sidebar />
+      <div className="flex flex-1 flex-col overflow-hidden">
+        {/* Drag region spanning the content area */}
+        <div
+          className="h-10 shrink-0"
+          data-tauri-drag-region
+        />
+        <div className="flex flex-1 overflow-hidden">
+          <ThreadList onOpenSearch={() => setIsCommandPaletteOpen(true)} />
+          {selectedThreadId && <ReadingPane />}
+        </div>
       </div>
       <Composer />
       <CommandPalette
