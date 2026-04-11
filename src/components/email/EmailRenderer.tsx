@@ -24,8 +24,7 @@ export function EmailRenderer({
       // DOMPurify: strip scripts, on* handlers, and dangerous tags
       const clean = DOMPurify.sanitize(dirty, {
         WHOLE_DOCUMENT: false,
-        FORBID_TAGS: ["style", "form", "input", "textarea", "select", "button"],
-        FORBID_ATTR: ["style"],
+        FORBID_TAGS: ["form", "input", "textarea", "select", "button", "script"],
         ALLOW_DATA_ATTR: false,
       });
 
@@ -62,6 +61,8 @@ export function EmailRenderer({
       const doc = iframe.contentDocument;
       if (!doc) return;
 
+      const isDark = document.documentElement.classList.contains("dark");
+
       const content = `<!DOCTYPE html>
 <html>
 <head>
@@ -75,20 +76,28 @@ export function EmailRenderer({
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     font-size: 14px;
     line-height: 1.5;
-    color: #1a1a1a;
+    color: ${isDark ? "#e2e8f0" : "#1a1a1a"};
+    background: ${isDark ? "#0f172a" : "#ffffff"};
     word-wrap: break-word;
     overflow-wrap: break-word;
   }
   img { max-width: 100%; height: auto; }
-  a { color: #2563eb; }
+  img[data-blocked-src] {
+    border: 1px dashed ${isDark ? "#475569" : "#d1d5db"};
+    padding: 8px;
+    color: ${isDark ? "#94a3b8" : "#6b7280"};
+    font-size: 12px;
+  }
+  a { color: ${isDark ? "#818cf8" : "#2563eb"}; }
   blockquote {
     margin: 8px 0;
     padding-left: 12px;
-    border-left: 3px solid #d1d5db;
-    color: #6b7280;
+    border-left: 3px solid ${isDark ? "#475569" : "#d1d5db"};
+    color: ${isDark ? "#94a3b8" : "#6b7280"};
   }
   pre { white-space: pre-wrap; overflow-x: auto; }
   table { border-collapse: collapse; max-width: 100%; }
+  td, th { padding: 4px 8px; }
 </style>
 </head>
 <body>${sanitizedHtml}</body>
