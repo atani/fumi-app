@@ -14,6 +14,7 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [showClientIdInput, setShowClientIdInput] = useState(false);
   const [clientIdInput, setClientIdInput] = useState("");
+  const [clientSecretInput, setClientSecretInput] = useState("");
   const { addAccount } = useAccountStore();
 
   const handleLogin = async () => {
@@ -48,6 +49,12 @@ export function LoginPage() {
         "INSERT OR REPLACE INTO settings (key, value) VALUES ('google_client_id', $1)",
         [clientIdInput.trim()],
       );
+      if (clientSecretInput.trim()) {
+        await db.execute(
+          "INSERT OR REPLACE INTO settings (key, value) VALUES ('google_client_secret', $1)",
+          [clientSecretInput.trim()],
+        );
+      }
 
       await performOAuth(clientIdInput.trim());
     } catch (err) {
@@ -60,11 +67,19 @@ export function LoginPage() {
     const { code, codeVerifier, redirectUri } =
       await startOAuthFlow(clientId);
 
+    const { getDb } = await import("../../services/db/connection");
+    const db = await getDb();
+    const secretRows = await db.select<{ value: string }[]>(
+      "SELECT value FROM settings WHERE key = 'google_client_secret'",
+    );
+    const clientSecret = secretRows[0]?.value;
+
     const tokens = await exchangeCodeForTokens(
       clientId,
       code,
       codeVerifier,
       redirectUri,
+      clientSecret,
     );
 
     const userInfo = await fetchUserInfo(tokens.access_token);
@@ -101,7 +116,7 @@ export function LoginPage() {
           {showClientIdInput ? (
             <div className="space-y-4">
               <p className="text-sm text-text-secondary">
-                Enter your Google OAuth Client ID to get started.
+                Enter your Google OAuth credentials to get started.
               </p>
               <input
                 type="text"
@@ -110,6 +125,14 @@ export function LoginPage() {
                 placeholder="Client ID"
                 className="w-full rounded-lg border border-border-primary bg-bg-secondary px-4 py-3 text-sm text-text-primary outline-none focus:border-accent"
                 data-testid="client-id-input"
+              />
+              <input
+                type="password"
+                value={clientSecretInput}
+                onChange={(e) => setClientSecretInput(e.target.value)}
+                placeholder="Client Secret (optional for Desktop type)"
+                className="w-full rounded-lg border border-border-primary bg-bg-secondary px-4 py-3 text-sm text-text-primary outline-none focus:border-accent"
+                data-testid="client-secret-input"
               />
               <button
                 onClick={handleClientIdSubmit}

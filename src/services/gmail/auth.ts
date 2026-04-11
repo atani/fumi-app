@@ -84,17 +84,23 @@ export async function exchangeCodeForTokens(
   code: string,
   codeVerifier: string,
   redirectUri: string,
+  clientSecret?: string,
 ): Promise<GmailTokenResponse> {
+  const params: Record<string, string> = {
+    client_id: clientId,
+    code,
+    code_verifier: codeVerifier,
+    grant_type: "authorization_code",
+    redirect_uri: redirectUri,
+  };
+  if (clientSecret) {
+    params.client_secret = clientSecret;
+  }
+
   const response = await fetch(TOKEN_URL, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      client_id: clientId,
-      code,
-      code_verifier: codeVerifier,
-      grant_type: "authorization_code",
-      redirect_uri: redirectUri,
-    }),
+    body: new URLSearchParams(params),
   });
 
   if (!response.ok) {
@@ -108,15 +114,21 @@ export async function exchangeCodeForTokens(
 export async function refreshAccessToken(
   clientId: string,
   refreshToken: string,
+  clientSecret?: string,
 ): Promise<GmailTokenResponse> {
+  const params: Record<string, string> = {
+    client_id: clientId,
+    refresh_token: refreshToken,
+    grant_type: "refresh_token",
+  };
+  if (clientSecret) {
+    params.client_secret = clientSecret;
+  }
+
   const response = await fetch(TOKEN_URL, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      client_id: clientId,
-      refresh_token: refreshToken,
-      grant_type: "refresh_token",
-    }),
+    body: new URLSearchParams(params),
   });
 
   if (!response.ok) {
