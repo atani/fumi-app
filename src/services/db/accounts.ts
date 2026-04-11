@@ -18,8 +18,9 @@ export async function getAccount(id: string): Promise<Account | null> {
 export async function upsertAccount(account: Account): Promise<void> {
   const db = await getDb();
   await db.execute(
-    `INSERT INTO accounts (id, email, name, picture, provider, access_token, refresh_token, token_expiry)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    `INSERT INTO accounts (id, email, name, picture, provider, access_token, refresh_token, token_expiry,
+       imap_host, imap_port, imap_security, imap_username, imap_password, smtp_host, smtp_port, smtp_security)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
      ON CONFLICT(id) DO UPDATE SET
        email = excluded.email,
        name = excluded.name,
@@ -27,6 +28,14 @@ export async function upsertAccount(account: Account): Promise<void> {
        access_token = excluded.access_token,
        refresh_token = excluded.refresh_token,
        token_expiry = excluded.token_expiry,
+       imap_host = excluded.imap_host,
+       imap_port = excluded.imap_port,
+       imap_security = excluded.imap_security,
+       imap_username = excluded.imap_username,
+       imap_password = excluded.imap_password,
+       smtp_host = excluded.smtp_host,
+       smtp_port = excluded.smtp_port,
+       smtp_security = excluded.smtp_security,
        updated_at = datetime('now')`,
     [
       account.id,
@@ -37,6 +46,14 @@ export async function upsertAccount(account: Account): Promise<void> {
       account.access_token,
       account.refresh_token,
       account.token_expiry,
+      account.imap_host ?? null,
+      account.imap_port ?? null,
+      account.imap_security ?? null,
+      account.imap_username ?? null,
+      account.imap_password ?? null,
+      account.smtp_host ?? null,
+      account.smtp_port ?? null,
+      account.smtp_security ?? null,
     ],
   );
 }

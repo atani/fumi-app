@@ -28,3 +28,9 @@ url = "2"
 rand = "0.8"
 sha2 = "0.10"
 base64 = "0.22"
+async-imap = "0.10"
+async-native-tls = "0.5"
+lettre = { version = "0.11", features = ["tokio1-native-tls", "smtp-transport", "builder"] }
+mail-parser = "0.9"
+async-std = { version = "1", features = ["attributes"] }
+futures = "0.3"

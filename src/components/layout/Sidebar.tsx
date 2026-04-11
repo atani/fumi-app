@@ -13,6 +13,7 @@ import {
 import { useThreadStore } from "../../stores/threadStore";
 import { useAccountStore } from "../../stores/accountStore";
 import { useUIStore } from "../../stores/uiStore";
+import { AccountSwitcher } from "../accounts/AccountSwitcher";
 
 const LABELS = [
   { id: "INBOX", name: "Inbox", icon: Inbox },
@@ -63,6 +64,8 @@ export function Sidebar() {
       <div className="flex h-10 items-center px-5 font-bold text-text-primary">
         Fumi
       </div>
+
+      <AccountSwitcher />
 
       <nav className="flex-1 space-y-0.5 px-2 py-2">
         {LABELS.map(({ id, name, icon: Icon }) => (

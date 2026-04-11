@@ -4,18 +4,28 @@ import { ThreadList } from "./ThreadList";
 import { ReadingPane } from "./ReadingPane";
 import { Composer } from "../composer/Composer";
 import { CommandPalette } from "../search/CommandPalette";
+import { ShortcutsHelp } from "../search/ShortcutsHelp";
 import { useAccountStore } from "../../stores/accountStore";
 import { useThreadStore } from "../../stores/threadStore";
-import { useComposerStore } from "../../stores/composerStore";
 import { syncInbox, syncLabels } from "../../services/gmail/sync";
 import { initNotifications, notifyNewMessages } from "../../services/notifications/notificationManager";
 import { updateBadgeCount } from "../../services/notifications/badgeManager";
+import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts";
 
 export function MailLayout() {
-  const { getActiveAccount } = useAccountStore();
-  const { loadThreads, setThreads, setSyncing, selectedThreadId } =
+  const { activeAccountId, getActiveAccount } = useAccountStore();
+  const { loadThreads, setThreads, setSyncing, selectedThreadId, selectThread } =
     useThreadStore();
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [isShortcutsHelpOpen, setIsShortcutsHelpOpen] = useState(false);
+
+  useKeyboardShortcuts({
+    onOpenSearch: useCallback(() => setIsCommandPaletteOpen(true), []),
+    onToggleShortcutsHelp: useCallback(
+      () => setIsShortcutsHelpOpen((prev) => !prev),
+      [],
+    ),
+  });
 
   const doSync = useCallback(async () => {
     const account = getActiveAccount();
@@ -37,7 +47,15 @@ export function MailLayout() {
     } finally {
       setSyncing(false);
     }
-  }, [getActiveAccount, loadThreads, setThreads, setSyncing]);
+  }, [getActiveAccount, activeAccountId, loadThreads, setThreads, setSyncing]);
+
+  // When the active account changes, clear selection and re-sync
+  useEffect(() => {
+    if (!activeAccountId) return;
+    selectThread(null);
+    doSync();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeAccountId]);
 
   useEffect(() => {
     initNotifications();
@@ -63,45 +81,6 @@ export function MailLayout() {
     };
   }, [doSync]);
 
-  // 'c' keyboard shortcut for compose
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Skip if user is typing in an input, textarea, or contentEditable
-      const target = e.target as HTMLElement;
-      if (
-        target.tagName === "INPUT" ||
-        target.tagName === "TEXTAREA" ||
-        target.isContentEditable
-      ) {
-        return;
-      }
-
-      if (e.key === "c" && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        e.preventDefault();
-        useComposerStore.getState().openCompose();
-      }
-
-      if (e.key === "/" && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        e.preventDefault();
-        setIsCommandPaletteOpen(true);
-      }
-    };
-
-    const handleCtrlK = (e: KeyboardEvent) => {
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        setIsCommandPaletteOpen(true);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keydown", handleCtrlK);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keydown", handleCtrlK);
-    };
-  }, []);
-
   return (
     <div className="flex h-screen flex-col bg-bg-primary" data-testid="mail-layout">
       {/* Drag region for window movement */}
@@ -118,6 +97,10 @@ export function MailLayout() {
       <CommandPalette
         isOpen={isCommandPaletteOpen}
         onClose={() => setIsCommandPaletteOpen(false)}
+      />
+      <ShortcutsHelp
+        isOpen={isShortcutsHelpOpen}
+        onClose={() => setIsShortcutsHelpOpen(false)}
       />
     </div>
   );

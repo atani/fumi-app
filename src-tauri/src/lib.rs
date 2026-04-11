@@ -1,3 +1,6 @@
+mod imap;
+mod smtp;
+
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
 use rand::Rng;
 use serde::Serialize;
@@ -174,7 +177,13 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             start_oauth_server,
             get_oauth_params,
-            get_code_verifier
+            get_code_verifier,
+            imap::imap_test_connection,
+            imap::imap_list_folders,
+            imap::imap_fetch_messages,
+            imap::imap_fetch_message_body,
+            smtp::smtp_test_connection,
+            smtp::smtp_send_email
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

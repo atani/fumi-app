@@ -32,10 +32,7 @@ export function App() {
 
   return (
     <Routes>
-      <Route
-        path="/login"
-        element={isAuthenticated ? <Navigate to="/" /> : <LoginPage />}
-      />
+      <Route path="/login" element={<LoginPage />} />
       <Route
         path="/*"
         element={isAuthenticated ? <MailLayout /> : <Navigate to="/login" />}

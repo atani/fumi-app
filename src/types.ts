@@ -7,6 +7,14 @@ export interface Account {
   access_token: string | null;
   refresh_token: string | null;
   token_expiry: number | null;
+  imap_host?: string | null;
+  imap_port?: number | null;
+  imap_security?: "ssl" | "starttls" | "none" | null;
+  imap_username?: string | null;
+  imap_password?: string | null;
+  smtp_host?: string | null;
+  smtp_port?: number | null;
+  smtp_security?: "ssl" | "starttls" | "none" | null;
   created_at?: string;
   updated_at?: string;
 }

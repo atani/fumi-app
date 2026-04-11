@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Mail } from "lucide-react";
 import { useAccountStore } from "../../stores/accountStore";
 import {
@@ -14,7 +15,8 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [clientId, setClientId] = useState("");
   const [clientSecret, setClientSecret] = useState("");
-  const { addAccount } = useAccountStore();
+  const { accounts, addAccount } = useAccountStore();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const loadStored = async () => {
@@ -74,6 +76,12 @@ export function LoginPage() {
       };
 
       await addAccount(account);
+
+      // If there were already accounts, this is an "add account" flow —
+      // navigate back to the inbox so the route guard doesn't just redirect.
+      if (accounts.length > 0) {
+        navigate("/");
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Authentication failed");
     } finally {
