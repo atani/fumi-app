@@ -13,44 +13,34 @@ test.describe("Fumi App", () => {
       page.getByText("Fast, lightweight email client"),
     ).toBeVisible();
 
-    // Should have Google login button
+    // Should have credential inputs and login button
+    await expect(page.getByTestId("client-id-input")).toBeVisible();
+    await expect(page.getByTestId("client-secret-input")).toBeVisible();
+
     const loginButton = page.getByTestId("google-login-button");
     await expect(loginButton).toBeVisible();
     await expect(loginButton).toContainText("Sign in with Google");
   });
 
-  test("should show client ID input when no client ID is configured", async ({
+  test("should disable login button when client ID is empty", async ({
     page,
   }) => {
     await page.goto("/login");
 
-    // Click Google login button
     const loginButton = page.getByTestId("google-login-button");
-    await loginButton.click();
-
-    // Should show client ID input (since no client ID is stored in DB)
-    const clientIdInput = page.getByTestId("client-id-input");
-    await expect(clientIdInput).toBeVisible();
-
-    // Should have submit button
-    const submitButton = page.getByTestId("submit-client-id");
-    await expect(submitButton).toBeVisible();
-    await expect(submitButton).toBeDisabled(); // disabled when empty
+    await expect(loginButton).toBeDisabled();
   });
 
-  test("should enable submit button when client ID is entered", async ({
+  test("should enable login button when client ID is entered", async ({
     page,
   }) => {
     await page.goto("/login");
-
-    const loginButton = page.getByTestId("google-login-button");
-    await loginButton.click();
 
     const clientIdInput = page.getByTestId("client-id-input");
     await clientIdInput.fill("test-client-id.apps.googleusercontent.com");
 
-    const submitButton = page.getByTestId("submit-client-id");
-    await expect(submitButton).toBeEnabled();
+    const loginButton = page.getByTestId("google-login-button");
+    await expect(loginButton).toBeEnabled();
   });
 
   test("should have correct page title", async ({ page }) => {
