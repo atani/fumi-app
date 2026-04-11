@@ -9,7 +9,9 @@ import {
   Sun,
   Moon,
   Monitor,
+  Settings,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useThreadStore } from "../../stores/threadStore";
 import { useAccountStore } from "../../stores/accountStore";
 import { useUIStore } from "../../stores/uiStore";
@@ -47,6 +49,7 @@ export function Sidebar() {
   const { activeLabel, setActiveLabel, loadThreads } = useThreadStore();
   const { getActiveAccount } = useAccountStore();
   const { theme, setTheme } = useUIStore();
+  const navigate = useNavigate();
 
   const handleLabelClick = async (labelId: string) => {
     setActiveLabel(labelId);
@@ -90,6 +93,14 @@ export function Sidebar() {
       </nav>
 
       <div className="border-t border-border-primary px-2 py-2">
+        <button
+          onClick={() => navigate("/settings")}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-text transition-colors hover:bg-bg-hover"
+          data-testid="sidebar-settings"
+        >
+          <Settings className="h-4 w-4" />
+          Settings
+        </button>
         <button
           onClick={() => setTheme(THEME_CYCLE[theme] ?? "system")}
           className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-text transition-colors hover:bg-bg-hover"

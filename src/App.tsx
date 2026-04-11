@@ -4,6 +4,7 @@ import { useAccountStore } from "./stores/accountStore";
 import { useUIStore } from "./stores/uiStore";
 import { LoginPage } from "./components/auth/LoginPage";
 import { MailLayout } from "./components/layout/MailLayout";
+import { SettingsPage } from "./components/settings/SettingsPage";
 import { runMigrations } from "./services/db/migrations";
 
 export function App() {
@@ -33,6 +34,10 @@ export function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route
+        path="/settings"
+        element={isAuthenticated ? <SettingsPage /> : <Navigate to="/login" />}
+      />
       <Route
         path="/*"
         element={isAuthenticated ? <MailLayout /> : <Navigate to="/login" />}
