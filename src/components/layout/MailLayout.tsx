@@ -13,7 +13,7 @@ export function MailLayout() {
 
   const doSync = useCallback(async () => {
     const account = getActiveAccount();
-    if (!account?.access_token) return;
+    if (!account?.access_token && !account?.refresh_token) return;
 
     setSyncing(true);
     try {

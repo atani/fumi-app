@@ -1,4 +1,5 @@
-import type { GmailThread, GmailMessage } from "../../types";
+import type { Account, GmailThread, GmailMessage } from "../../types";
+import { withTokenRefresh } from "./tokenManager";
 
 const BASE_URL = "https://gmail.googleapis.com/gmail/v1/users/me";
 
@@ -22,6 +23,20 @@ async function gmailFetch<T>(
   }
 
   return response.json();
+}
+
+/**
+ * Makes an authenticated Gmail API request for the given account.
+ * Automatically refreshes the access token if expired or on 401.
+ */
+export async function authenticatedFetch<T>(
+  account: Account,
+  path: string,
+  options?: RequestInit,
+): Promise<T> {
+  return withTokenRefresh(account, (token) =>
+    gmailFetch<T>(token, path, options),
+  );
 }
 
 export async function listThreads(

@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAccountStore } from "./stores/accountStore";
+import { useUIStore } from "./stores/uiStore";
 import { LoginPage } from "./components/auth/LoginPage";
 import { MailLayout } from "./components/layout/MailLayout";
 import { runMigrations } from "./services/db/migrations";
@@ -12,6 +13,7 @@ export function App() {
   useEffect(() => {
     const init = async () => {
       await runMigrations();
+      await useUIStore.getState().initTheme();
       await loadAccounts();
     };
     init();

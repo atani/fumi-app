@@ -3,7 +3,10 @@ use rand::Rng;
 use serde::Serialize;
 use sha2::{Digest, Sha256};
 use std::sync::Mutex;
-use tauri::{Emitter, State};
+use tauri::image::Image;
+use tauri::menu::{MenuBuilder, MenuItemBuilder, PredefinedMenuItem};
+use tauri::tray::TrayIconBuilder;
+use tauri::{Emitter, Manager, State, WindowEvent};
 
 struct OAuthState {
     code_verifier: Mutex<Option<String>>,
@@ -106,8 +109,67 @@ pub fn run() {
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_log::Builder::new().build())
+        .plugin(tauri_plugin_autostart::init(
+            tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+            Some(vec!["--hidden"]),
+        ))
         .manage(OAuthState {
             code_verifier: Mutex::new(None),
+        })
+        .setup(|app| {
+            let show = MenuItemBuilder::with_id("show", "Show Fumi").build(app)?;
+            let check_mail = MenuItemBuilder::with_id("check_mail", "Check Mail").build(app)?;
+            let separator = PredefinedMenuItem::separator(app)?;
+            let quit = MenuItemBuilder::with_id("quit", "Quit Fumi").build(app)?;
+
+            let menu = MenuBuilder::new(app)
+                .item(&show)
+                .item(&check_mail)
+                .item(&separator)
+                .item(&quit)
+                .build()?;
+
+            let tray_icon = Image::from_path("icons/32x32.png")
+                .or_else(|_| Image::from_path("icons/icon.png"))
+                .unwrap_or_else(|_| Image::from_bytes(include_bytes!("../icons/32x32.png")).expect("failed to load embedded tray icon"));
+
+            TrayIconBuilder::new()
+                .icon(tray_icon)
+                .menu(&menu)
+                .tooltip("Fumi")
+                .on_menu_event(move |app, event| match event.id().as_ref() {
+                    "show" => {
+                        if let Some(window) = app.get_webview_window("main") {
+                            let _ = window.show();
+                            let _ = window.set_focus();
+                        }
+                    }
+                    "check_mail" => {
+                        let _ = app.emit("tray-check-mail", ());
+                    }
+                    "quit" => {
+                        app.exit(0);
+                    }
+                    _ => {}
+                })
+                .on_tray_icon_event(|tray, event| {
+                    if let tauri::tray::TrayIconEvent::Click { .. } = event {
+                        if let Some(window) = tray.app_handle().get_webview_window("main") {
+                            let _ = window.show();
+                            let _ = window.set_focus();
+                        }
+                    }
+                })
+                .build(app)?;
+
+            Ok(())
+        })
+        .on_window_event(|window, event| {
+            if let WindowEvent::CloseRequested { api, .. } = event {
+                // Hide the window instead of closing it (minimize to tray)
+                let _ = window.hide();
+                api.prevent_close();
+            }
         })
         .invoke_handler(tauri::generate_handler![
             start_oauth_server,

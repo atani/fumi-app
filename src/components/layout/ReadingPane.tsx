@@ -1,5 +1,6 @@
 import { useThreadStore } from "../../stores/threadStore";
 import { Reply, ReplyAll, Forward, Archive, Trash2, Star } from "lucide-react";
+import { EmailRenderer } from "../email/EmailRenderer";
 
 export function ReadingPane() {
   const { messages } = useThreadStore();
@@ -67,16 +68,10 @@ export function ReadingPane() {
             </div>
 
             <div className="mt-4 text-sm text-text-primary">
-              {message.body_html ? (
-                <div
-                  dangerouslySetInnerHTML={{ __html: message.body_html }}
-                  className="prose prose-sm max-w-none"
-                />
-              ) : (
-                <pre className="whitespace-pre-wrap font-sans">
-                  {message.body_text || message.snippet}
-                </pre>
-              )}
+              <EmailRenderer
+                html={message.body_html}
+                text={message.body_text ?? message.snippet}
+              />
             </div>
           </div>
         ))}

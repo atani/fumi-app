@@ -6,9 +6,13 @@ import {
   Trash2,
   AlertOctagon,
   Archive,
+  Sun,
+  Moon,
+  Monitor,
 } from "lucide-react";
 import { useThreadStore } from "../../stores/threadStore";
 import { useAccountStore } from "../../stores/accountStore";
+import { useUIStore } from "../../stores/uiStore";
 
 const LABELS = [
   { id: "INBOX", name: "Inbox", icon: Inbox },
@@ -20,9 +24,28 @@ const LABELS = [
   { id: "ARCHIVE", name: "All Mail", icon: Archive },
 ];
 
+const THEME_CYCLE: Record<string, "light" | "dark" | "system"> = {
+  system: "light",
+  light: "dark",
+  dark: "system",
+};
+
+const THEME_ICON = {
+  system: Monitor,
+  light: Sun,
+  dark: Moon,
+} as const;
+
+const THEME_LABEL = {
+  system: "System",
+  light: "Light",
+  dark: "Dark",
+} as const;
+
 export function Sidebar() {
   const { activeLabel, setActiveLabel, loadThreads } = useThreadStore();
   const { getActiveAccount } = useAccountStore();
+  const { theme, setTheme } = useUIStore();
 
   const handleLabelClick = async (labelId: string) => {
     setActiveLabel(labelId);
@@ -58,6 +81,21 @@ export function Sidebar() {
           </button>
         ))}
       </nav>
+
+      <div className="border-t border-border-primary px-2 py-2">
+        <button
+          onClick={() => setTheme(THEME_CYCLE[theme] ?? "system")}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-text transition-colors hover:bg-bg-hover"
+          data-testid="theme-toggle"
+          title={`Theme: ${THEME_LABEL[theme]}`}
+        >
+          {(() => {
+            const ThemeIcon = THEME_ICON[theme];
+            return <ThemeIcon className="h-4 w-4" />;
+          })()}
+          {THEME_LABEL[theme]}
+        </button>
+      </div>
     </aside>
   );
 }

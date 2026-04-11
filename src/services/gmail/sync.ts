@@ -1,8 +1,8 @@
-import { listThreads, getThread, getHeader, getMessageBody, listLabels } from "./api";
+import { authenticatedFetch, getHeader, getMessageBody } from "./api";
 import { upsertThread, setThreadLabels } from "../db/threads";
 import { upsertMessage } from "../db/messages";
 import { getDb } from "../db/connection";
-import type { Account, Thread, Message, GmailMessage } from "../../types";
+import type { Account, Thread, Message, GmailMessage, GmailThread } from "../../types";
 
 function parseGmailMessage(
   gmailMsg: GmailMessage,
@@ -32,9 +32,11 @@ function parseGmailMessage(
 }
 
 export async function syncLabels(account: Account): Promise<void> {
-  if (!account.access_token) return;
+  if (!account.access_token && !account.refresh_token) return;
 
-  const { labels } = await listLabels(account.access_token);
+  const { labels } = await authenticatedFetch<{
+    labels: { id: string; name: string; type: string }[];
+  }>(account, "/labels");
   const db = await getDb();
 
   for (const label of labels) {
@@ -51,20 +53,27 @@ export async function syncInbox(
   account: Account,
   maxResults = 50,
 ): Promise<Thread[]> {
-  if (!account.access_token) return [];
+  if (!account.access_token && !account.refresh_token) return [];
 
-  const { threads: threadList } = await listThreads(
-    account.access_token,
-    ["INBOX"],
-    maxResults,
-  );
+  const params = new URLSearchParams({
+    maxResults: String(maxResults),
+    labelIds: "INBOX",
+  });
+
+  const { threads: threadList } = await authenticatedFetch<{
+    threads: { id: string; snippet: string }[];
+    nextPageToken?: string;
+  }>(account, `/threads?${params}`);
 
   if (!threadList?.length) return [];
 
   const syncedThreads: Thread[] = [];
 
   for (const item of threadList) {
-    const gmailThread = await getThread(account.access_token, item.id);
+    const gmailThread = await authenticatedFetch<GmailThread>(
+      account,
+      `/threads/${item.id}?format=full`,
+    );
     if (!gmailThread.messages?.length) continue;
 
     const messages = gmailThread.messages;
