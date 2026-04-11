@@ -49,6 +49,8 @@ export interface Message {
   has_attachments: boolean;
   header_message_id: string | null;
   auth_results: string | null;
+  list_unsubscribe: string | null;
+  list_unsubscribe_post: string | null;
 }
 
 export interface Label {
@@ -232,4 +234,38 @@ export interface GoogleCalendar {
   foregroundColor?: string;
   primary?: boolean;
   accessRole: string;
+}
+
+export type TaskPriority = "high" | "medium" | "low";
+
+export interface Task {
+  id: string;
+  account_id: string;
+  title: string;
+  description: string | null;
+  due_date: string | null;
+  priority: TaskPriority;
+  completed: boolean;
+  parent_task_id: string | null;
+  source_thread_id: string | null;
+  source_message_id: string | null;
+  recurrence_rule: string | null;
+  created_at: string;
+  completed_at: string | null;
+}
+
+export interface TaskTag {
+  id: string;
+  name: string;
+  color: string | null;
+  account_id: string;
+}
+
+export interface FollowUpReminder {
+  id: string;
+  thread_id: string;
+  account_id: string;
+  remind_after_hours: number;
+  created_at: string;
+  reminded_at: string | null;
 }

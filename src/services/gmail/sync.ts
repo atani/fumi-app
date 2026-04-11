@@ -5,6 +5,7 @@ import { getDb } from "../db/connection";
 import { recordContactsFromMessages } from "../contacts/contactService";
 import { processFilters } from "../filters/filterEngine";
 import { processBundleRules } from "../bundles/bundleManager";
+import { hasPendingOpsForThread } from "../queue/queueProcessor";
 import type { Account, Thread, Message, GmailMessage, GmailThread } from "../../types";
 
 export interface SyncResult {
@@ -37,6 +38,8 @@ function parseGmailMessage(
     has_attachments: false,
     header_message_id: getHeader(gmailMsg, "Message-ID") ?? null,
     auth_results: getHeader(gmailMsg, "Authentication-Results") ?? null,
+    list_unsubscribe: getHeader(gmailMsg, "List-Unsubscribe") ?? null,
+    list_unsubscribe_post: getHeader(gmailMsg, "List-Unsubscribe-Post") ?? null,
   };
 }
 
@@ -90,6 +93,9 @@ export async function syncInbox(
   const allParsedMessages: Message[] = [];
 
   for (const item of threadList) {
+    // Skip threads with pending local operations to avoid conflicts
+    if (await hasPendingOpsForThread(account.id, item.id)) continue;
+
     const gmailThread = await authenticatedFetch<GmailThread>(
       account,
       `/threads/${item.id}?format=full`,

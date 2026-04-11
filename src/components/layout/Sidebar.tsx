@@ -17,6 +17,7 @@ import {
   Plus,
   Tag,
   PackageOpen,
+  CheckSquare,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useThreadStore } from "../../stores/threadStore";
@@ -304,6 +305,14 @@ export function Sidebar() {
       </nav>
 
       <div className="border-t border-border-primary px-2 py-2">
+        <button
+          onClick={() => navigate("/tasks")}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-text transition-colors hover:bg-bg-hover"
+          data-testid="sidebar-tasks"
+        >
+          <CheckSquare className="h-4 w-4" />
+          Tasks
+        </button>
         <button
           onClick={() => navigate("/calendar")}
           className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-text transition-colors hover:bg-bg-hover"

@@ -1,25 +1,33 @@
 import { useEffect, useCallback, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { ThreadList } from "./ThreadList";
 import { ReadingPane } from "./ReadingPane";
 import { Composer } from "../composer/Composer";
 import { CommandPalette } from "../search/CommandPalette";
 import { ShortcutsHelp } from "../search/ShortcutsHelp";
+import { OfflineBanner } from "../ui/OfflineBanner";
+import { AiTaskExtractDialog } from "../tasks/AiTaskExtractDialog";
 import { useAccountStore } from "../../stores/accountStore";
 import { useThreadStore } from "../../stores/threadStore";
+import { useUIStore } from "../../stores/uiStore";
 import { syncInbox, syncLabels } from "../../services/gmail/sync";
 import { initNotifications, notifyNewMessages } from "../../services/notifications/notificationManager";
 import { updateBadgeCount } from "../../services/notifications/badgeManager";
 import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts";
 import { startSnoozeChecker, stopSnoozeChecker } from "../../services/snooze/snoozeChecker";
 import { startBundleChecker, stopBundleChecker } from "../../services/bundles/bundleChecker";
+import { startFollowUpChecker, stopFollowUpChecker } from "../../services/followup/followupChecker";
+import { startQueueProcessor, stopQueueProcessor, processQueue } from "../../services/queue/queueProcessor";
 
 export function MailLayout() {
+  const navigate = useNavigate();
   const { activeAccountId, getActiveAccount } = useAccountStore();
-  const { loadThreads, setThreads, setSyncing, selectedThreadId, selectThread } =
+  const { loadThreads, setThreads, setSyncing, selectedThreadId, messages, selectThread } =
     useThreadStore();
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isShortcutsHelpOpen, setIsShortcutsHelpOpen] = useState(false);
+  const [isTaskExtractOpen, setIsTaskExtractOpen] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
 
   useKeyboardShortcuts({
@@ -28,6 +36,12 @@ export function MailLayout() {
       () => setIsShortcutsHelpOpen((prev) => !prev),
       [],
     ),
+    onNavigate: useCallback((path: string) => navigate(path), [navigate]),
+    onExtractTasks: useCallback(() => {
+      if (selectedThreadId) {
+        setIsTaskExtractOpen(true);
+      }
+    }, [selectedThreadId]),
   });
 
   const doSync = useCallback(async () => {
@@ -65,6 +79,26 @@ export function MailLayout() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeAccountId]);
 
+  // Network status detection — update store and flush queue on reconnect
+  useEffect(() => {
+    const handleOnline = () => {
+      useUIStore.getState().setOnline(true);
+      // Flush pending operations on reconnect
+      void processQueue();
+    };
+    const handleOffline = () => {
+      useUIStore.getState().setOnline(false);
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
   useEffect(() => {
     initNotifications();
     doSync();
@@ -73,6 +107,8 @@ export function MailLayout() {
 
     startSnoozeChecker(() => getActiveAccount());
     startBundleChecker(() => getActiveAccount());
+    startFollowUpChecker(() => getActiveAccount());
+    startQueueProcessor();
 
     let unlistenTray: (() => void) | undefined;
 
@@ -90,6 +126,8 @@ export function MailLayout() {
       clearInterval(interval);
       stopSnoozeChecker();
       stopBundleChecker();
+      stopFollowUpChecker();
+      stopQueueProcessor();
       unlistenTray?.();
     };
   }, [doSync, getActiveAccount]);
@@ -104,6 +142,7 @@ export function MailLayout() {
           data-tauri-drag-region
           style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
         />
+        <OfflineBanner />
         {syncError && (
           <div className="shrink-0 border-b border-danger bg-danger/10 px-4 py-2 text-xs text-danger">
             Sync error: {syncError}
@@ -123,6 +162,15 @@ export function MailLayout() {
         isOpen={isShortcutsHelpOpen}
         onClose={() => setIsShortcutsHelpOpen(false)}
       />
+      {selectedThreadId && activeAccountId && (
+        <AiTaskExtractDialog
+          isOpen={isTaskExtractOpen}
+          onClose={() => setIsTaskExtractOpen(false)}
+          messages={messages}
+          threadId={selectedThreadId}
+          accountId={activeAccountId}
+        />
+      )}
     </div>
   );
 }

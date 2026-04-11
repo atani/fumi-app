@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { Reply, ReplyAll, Forward, ChevronDown, ChevronRight } from "lucide-react";
+import { useState, useMemo, useCallback } from "react";
+import { Reply, ReplyAll, Forward, ChevronDown, ChevronRight, MailMinus } from "lucide-react";
 import { EmailRenderer } from "./EmailRenderer";
 import { AttachmentList } from "./AttachmentList";
 import { AuthBadge } from "./AuthBadge";
@@ -7,6 +7,7 @@ import { PhishingBanner } from "./PhishingBanner";
 import { useComposerStore } from "../../stores/composerStore";
 import { parseAuthResults } from "../../services/security/authParser";
 import { analyzeMessage, getOverallRisk } from "../../services/security/phishingDetector";
+import { getUnsubscribeInfo, unsubscribe } from "../../services/unsubscribe/unsubscribeManager";
 import type { Account, Message, Attachment, PhishingSensitivity } from "../../types";
 
 interface MessageItemProps {
@@ -113,6 +114,19 @@ export function MessageItem({
 }: MessageItemProps) {
   const [showQuoted, setShowQuoted] = useState(false);
   const [trustedSender, setTrustedSender] = useState(false);
+  const [unsubscribeStatus, setUnsubscribeStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+
+  const unsubscribeInfo = useMemo(
+    () => getUnsubscribeInfo(message),
+    [message],
+  );
+
+  const handleUnsubscribe = useCallback(async () => {
+    if (!account || unsubscribeStatus === "loading" || unsubscribeStatus === "done") return;
+    setUnsubscribeStatus("loading");
+    const result = await unsubscribe(account, message);
+    setUnsubscribeStatus(result.success ? "done" : "error");
+  }, [account, message, unsubscribeStatus]);
 
   const quotedContent = useMemo(() => {
     if (message.body_html) {
@@ -216,6 +230,27 @@ export function MessageItem({
       {message.cc_addresses && (
         <div className="pl-6 text-xs text-text-secondary">
           Cc: {message.cc_addresses}
+        </div>
+      )}
+
+      {/* Unsubscribe link */}
+      {unsubscribeInfo.canUnsubscribe && (
+        <div className="mt-1 pl-6">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              void handleUnsubscribe();
+            }}
+            disabled={unsubscribeStatus === "loading" || unsubscribeStatus === "done"}
+            className="inline-flex items-center gap-1 text-xs text-accent hover:underline disabled:text-text-tertiary disabled:no-underline"
+            data-testid="unsubscribe-btn"
+          >
+            <MailMinus className="h-3 w-3" />
+            {unsubscribeStatus === "idle" && "Unsubscribe"}
+            {unsubscribeStatus === "loading" && "Unsubscribing..."}
+            {unsubscribeStatus === "done" && "Unsubscribed"}
+            {unsubscribeStatus === "error" && "Unsubscribe failed — retry"}
+          </button>
         </div>
       )}
 

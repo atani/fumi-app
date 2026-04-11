@@ -3,11 +3,12 @@ import { useThreadStore } from "../../stores/threadStore";
 import { useAccountStore } from "../../stores/accountStore";
 import { useComposerStore } from "../../stores/composerStore";
 import { useLabelStore } from "../../stores/labelStore";
-import { Reply, ReplyAll, Forward, Archive, Trash2, Star, Clock, Tag, X, ExternalLink } from "lucide-react";
+import { Reply, ReplyAll, Forward, Archive, Trash2, Star, Clock, Tag, X, ExternalLink, BellRing } from "lucide-react";
 import { ThreadSummary } from "../email/ThreadSummary";
 import { SmartReplySuggestions } from "../email/SmartReplySuggestions";
 import { MessageItem } from "../email/MessageItem";
 import { SnoozeDialog } from "../email/SnoozeDialog";
+import { FollowUpDialog } from "../email/FollowUpDialog";
 import { MoveToLabelDialog } from "../email/MoveToLabelDialog";
 import {
   markAsRead,
@@ -16,6 +17,7 @@ import {
   trashThread,
 } from "../../services/emailActions";
 import { snoozeThread } from "../../services/snooze/snoozeService";
+import { addFollowUp } from "../../services/followup/followupManager";
 import { openThreadWindow } from "../../services/windowManager";
 import { getAttachmentsByThread } from "../../services/db/attachments";
 import { getThreadLabelIds } from "../../services/db/labels";
@@ -31,6 +33,7 @@ export function ReadingPane() {
   const { userLabels } = useLabelStore();
 
   const [isSnoozeOpen, setIsSnoozeOpen] = useState(false);
+  const [isFollowUpOpen, setIsFollowUpOpen] = useState(false);
   const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false);
   const [threadLabelIds, setThreadLabelIds] = useState<string[]>([]);
   const [attachmentMap, setAttachmentMap] = useState<Map<string, Attachment[]>>(
@@ -171,6 +174,12 @@ export function ReadingPane() {
     }
   };
 
+  const handleFollowUp = (hours: number) => {
+    if (account && thread) {
+      void addFollowUp(thread.id, account.id, hours);
+    }
+  };
+
   return (
     <div
       className="flex flex-1 flex-col overflow-hidden bg-bg-primary"
@@ -238,6 +247,14 @@ export function ReadingPane() {
             className="rounded-lg p-2 text-text-secondary hover:bg-bg-hover hover:text-text-primary"
           >
             <Clock className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => setIsFollowUpOpen(true)}
+            title="Follow up"
+            className="rounded-lg p-2 text-text-secondary hover:bg-bg-hover hover:text-text-primary"
+            data-testid="follow-up-btn"
+          >
+            <BellRing className="h-4 w-4" />
           </button>
           <button
             onClick={handleTrash}
@@ -350,6 +367,12 @@ export function ReadingPane() {
         isOpen={isSnoozeOpen}
         onClose={() => setIsSnoozeOpen(false)}
         onSnooze={handleSnooze}
+      />
+
+      <FollowUpDialog
+        isOpen={isFollowUpOpen}
+        onClose={() => setIsFollowUpOpen(false)}
+        onSetFollowUp={handleFollowUp}
       />
 
       {selectedThreadId && activeAccountId && (

@@ -1,10 +1,12 @@
 import type { Account } from "../types";
 import { authenticatedFetch } from "./gmail/api";
 import { useThreadStore } from "../stores/threadStore";
+import { useUIStore } from "../stores/uiStore";
 import { getDb } from "./db/connection";
+import { enqueueOperation } from "./queue/queueProcessor";
 
 /**
- * Modify a Gmail thread's labels via the API.
+ * Modify a Gmail thread's labels via the API, or enqueue if offline.
  */
 async function modifyThreadLabels(
   account: Account,
@@ -12,6 +14,15 @@ async function modifyThreadLabels(
   addLabelIds: string[] = [],
   removeLabelIds: string[] = [],
 ): Promise<void> {
+  if (!useUIStore.getState().isOnline) {
+    await enqueueOperation(account.id, "modifyLabels", {
+      threadId,
+      addLabelIds,
+      removeLabelIds,
+    });
+    return;
+  }
+
   await authenticatedFetch(account, `/threads/${threadId}/modify`, {
     method: "POST",
     body: JSON.stringify({ addLabelIds, removeLabelIds }),
@@ -87,6 +98,7 @@ async function addThreadLabelInDb(
 
 /**
  * Mark a thread as read. Optimistic UI update, then Gmail API + local DB.
+ * When offline, API call is enqueued; local DB is always updated immediately.
  */
 export async function markAsRead(
   account: Account,
@@ -95,7 +107,7 @@ export async function markAsRead(
   // Optimistic UI
   useThreadStore.getState().updateThread(threadId, { is_read: true });
 
-  // API + DB (fire concurrently)
+  // API (or enqueue) + DB concurrently
   await Promise.all([
     modifyThreadLabels(account, threadId, [], ["UNREAD"]),
     updateThreadInDb(threadId, account.id, { is_read: true }),

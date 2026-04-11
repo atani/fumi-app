@@ -1,5 +1,70 @@
 import { getDb } from "./connection";
 import type { Thread } from "../../types";
+import type { ThreadCategory } from "../ai/aiService";
+
+export async function getThreadCategoriesForAccount(
+  accountId: string,
+): Promise<Record<string, ThreadCategory>> {
+  const db = await getDb();
+  const rows = await db.select<{ thread_id: string; category: string }[]>(
+    "SELECT thread_id, category FROM thread_categories WHERE account_id = $1",
+    [accountId],
+  );
+  const map: Record<string, ThreadCategory> = {};
+  for (const row of rows) {
+    map[row.thread_id] = row.category as ThreadCategory;
+  }
+  return map;
+}
+
+export async function getCategoryCountsForThreads(
+  accountId: string,
+  threadIds: string[],
+): Promise<Record<string, number>> {
+  if (threadIds.length === 0) return {};
+  const db = await getDb();
+  const placeholders = threadIds.map((_, i) => `$${i + 2}`).join(",");
+  const rows = await db.select<{ category: string; cnt: number }[]>(
+    `SELECT category, COUNT(*) as cnt FROM thread_categories
+     WHERE account_id = $1 AND thread_id IN (${placeholders})
+     GROUP BY category`,
+    [accountId, ...threadIds],
+  );
+  const counts: Record<string, number> = {};
+  for (const row of rows) {
+    counts[row.category] = row.cnt;
+  }
+  return counts;
+}
+
+export async function getUncategorizedInboxThreadIds(
+  accountId: string,
+): Promise<{ threadId: string; fromAddress: string | null; subject: string | null }[]> {
+  const db = await getDb();
+  return db.select<{ threadId: string; fromAddress: string | null; subject: string | null }[]>(
+    `SELECT t.id AS threadId, m.from_address AS fromAddress, m.subject
+     FROM threads t
+     JOIN thread_labels tl ON t.id = tl.thread_id AND t.account_id = tl.account_id
+     LEFT JOIN thread_categories tc ON t.id = tc.thread_id AND t.account_id = tc.account_id
+     LEFT JOIN messages m ON m.thread_id = t.id AND m.account_id = t.account_id
+     WHERE t.account_id = $1 AND tl.label_id = 'INBOX' AND tc.thread_id IS NULL
+     GROUP BY t.id
+     ORDER BY t.last_message_at DESC`,
+    [accountId],
+  );
+}
+
+export async function setThreadCategory(
+  threadId: string,
+  accountId: string,
+  category: ThreadCategory,
+): Promise<void> {
+  const db = await getDb();
+  await db.execute(
+    "INSERT INTO thread_categories (thread_id, account_id, category) VALUES ($1, $2, $3) ON CONFLICT(thread_id, account_id) DO UPDATE SET category = $3",
+    [threadId, accountId, category],
+  );
+}
 
 export async function getThreadsByLabel(
   accountId: string,

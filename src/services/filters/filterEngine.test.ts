@@ -21,6 +21,8 @@ function makeMessage(overrides: Partial<Message> = {}): Message {
     has_attachments: false,
     header_message_id: null,
     auth_results: null,
+    list_unsubscribe: null,
+    list_unsubscribe_post: null,
     ...overrides,
   };
 }

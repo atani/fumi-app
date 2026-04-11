@@ -164,3 +164,50 @@ export async function categorizeThread(
 
   return result;
 }
+
+export interface ExtractedTask {
+  title: string;
+  description: string | null;
+  priority: "high" | "medium" | "low";
+  due_date: string | null;
+}
+
+export async function extractTasksFromThread(
+  messages: Message[],
+  threadId: string,
+  accountId: string,
+): Promise<ExtractedTask[]> {
+  const cached = await getCachedResult(threadId, accountId, "tasks");
+  if (cached) {
+    try {
+      return JSON.parse(cached) as ExtractedTask[];
+    } catch {
+      // Cached value is corrupt, regenerate
+    }
+  }
+
+  const config = await getAIConfig();
+  if (!config) throw new Error("AI is not configured. Set an API key in Settings.");
+
+  const systemPrompt =
+    "You are a task extraction assistant. Analyze the email thread and extract actionable tasks. Return ONLY a JSON array of objects with these fields: title (string, concise action item), description (string or null, brief context), priority (\"high\", \"medium\", or \"low\"), due_date (ISO date string or null if no deadline mentioned). If there are no tasks, return an empty array [].";
+  const userPrompt = formatMessagesForPrompt(messages);
+
+  const response = await callAI(
+    config.provider,
+    config.apiKey,
+    systemPrompt,
+    userPrompt,
+  );
+
+  let tasks: ExtractedTask[];
+  try {
+    const cleaned = response.text.replace(/```json?\n?/g, "").replace(/```/g, "").trim();
+    tasks = JSON.parse(cleaned) as ExtractedTask[];
+  } catch {
+    tasks = [];
+  }
+
+  await setCachedResult(threadId, accountId, "tasks", JSON.stringify(tasks));
+  return tasks;
+}

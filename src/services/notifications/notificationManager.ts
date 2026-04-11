@@ -25,6 +25,17 @@ function isWindowFocused(): boolean {
   return typeof document !== "undefined" && document.hasFocus();
 }
 
+export async function notifyFollowUp(subject: string): Promise<void> {
+  if (!isTauri() || !permissionGranted) return;
+
+  const { sendNotification } = await import("@tauri-apps/plugin-notification");
+
+  sendNotification({
+    title: "Follow-up reminder",
+    body: `No reply yet: ${subject}`,
+  });
+}
+
 export async function notifyNewMessages(newThreads: Thread[]): Promise<void> {
   if (!isTauri() || !permissionGranted) return;
   if (newThreads.length === 0) return;

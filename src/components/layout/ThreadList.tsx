@@ -1,5 +1,7 @@
+import { useMemo } from "react";
 import { useThreadStore } from "../../stores/threadStore";
 import { useAccountStore } from "../../stores/accountStore";
+import { CategoryTabs } from "../email/CategoryTabs";
 import { RefreshCw, Star, Search } from "lucide-react";
 
 interface ThreadListProps {
@@ -7,9 +9,24 @@ interface ThreadListProps {
 }
 
 export function ThreadList({ onOpenSearch }: ThreadListProps) {
-  const { threads, selectedThreadId, selectThread, isLoading, isSyncing } =
-    useThreadStore();
+  const {
+    threads,
+    selectedThreadId,
+    selectThread,
+    isLoading,
+    isSyncing,
+    activeLabel,
+    activeCategory,
+    categoryMap,
+  } = useThreadStore();
   const { activeAccountId } = useAccountStore();
+
+  const isInbox = activeLabel === "INBOX";
+
+  const filteredThreads = useMemo(() => {
+    if (!isInbox || activeCategory === null) return threads;
+    return threads.filter((t) => categoryMap[t.id] === activeCategory);
+  }, [threads, isInbox, activeCategory, categoryMap]);
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "";
@@ -49,17 +66,19 @@ export function ThreadList({ onOpenSearch }: ThreadListProps) {
         </div>
       </div>
 
+      {isInbox && <CategoryTabs />}
+
       <div className="flex-1 overflow-y-auto">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <p className="text-sm text-text-tertiary">Loading...</p>
           </div>
-        ) : threads.length === 0 ? (
+        ) : filteredThreads.length === 0 ? (
           <div className="flex items-center justify-center py-12">
             <p className="text-sm text-text-tertiary">No messages</p>
           </div>
         ) : (
-          threads.map((thread) => (
+          filteredThreads.map((thread) => (
             <button
               key={thread.id}
               onClick={() => selectThread(thread.id, activeAccountId ?? undefined)}

@@ -7,6 +7,7 @@ import { LoginPage } from "./components/auth/LoginPage";
 import { MailLayout } from "./components/layout/MailLayout";
 import { SettingsPage } from "./components/settings/SettingsPage";
 import { CalendarPage } from "./components/calendar/CalendarPage";
+import { TasksPage } from "./components/tasks/TasksPage";
 import { runMigrations } from "./services/db/migrations";
 import { loadDrafts, deleteDraft } from "./services/composer/draftAutoSave";
 import type { LocalDraft } from "./services/composer/draftAutoSave";
@@ -99,6 +100,10 @@ export function App() {
       )}
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/tasks"
+          element={isAuthenticated ? <TasksPage /> : <Navigate to="/login" />}
+        />
         <Route
           path="/calendar"
           element={isAuthenticated ? <CalendarPage /> : <Navigate to="/login" />}

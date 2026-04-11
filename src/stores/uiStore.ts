@@ -6,8 +6,10 @@ type Theme = "light" | "dark" | "system";
 interface UIState {
   theme: Theme;
   sidebarCollapsed: boolean;
+  isOnline: boolean;
   setTheme: (theme: Theme) => void;
   toggleSidebar: () => void;
+  setOnline: (online: boolean) => void;
   initTheme: () => Promise<void>;
 }
 
@@ -50,6 +52,7 @@ function listenSystemTheme(theme: Theme): void {
 export const useUIStore = create<UIState>((set) => ({
   theme: "system",
   sidebarCollapsed: false,
+  isOnline: typeof navigator !== "undefined" ? navigator.onLine : true,
 
   setTheme: (theme) => {
     set({ theme });
@@ -60,6 +63,8 @@ export const useUIStore = create<UIState>((set) => ({
 
   toggleSidebar: () =>
     set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
+
+  setOnline: (online: boolean) => set({ isOnline: online }),
 
   initTheme: async () => {
     try {

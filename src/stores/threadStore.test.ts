@@ -8,6 +8,9 @@ describe("threadStore", () => {
       selectedThreadId: null,
       messages: [],
       activeLabel: "INBOX",
+      activeCategory: null,
+      categoryMap: {},
+      categoryCounts: {},
       isLoading: false,
       isSyncing: false,
     });

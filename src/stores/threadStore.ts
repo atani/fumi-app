@@ -1,6 +1,11 @@
 import { create } from "zustand";
 import type { Thread, Message } from "../types";
-import { getThreadsByLabel } from "../services/db/threads";
+import type { ThreadCategory } from "../services/ai/aiService";
+import {
+  getThreadsByLabel,
+  getThreadCategoriesForAccount,
+  getCategoryCountsForThreads,
+} from "../services/db/threads";
 import { getMessagesByThread } from "../services/db/messages";
 
 interface ThreadState {
@@ -8,11 +13,15 @@ interface ThreadState {
   selectedThreadId: string | null;
   messages: Message[];
   activeLabel: string;
+  activeCategory: ThreadCategory | null;
+  categoryMap: Record<string, ThreadCategory>;
+  categoryCounts: Record<string, number>;
   isLoading: boolean;
   isSyncing: boolean;
   loadThreads: (accountId: string, labelId?: string) => Promise<void>;
   selectThread: (threadId: string | null, accountId?: string) => Promise<void>;
   setActiveLabel: (labelId: string) => void;
+  setActiveCategory: (category: ThreadCategory | null) => void;
   setThreads: (threads: Thread[]) => void;
   setSyncing: (syncing: boolean) => void;
   updateThread: (threadId: string, updates: Partial<Pick<Thread, "is_read" | "is_starred">>) => void;
@@ -24,6 +33,9 @@ export const useThreadStore = create<ThreadState>((set, get) => ({
   selectedThreadId: null,
   messages: [],
   activeLabel: "INBOX",
+  activeCategory: null,
+  categoryMap: {},
+  categoryCounts: {},
   isLoading: false,
   isSyncing: false,
 
@@ -31,7 +43,19 @@ export const useThreadStore = create<ThreadState>((set, get) => ({
     const label = labelId ?? get().activeLabel;
     set({ isLoading: true });
     const threads = await getThreadsByLabel(accountId, label);
-    set({ threads, isLoading: false, activeLabel: label });
+
+    if (label === "INBOX") {
+      const [categoryMap, categoryCounts] = await Promise.all([
+        getThreadCategoriesForAccount(accountId),
+        getCategoryCountsForThreads(
+          accountId,
+          threads.map((t) => t.id),
+        ),
+      ]);
+      set({ threads, isLoading: false, activeLabel: label, categoryMap, categoryCounts });
+    } else {
+      set({ threads, isLoading: false, activeLabel: label, activeCategory: null, categoryMap: {}, categoryCounts: {} });
+    }
   },
 
   selectThread: async (threadId, accountId) => {
@@ -45,6 +69,8 @@ export const useThreadStore = create<ThreadState>((set, get) => ({
   },
 
   setActiveLabel: (labelId) => set({ activeLabel: labelId }),
+
+  setActiveCategory: (category) => set({ activeCategory: category }),
 
   setThreads: (threads) => set({ threads }),
 

@@ -7,10 +7,13 @@ import {
   toggleStar,
   trashThread,
 } from "@/services/emailActions";
+import { unsubscribe, getUnsubscribeInfo } from "@/services/unsubscribe/unsubscribeManager";
 
 interface UseKeyboardShortcutsOptions {
   onOpenSearch: () => void;
   onToggleShortcutsHelp: () => void;
+  onNavigate?: (path: string) => void;
+  onExtractTasks?: () => void;
 }
 
 function isEditableTarget(target: EventTarget | null): boolean {
@@ -24,6 +27,8 @@ function isEditableTarget(target: EventTarget | null): boolean {
 export function useKeyboardShortcuts({
   onOpenSearch,
   onToggleShortcutsHelp,
+  onNavigate,
+  onExtractTasks,
 }: UseKeyboardShortcutsOptions): void {
   const pendingPrefixRef = useRef<string | null>(null);
   const prefixTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -54,7 +59,11 @@ export function useKeyboardShortcuts({
       if (pendingPrefixRef.current === "g") {
         e.preventDefault();
         clearPrefix();
-        handleGSequence(key);
+        if (key === "k" && onNavigate) {
+          onNavigate("/tasks");
+        } else {
+          handleGSequence(key);
+        }
         return;
       }
 
@@ -111,6 +120,14 @@ export function useKeyboardShortcuts({
           e.preventDefault();
           replyToThread("forward");
           break;
+        case "u":
+          e.preventDefault();
+          void unsubscribeSelectedThread();
+          break;
+        case "t":
+          e.preventDefault();
+          if (onExtractTasks) onExtractTasks();
+          break;
         case "/":
           e.preventDefault();
           onOpenSearch();
@@ -130,7 +147,7 @@ export function useKeyboardShortcuts({
       window.removeEventListener("keydown", handleKeyDown);
       clearPrefix();
     };
-  }, [onOpenSearch, onToggleShortcutsHelp, clearPrefix]);
+  }, [onOpenSearch, onToggleShortcutsHelp, onNavigate, onExtractTasks, clearPrefix]);
 }
 
 // ---------------------------------------------------------------------------
@@ -204,6 +221,20 @@ async function trashSelectedThread(): Promise<void> {
   const account = useAccountStore.getState().getActiveAccount();
   if (!thread || !account) return;
   await trashThread(account, thread.id);
+}
+
+async function unsubscribeSelectedThread(): Promise<void> {
+  const account = useAccountStore.getState().getActiveAccount();
+  if (!account) return;
+
+  const { messages } = useThreadStore.getState();
+  // Find the first message in the thread that supports unsubscribe
+  const target = messages.find(
+    (m) => getUnsubscribeInfo(m).canUnsubscribe,
+  );
+  if (!target) return;
+
+  await unsubscribe(account, target);
 }
 
 // ---------------------------------------------------------------------------

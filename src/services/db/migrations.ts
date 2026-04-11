@@ -327,6 +327,104 @@ const MIGRATIONS = [
       ALTER TABLE messages ADD COLUMN auth_results TEXT;
     `,
   },
+  {
+    version: 13,
+    sql: `
+      CREATE TABLE IF NOT EXISTS pending_operations (
+        id TEXT PRIMARY KEY,
+        account_id TEXT NOT NULL,
+        operation TEXT NOT NULL,
+        payload TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'pending',
+        retry_count INTEGER NOT NULL DEFAULT 0,
+        next_retry_at TEXT,
+        error TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_pending_operations_account_status
+        ON pending_operations(account_id, status);
+    `,
+  },
+  {
+    version: 14,
+    sql: `
+      CREATE TABLE IF NOT EXISTS unsubscribe_actions (
+        id TEXT PRIMARY KEY,
+        message_id TEXT NOT NULL,
+        account_id TEXT NOT NULL,
+        method TEXT NOT NULL,
+        target TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'pending',
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_unsubscribe_actions_message
+        ON unsubscribe_actions(message_id, account_id);
+
+      ALTER TABLE messages ADD COLUMN list_unsubscribe TEXT;
+      ALTER TABLE messages ADD COLUMN list_unsubscribe_post TEXT;
+    `,
+  },
+  {
+    version: 15,
+    sql: `
+      CREATE INDEX IF NOT EXISTS idx_thread_categories_account_category
+        ON thread_categories(account_id, category);
+    `,
+  },
+  {
+    version: 16,
+    sql: `
+      CREATE TABLE IF NOT EXISTS tasks (
+        id TEXT PRIMARY KEY,
+        account_id TEXT,
+        title TEXT NOT NULL,
+        description TEXT,
+        due_date TEXT,
+        priority TEXT NOT NULL DEFAULT 'medium',
+        completed INTEGER NOT NULL DEFAULT 0,
+        parent_task_id TEXT,
+        source_thread_id TEXT,
+        source_message_id TEXT,
+        recurrence_rule TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        completed_at TEXT,
+        FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE,
+        FOREIGN KEY (parent_task_id) REFERENCES tasks(id) ON DELETE SET NULL
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_tasks_account ON tasks(account_id);
+      CREATE INDEX IF NOT EXISTS idx_tasks_parent ON tasks(parent_task_id);
+      CREATE INDEX IF NOT EXISTS idx_tasks_due ON tasks(due_date) WHERE due_date IS NOT NULL;
+
+      CREATE TABLE IF NOT EXISTS task_tags (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        color TEXT,
+        account_id TEXT,
+        FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+      );
+    `,
+  },
+  {
+    version: 17,
+    sql: `
+      CREATE TABLE IF NOT EXISTS follow_up_reminders (
+        id TEXT PRIMARY KEY,
+        thread_id TEXT NOT NULL,
+        account_id TEXT NOT NULL,
+        remind_after_hours INTEGER NOT NULL DEFAULT 48,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        reminded_at TEXT,
+        FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_follow_up_reminders_thread
+        ON follow_up_reminders(thread_id, account_id);
+    `,
+  },
 ];
 
 export async function runMigrations(): Promise<void> {
