@@ -22,7 +22,7 @@ export function LoginPage() {
     setIsLoading(true);
 
     try {
-      let clientId = await getClientId();
+      const clientId = await getClientId();
 
       if (!clientId) {
         setShowClientIdInput(true);
@@ -32,7 +32,14 @@ export function LoginPage() {
 
       await performOAuth(clientId);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Authentication failed");
+      const msg = err instanceof Error ? err.message : "Authentication failed";
+      setError(msg);
+      // If client_secret is missing, show the form so user can add it
+      if (msg.includes("client_secret")) {
+        const storedId = await getClientId();
+        if (storedId) setClientIdInput(storedId);
+        setShowClientIdInput(true);
+      }
       setIsLoading(false);
     }
   };
