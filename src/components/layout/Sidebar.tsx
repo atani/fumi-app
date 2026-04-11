@@ -13,6 +13,7 @@ import {
   Moon,
   Monitor,
   Settings,
+  PenSquare,
   Plus,
   Tag,
   PackageOpen,
@@ -21,6 +22,7 @@ import { useNavigate } from "react-router-dom";
 import { useThreadStore } from "../../stores/threadStore";
 import { useAccountStore } from "../../stores/accountStore";
 import { useUIStore } from "../../stores/uiStore";
+import { useComposerStore } from "../../stores/composerStore";
 import { useLabelStore } from "../../stores/labelStore";
 import { AccountSwitcher } from "../accounts/AccountSwitcher";
 import { LabelForm } from "../labels/LabelForm";
@@ -185,6 +187,17 @@ export function Sidebar() {
       </div>
 
       <AccountSwitcher />
+
+      <div className="px-3 py-2">
+        <button
+          onClick={() => useComposerStore.getState().openCompose()}
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover"
+          data-testid="compose-button"
+        >
+          <PenSquare className="h-4 w-4" />
+          Compose
+        </button>
+      </div>
 
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 py-2">
         {LABELS.map(({ id, name, icon: Icon }) => (
