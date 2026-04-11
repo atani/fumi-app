@@ -18,6 +18,7 @@ export function MailLayout() {
     useThreadStore();
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isShortcutsHelpOpen, setIsShortcutsHelpOpen] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
 
   useKeyboardShortcuts({
     onOpenSearch: useCallback(() => setIsCommandPaletteOpen(true), []),
@@ -32,6 +33,7 @@ export function MailLayout() {
     if (!account?.access_token && !account?.refresh_token) return;
 
     setSyncing(true);
+    setSyncError(null);
     try {
       await syncLabels(account);
       const { threads, newThreads } = await syncInbox(account);
@@ -44,6 +46,10 @@ export function MailLayout() {
         await notifyNewMessages(newThreads);
       }
       await updateBadgeCount(account.id);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error("Sync error:", msg);
+      setSyncError(msg);
     } finally {
       setSyncing(false);
     }
@@ -90,6 +96,11 @@ export function MailLayout() {
           className="h-10 shrink-0"
           data-tauri-drag-region
         />
+        {syncError && (
+          <div className="shrink-0 border-b border-danger bg-danger/10 px-4 py-2 text-xs text-danger">
+            Sync error: {syncError}
+          </div>
+        )}
         <div className="flex flex-1 overflow-hidden">
           <ThreadList onOpenSearch={() => setIsCommandPaletteOpen(true)} />
           {selectedThreadId && <ReadingPane />}
