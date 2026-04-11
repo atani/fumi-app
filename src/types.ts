@@ -48,6 +48,7 @@ export interface Message {
   is_read: boolean;
   has_attachments: boolean;
   header_message_id: string | null;
+  auth_results: string | null;
 }
 
 export interface Label {
@@ -173,4 +174,62 @@ export interface FilterRule {
   actions: FilterActions;
   enabled: boolean;
   created_at: string;
+}
+
+export type PhishingRiskLevel = "safe" | "warning" | "danger";
+export type PhishingSensitivity = "low" | "default" | "high";
+
+export interface LinkScanResult {
+  id: string;
+  message_id: string;
+  account_id: string;
+  url: string;
+  risk_level: PhishingRiskLevel;
+  reasons: string;
+  scanned_at: string;
+}
+
+export interface LinkAnalysis {
+  url: string;
+  displayText: string | null;
+  riskLevel: PhishingRiskLevel;
+  reasons: string[];
+}
+
+export interface AuthResult {
+  spf: "pass" | "fail" | "none" | "unknown";
+  dkim: "pass" | "fail" | "none" | "unknown";
+  dmarc: "pass" | "fail" | "none" | "unknown";
+  verdict: "pass" | "fail" | "warning" | "unknown";
+}
+
+export interface CalendarEvent {
+  id: string;
+  summary: string;
+  description?: string;
+  start: { dateTime?: string; date?: string; timeZone?: string };
+  end: { dateTime?: string; date?: string; timeZone?: string };
+  htmlLink?: string;
+  colorId?: string;
+  status?: string;
+  creator?: { email: string; displayName?: string };
+  organizer?: { email: string; displayName?: string };
+}
+
+export interface BundleRule {
+  id: string;
+  account_id: string;
+  sender_pattern: string;
+  bundle_name: string;
+  schedule: "instant" | "daily" | "weekly";
+  enabled: boolean;
+}
+
+export interface GoogleCalendar {
+  id: string;
+  summary: string;
+  backgroundColor?: string;
+  foregroundColor?: string;
+  primary?: boolean;
+  accessRole: string;
 }

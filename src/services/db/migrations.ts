@@ -267,6 +267,66 @@ const MIGRATIONS = [
       );
     `,
   },
+  {
+    version: 10,
+    sql: `
+      CREATE TABLE IF NOT EXISTS ai_cache (
+        id TEXT PRIMARY KEY,
+        thread_id TEXT,
+        account_id TEXT,
+        type TEXT,
+        result TEXT,
+        created_at TEXT DEFAULT (datetime('now'))
+      );
+
+      CREATE TABLE IF NOT EXISTS thread_categories (
+        thread_id TEXT,
+        account_id TEXT,
+        category TEXT,
+        PRIMARY KEY (thread_id, account_id)
+      );
+    `,
+  },
+  {
+    version: 11,
+    sql: `
+      CREATE TABLE IF NOT EXISTS bundle_rules (
+        id TEXT PRIMARY KEY,
+        account_id TEXT,
+        sender_pattern TEXT NOT NULL,
+        bundle_name TEXT NOT NULL,
+        schedule TEXT DEFAULT 'daily',
+        enabled INTEGER DEFAULT 1,
+        FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+      );
+
+      CREATE TABLE IF NOT EXISTS bundled_threads (
+        thread_id TEXT NOT NULL,
+        account_id TEXT NOT NULL,
+        bundle_rule_id TEXT NOT NULL,
+        bundled_at TEXT DEFAULT (datetime('now')),
+        delivered INTEGER DEFAULT 0,
+        PRIMARY KEY (thread_id, account_id),
+        FOREIGN KEY (bundle_rule_id) REFERENCES bundle_rules(id) ON DELETE CASCADE
+      );
+    `,
+  },
+  {
+    version: 12,
+    sql: `
+      CREATE TABLE IF NOT EXISTS link_scan_results (
+        id TEXT PRIMARY KEY,
+        message_id TEXT,
+        account_id TEXT,
+        url TEXT,
+        risk_level TEXT,
+        reasons TEXT,
+        scanned_at TEXT DEFAULT (datetime('now'))
+      );
+
+      ALTER TABLE messages ADD COLUMN auth_results TEXT;
+    `,
+  },
 ];
 
 export async function runMigrations(): Promise<void> {

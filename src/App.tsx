@@ -6,6 +6,7 @@ import { useComposerStore } from "./stores/composerStore";
 import { LoginPage } from "./components/auth/LoginPage";
 import { MailLayout } from "./components/layout/MailLayout";
 import { SettingsPage } from "./components/settings/SettingsPage";
+import { CalendarPage } from "./components/calendar/CalendarPage";
 import { runMigrations } from "./services/db/migrations";
 import { loadDrafts, deleteDraft } from "./services/composer/draftAutoSave";
 import type { LocalDraft } from "./services/composer/draftAutoSave";
@@ -98,6 +99,10 @@ export function App() {
       )}
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/calendar"
+          element={isAuthenticated ? <CalendarPage /> : <Navigate to="/login" />}
+        />
         <Route
           path="/settings"
           element={isAuthenticated ? <SettingsPage /> : <Navigate to="/login" />}

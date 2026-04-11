@@ -12,6 +12,7 @@ import { initNotifications, notifyNewMessages } from "../../services/notificatio
 import { updateBadgeCount } from "../../services/notifications/badgeManager";
 import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts";
 import { startSnoozeChecker, stopSnoozeChecker } from "../../services/snooze/snoozeChecker";
+import { startBundleChecker, stopBundleChecker } from "../../services/bundles/bundleChecker";
 
 export function MailLayout() {
   const { activeAccountId, getActiveAccount } = useAccountStore();
@@ -71,6 +72,7 @@ export function MailLayout() {
     const interval = setInterval(doSync, 60_000);
 
     startSnoozeChecker(() => getActiveAccount());
+    startBundleChecker(() => getActiveAccount());
 
     let unlistenTray: (() => void) | undefined;
 
@@ -87,6 +89,7 @@ export function MailLayout() {
     return () => {
       clearInterval(interval);
       stopSnoozeChecker();
+      stopBundleChecker();
       unlistenTray?.();
     };
   }, [doSync, getActiveAccount]);

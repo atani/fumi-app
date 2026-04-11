@@ -20,6 +20,7 @@ function makeMessage(overrides: Partial<Message> = {}): Message {
     is_read: false,
     has_attachments: false,
     header_message_id: null,
+    auth_results: null,
     ...overrides,
   };
 }

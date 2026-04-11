@@ -4,6 +4,8 @@ import { useAccountStore } from "../../stores/accountStore";
 import { useComposerStore } from "../../stores/composerStore";
 import { useLabelStore } from "../../stores/labelStore";
 import { Reply, ReplyAll, Forward, Archive, Trash2, Star, Clock, Tag, X, ExternalLink } from "lucide-react";
+import { ThreadSummary } from "../email/ThreadSummary";
+import { SmartReplySuggestions } from "../email/SmartReplySuggestions";
 import { MessageItem } from "../email/MessageItem";
 import { SnoozeDialog } from "../email/SnoozeDialog";
 import { MoveToLabelDialog } from "../email/MoveToLabelDialog";
@@ -176,9 +178,18 @@ export function ReadingPane() {
     >
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border-primary px-6 py-3">
-        <h2 className="text-lg font-semibold text-text-primary">
-          {lastMessage?.subject || "(No subject)"}
-        </h2>
+        <div className="flex items-center gap-3 min-w-0">
+          <h2 className="truncate text-lg font-semibold text-text-primary">
+            {lastMessage?.subject || "(No subject)"}
+          </h2>
+          {selectedThreadId && activeAccountId && (
+            <ThreadSummary
+              messages={messages}
+              threadId={selectedThreadId}
+              accountId={activeAccountId}
+            />
+          )}
+        </div>
         <div className="flex items-center gap-1">
           <button
             onClick={() => {
@@ -293,6 +304,17 @@ export function ReadingPane() {
           />
         ))}
       </div>
+
+      {/* Smart reply suggestions */}
+      {selectedThreadId && activeAccountId && (
+        <div className="border-t border-border-secondary px-6 py-2">
+          <SmartReplySuggestions
+            messages={messages}
+            threadId={selectedThreadId}
+            accountId={activeAccountId}
+          />
+        </div>
+      )}
 
       {/* Quick reply actions */}
       <div className="flex gap-2 border-t border-border-primary px-6 py-3">

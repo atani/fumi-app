@@ -8,12 +8,14 @@ import {
   AlertOctagon,
   Archive,
   Clock,
+  Calendar,
   Sun,
   Moon,
   Monitor,
   Settings,
   Plus,
   Tag,
+  PackageOpen,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useThreadStore } from "../../stores/threadStore";
@@ -22,6 +24,7 @@ import { useUIStore } from "../../stores/uiStore";
 import { useLabelStore } from "../../stores/labelStore";
 import { AccountSwitcher } from "../accounts/AccountSwitcher";
 import { LabelForm } from "../labels/LabelForm";
+import { getBundleCounts } from "../../services/bundles/bundleManager";
 
 const LABELS = [
   { id: "INBOX", name: "Inbox", icon: Inbox },
@@ -60,6 +63,11 @@ export function Sidebar() {
     useLabelStore();
   const navigate = useNavigate();
 
+  // Bundles state
+  const [bundles, setBundles] = useState<
+    { ruleId: string; bundleName: string; count: number }[]
+  >([]);
+
   // Label form state
   const [isLabelFormOpen, setIsLabelFormOpen] = useState(false);
   const [editingLabel, setEditingLabel] = useState<{
@@ -78,12 +86,22 @@ export function Sidebar() {
   } | null>(null);
   const contextMenuRef = useRef<HTMLDivElement>(null);
 
-  // Load user labels when account changes
+  // Load user labels and bundle counts when account changes
   useEffect(() => {
     if (activeAccountId) {
       void loadLabels(activeAccountId);
+      void getBundleCounts(activeAccountId).then(setBundles);
     }
   }, [activeAccountId, loadLabels]);
+
+  // Refresh bundle counts periodically
+  useEffect(() => {
+    if (!activeAccountId) return;
+    const interval = setInterval(() => {
+      void getBundleCounts(activeAccountId).then(setBundles);
+    }, 60_000);
+    return () => clearInterval(interval);
+  }, [activeAccountId]);
 
   // Close context menu on outside click
   useEffect(() => {
@@ -241,9 +259,46 @@ export function Sidebar() {
             </button>
           </div>
         )}
+
+        {/* Bundles section */}
+        {bundles.length > 0 && (
+          <>
+            <div className="mt-3 mb-1 px-3">
+              <span className="text-xs font-medium uppercase tracking-wider text-text-tertiary">
+                Bundles
+              </span>
+            </div>
+            {bundles.map((bundle) => (
+              <button
+                key={bundle.ruleId}
+                onClick={() => void handleLabelClick("BUNDLED")}
+                className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
+                  activeLabel === "BUNDLED"
+                    ? "bg-bg-selected text-accent font-medium"
+                    : "text-sidebar-text hover:bg-bg-hover"
+                }`}
+                data-testid={`sidebar-bundle-${bundle.ruleId}`}
+              >
+                <PackageOpen className="h-4 w-4 shrink-0" />
+                <span className="truncate">{bundle.bundleName}</span>
+                <span className="ml-auto shrink-0 rounded-full bg-accent/10 px-1.5 py-0.5 text-xs font-medium text-accent">
+                  {bundle.count}
+                </span>
+              </button>
+            ))}
+          </>
+        )}
       </nav>
 
       <div className="border-t border-border-primary px-2 py-2">
+        <button
+          onClick={() => navigate("/calendar")}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-text transition-colors hover:bg-bg-hover"
+          data-testid="sidebar-calendar"
+        >
+          <Calendar className="h-4 w-4" />
+          Calendar
+        </button>
         <button
           onClick={() => navigate("/settings")}
           className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-text transition-colors hover:bg-bg-hover"

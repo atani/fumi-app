@@ -2,8 +2,12 @@ import { useState, useMemo } from "react";
 import { Reply, ReplyAll, Forward, ChevronDown, ChevronRight } from "lucide-react";
 import { EmailRenderer } from "./EmailRenderer";
 import { AttachmentList } from "./AttachmentList";
+import { AuthBadge } from "./AuthBadge";
+import { PhishingBanner } from "./PhishingBanner";
 import { useComposerStore } from "../../stores/composerStore";
-import type { Account, Message, Attachment } from "../../types";
+import { parseAuthResults } from "../../services/security/authParser";
+import { analyzeMessage, getOverallRisk } from "../../services/security/phishingDetector";
+import type { Account, Message, Attachment, PhishingSensitivity } from "../../types";
 
 interface MessageItemProps {
   message: Message;
@@ -11,6 +15,7 @@ interface MessageItemProps {
   onToggle: () => void;
   account: Account | null;
   attachments: Attachment[];
+  phishingSensitivity?: PhishingSensitivity;
 }
 
 /**
@@ -104,8 +109,10 @@ export function MessageItem({
   onToggle,
   account,
   attachments,
+  phishingSensitivity = "default",
 }: MessageItemProps) {
   const [showQuoted, setShowQuoted] = useState(false);
+  const [trustedSender, setTrustedSender] = useState(false);
 
   const quotedContent = useMemo(() => {
     if (message.body_html) {
@@ -119,6 +126,21 @@ export function MessageItem({
   }, [message.body_html, message.body_text, message.snippet]);
 
   const hasQuotedContent = quotedContent.quoted !== null;
+
+  const authResult = useMemo(
+    () => parseAuthResults(message.auth_results),
+    [message.auth_results],
+  );
+
+  const phishingAnalyses = useMemo(() => {
+    if (!message.body_html || trustedSender) return [];
+    return analyzeMessage(message.body_html, phishingSensitivity, message.from_address);
+  }, [message.body_html, message.from_address, phishingSensitivity, trustedSender]);
+
+  const overallRisk = useMemo(
+    () => getOverallRisk(phishingAnalyses),
+    [phishingAnalyses],
+  );
 
   const senderDisplay = message.from_name || message.from_address || "Unknown";
   const snippet = message.snippet ?? "";
@@ -180,6 +202,7 @@ export function MessageItem({
               &lt;{message.from_address}&gt;
             </span>
           )}
+          <AuthBadge authResult={authResult} />
         </div>
         <span className="text-xs text-text-tertiary">
           {message.date ? new Date(message.date).toLocaleString() : ""}
@@ -194,6 +217,19 @@ export function MessageItem({
         <div className="pl-6 text-xs text-text-secondary">
           Cc: {message.cc_addresses}
         </div>
+      )}
+
+      {/* Phishing banner */}
+      {overallRisk !== "safe" && (
+        <PhishingBanner
+          analyses={phishingAnalyses}
+          overallRisk={overallRisk}
+          onTrustSender={() => setTrustedSender(true)}
+          onReport={() => {
+            // Placeholder: in a real app this would report the message
+            console.warn("Phishing reported for message:", message.id);
+          }}
+        />
       )}
 
       {/* Body */}

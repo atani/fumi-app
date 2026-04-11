@@ -4,6 +4,7 @@ import { upsertMessage } from "../db/messages";
 import { getDb } from "../db/connection";
 import { recordContactsFromMessages } from "../contacts/contactService";
 import { processFilters } from "../filters/filterEngine";
+import { processBundleRules } from "../bundles/bundleManager";
 import type { Account, Thread, Message, GmailMessage, GmailThread } from "../../types";
 
 export interface SyncResult {
@@ -35,6 +36,7 @@ function parseGmailMessage(
     is_read: !gmailMsg.labelIds.includes("UNREAD"),
     has_attachments: false,
     header_message_id: getHeader(gmailMsg, "Message-ID") ?? null,
+    auth_results: getHeader(gmailMsg, "Authentication-Results") ?? null,
   };
 }
 
@@ -140,6 +142,9 @@ export async function syncInbox(
     newThreadIds.has(m.thread_id),
   );
   await processFilters(account, newMessages);
+
+  // Check new threads against bundle rules
+  await processBundleRules(account, newThreads, allParsedMessages);
 
   return { threads: syncedThreads, newThreads };
 }

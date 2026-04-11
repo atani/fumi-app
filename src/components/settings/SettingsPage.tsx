@@ -16,6 +16,7 @@ import { AccountAvatar } from "../accounts/AccountAvatar";
 import { TemplateEditor } from "./TemplateEditor";
 import { SignatureEditor } from "./SignatureEditor";
 import { FilterEditor } from "./FilterEditor";
+import { BundleEditor } from "./BundleEditor";
 import { getDb } from "../../services/db/connection";
 
 type Theme = "system" | "light" | "dark";
@@ -69,16 +70,43 @@ export function SettingsPage() {
     null,
   );
 
+  const [phishingSensitivity, setPhishingSensitivity] = useState<string>("default");
+
+  // AI settings state
+  const [aiProvider, setAiProvider] = useState<string>("claude");
+  const [aiApiKey, setAiApiKey] = useState("");
+  const [showAiApiKey, setShowAiApiKey] = useState(false);
+  const [aiSummaryEnabled, setAiSummaryEnabled] = useState(true);
+  const [aiRepliesEnabled, setAiRepliesEnabled] = useState(true);
+  const [aiCategoryEnabled, setAiCategoryEnabled] = useState(true);
+
   // Load persisted settings
   useEffect(() => {
     const load = async () => {
-      const [interval, notif, storedClientId, storedClientSecret, storedUndoDelay] =
-        await Promise.all([
+      const [
+        interval,
+        notif,
+        storedClientId,
+        storedClientSecret,
+        storedUndoDelay,
+        storedAiProvider,
+        storedAiApiKey,
+        storedAiSummary,
+        storedAiReplies,
+        storedAiCategory,
+        storedPhishingSensitivity,
+      ] = await Promise.all([
           loadSetting("sync_interval"),
           loadSetting("notifications_enabled"),
           loadSetting("google_client_id"),
           loadSetting("google_client_secret"),
           loadSetting("undo_send_delay"),
+          loadSetting("ai_provider"),
+          loadSetting("ai_api_key"),
+          loadSetting("ai_summary_enabled"),
+          loadSetting("ai_replies_enabled"),
+          loadSetting("ai_category_enabled"),
+          loadSetting("phishing_sensitivity"),
         ]);
 
       if (interval) setSyncInterval(Number(interval));
@@ -86,6 +114,12 @@ export function SettingsPage() {
       if (storedClientId) setClientId(storedClientId);
       if (storedClientSecret) setClientSecret(storedClientSecret);
       if (storedUndoDelay) setUndoSendDelay(Number(storedUndoDelay));
+      if (storedAiProvider) setAiProvider(storedAiProvider);
+      if (storedAiApiKey) setAiApiKey(storedAiApiKey);
+      if (storedAiSummary !== null) setAiSummaryEnabled(storedAiSummary !== "false");
+      if (storedAiReplies !== null) setAiRepliesEnabled(storedAiReplies !== "false");
+      if (storedAiCategory !== null) setAiCategoryEnabled(storedAiCategory !== "false");
+      if (storedPhishingSensitivity) setPhishingSensitivity(storedPhishingSensitivity);
 
       // Check autostart status
       if (
@@ -151,6 +185,11 @@ export function SettingsPage() {
     }
   }, []);
 
+  const handlePhishingSensitivityChange = useCallback(async (value: string) => {
+    setPhishingSensitivity(value);
+    await saveSetting("phishing_sensitivity", value);
+  }, []);
+
   const handleClientIdSave = useCallback(
     async (value: string) => {
       setClientId(value);
@@ -166,6 +205,31 @@ export function SettingsPage() {
     },
     [],
   );
+
+  const handleAiProviderChange = useCallback(async (value: string) => {
+    setAiProvider(value);
+    await saveSetting("ai_provider", value);
+  }, []);
+
+  const handleAiApiKeySave = useCallback(async (value: string) => {
+    setAiApiKey(value);
+    await saveSetting("ai_api_key", value);
+  }, []);
+
+  const handleAiSummaryToggle = useCallback(async (enabled: boolean) => {
+    setAiSummaryEnabled(enabled);
+    await saveSetting("ai_summary_enabled", String(enabled));
+  }, []);
+
+  const handleAiRepliesToggle = useCallback(async (enabled: boolean) => {
+    setAiRepliesEnabled(enabled);
+    await saveSetting("ai_replies_enabled", String(enabled));
+  }, []);
+
+  const handleAiCategoryToggle = useCallback(async (enabled: boolean) => {
+    setAiCategoryEnabled(enabled);
+    await saveSetting("ai_category_enabled", String(enabled));
+  }, []);
 
   return (
     <div className="flex h-screen flex-col bg-bg-primary">
@@ -319,6 +383,33 @@ export function SettingsPage() {
             <FilterEditor />
           </Section>
 
+          {/* Bundle Rules */}
+          <Section title="Bundle Rules">
+            <BundleEditor />
+          </Section>
+
+          {/* Phishing Detection */}
+          <Section title="Phishing Detection">
+            <label className="mb-2 block text-sm text-text-secondary">
+              Detection sensitivity
+            </label>
+            <select
+              value={phishingSensitivity}
+              onChange={(e) =>
+                handlePhishingSensitivityChange(e.target.value)
+              }
+              className="rounded-lg border border-border-primary bg-bg-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent"
+              data-testid="phishing-sensitivity-select"
+            >
+              <option value="low">Low</option>
+              <option value="default">Default</option>
+              <option value="high">High</option>
+            </select>
+            <p className="mt-1.5 text-xs text-text-tertiary">
+              Controls how aggressively links in emails are flagged as suspicious. Higher sensitivity catches more threats but may produce more false positives.
+            </p>
+          </Section>
+
           {/* Notifications */}
           <Section title="Notifications">
             <ToggleRow
@@ -349,6 +440,76 @@ export function SettingsPage() {
           {/* Signatures */}
           <Section title="Signatures">
             <SignatureEditor />
+          </Section>
+
+          {/* AI Features */}
+          <Section title="AI Features">
+            <div className="space-y-4">
+              <div>
+                <label className="mb-1 block text-sm text-text-secondary">
+                  AI Provider
+                </label>
+                <select
+                  value={aiProvider}
+                  onChange={(e) => void handleAiProviderChange(e.target.value)}
+                  className="rounded-lg border border-border-primary bg-bg-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent"
+                  data-testid="ai-provider-select"
+                >
+                  <option value="claude">Claude (Anthropic)</option>
+                  <option value="openai">OpenAI</option>
+                  <option value="gemini">Gemini (Google)</option>
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-sm text-text-secondary">
+                  API Key
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type={showAiApiKey ? "text" : "password"}
+                    value={aiApiKey}
+                    onChange={(e) => void handleAiApiKeySave(e.target.value)}
+                    placeholder="Enter API key"
+                    className="flex-1 rounded-lg border border-border-primary bg-bg-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent"
+                    data-testid="ai-api-key-input"
+                  />
+                  <button
+                    onClick={() => setShowAiApiKey((prev) => !prev)}
+                    className="rounded-md p-2 text-text-tertiary transition-colors hover:bg-bg-hover hover:text-text-primary"
+                    data-testid="toggle-ai-api-key-visibility"
+                  >
+                    {showAiApiKey ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-3 pt-2">
+                <ToggleRow
+                  label="Thread summaries"
+                  description="AI-generated summaries for email threads"
+                  enabled={aiSummaryEnabled}
+                  onToggle={handleAiSummaryToggle}
+                  testId="ai-summary-toggle"
+                />
+                <ToggleRow
+                  label="Smart reply suggestions"
+                  description="AI-suggested reply options for emails"
+                  enabled={aiRepliesEnabled}
+                  onToggle={handleAiRepliesToggle}
+                  testId="ai-replies-toggle"
+                />
+                <ToggleRow
+                  label="Auto-categorization"
+                  description="Automatically categorize emails using AI"
+                  enabled={aiCategoryEnabled}
+                  onToggle={handleAiCategoryToggle}
+                  testId="ai-category-toggle"
+                />
+              </div>
+            </div>
           </Section>
 
           {/* OAuth Credentials */}
