@@ -123,7 +123,15 @@ export function EmailRenderer({
   useEffect(() => {
     if (!html) return;
 
-    const sanitizedHtml = sanitize(html);
+    let sanitizedHtml = sanitize(html);
+
+    // If the HTML has no block-level elements, it's likely plain text
+    // wrapped in HTML. Convert \n to <br> to preserve line breaks.
+    const hasBlockElements = /<(div|p|br|table|ul|ol|li|h[1-6]|blockquote|section|article|header|footer|pre)\b/i.test(sanitizedHtml);
+    if (!hasBlockElements) {
+      sanitizedHtml = sanitizedHtml.replace(/\n/g, "<br>");
+    }
+
     writeToIframe(sanitizedHtml);
 
     // Resize after content is written
