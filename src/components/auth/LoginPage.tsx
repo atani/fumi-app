@@ -15,7 +15,7 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [clientId, setClientId] = useState("");
   const [clientSecret, setClientSecret] = useState("");
-  const { accounts, addAccount } = useAccountStore();
+  const { addAccount } = useAccountStore();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -76,12 +76,7 @@ export function LoginPage() {
       };
 
       await addAccount(account);
-
-      // If there were already accounts, this is an "add account" flow —
-      // navigate back to the inbox so the route guard doesn't just redirect.
-      if (accounts.length > 0) {
-        navigate("/");
-      }
+      navigate("/");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Authentication failed");
     } finally {
