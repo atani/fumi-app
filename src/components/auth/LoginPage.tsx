@@ -90,7 +90,14 @@ export function LoginPage() {
   };
 
   return (
-    <div className="flex h-screen items-center justify-center bg-bg-primary">
+    <div className="flex h-screen flex-col bg-bg-primary">
+      {/* Drag region for window movement */}
+      <div
+        className="h-10 w-full shrink-0"
+        data-tauri-drag-region
+        style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
+      />
+      <div className="flex flex-1 items-center justify-center">
       <div className="w-full max-w-sm px-8">
         <div className="text-center">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-accent-light">
@@ -159,6 +166,7 @@ export function LoginPage() {
             </p>
           )}
         </div>
+      </div>
       </div>
     </div>
   );

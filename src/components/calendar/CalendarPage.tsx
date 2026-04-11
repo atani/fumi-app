@@ -175,6 +175,7 @@ export function CalendarPage() {
       <div
         className="flex h-12 items-center gap-3 border-b border-border-primary px-4"
         data-tauri-drag-region
+        style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
       >
         <button
           onClick={() => navigate("/")}

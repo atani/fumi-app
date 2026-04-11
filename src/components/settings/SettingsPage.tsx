@@ -234,7 +234,11 @@ export function SettingsPage() {
   return (
     <div className="flex h-screen flex-col bg-bg-primary">
       {/* Title bar drag region */}
-      <div className="h-10 shrink-0" data-tauri-drag-region />
+      <div
+        className="h-10 shrink-0 bg-bg-primary"
+        data-tauri-drag-region
+        style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
+      />
 
       <div className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-2xl px-6 pb-12">
