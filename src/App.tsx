@@ -40,6 +40,16 @@ export function App() {
       } catch {
         // Draft restoration is best-effort
       }
+
+      // Close splash screen and show main window
+      if (typeof window !== "undefined" && "__TAURI_INTERNALS__" in window) {
+        try {
+          const { invoke } = await import("@tauri-apps/api/core");
+          await invoke("close_splashscreen");
+        } catch {
+          // Splash screen may not exist in dev mode
+        }
+      }
     };
     init();
   }, [loadAccounts]);
