@@ -298,3 +298,48 @@ export interface SendAsAlias {
   is_default: boolean;
   is_primary: boolean;
 }
+
+export type QuickStepActionType =
+  | "applyLabel"
+  | "removeLabel"
+  | "archive"
+  | "trash"
+  | "star"
+  | "unstar"
+  | "markRead"
+  | "markUnread"
+  | "forward"
+  | "reply"
+  | "move"
+  | "snooze"
+  | "mute"
+  | "followUp"
+  | "categorize"
+  | "addTask"
+  | "unsubscribe"
+  | "openUrl";
+
+export interface QuickStepAction {
+  type: QuickStepActionType;
+  params?: Record<string, string>;
+}
+
+export interface QuickStep {
+  id: string;
+  account_id: string;
+  name: string;
+  icon: string | null;
+  actions: QuickStepAction[];
+  shortcut: string | null;
+  created_at: string;
+}
+
+export interface SmartFolder {
+  id: string;
+  account_id: string;
+  name: string;
+  query: string;
+  icon: string | null;
+  sort_order: number;
+  created_at: string;
+}

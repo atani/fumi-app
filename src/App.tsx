@@ -8,6 +8,7 @@ import { MailLayout } from "./components/layout/MailLayout";
 import { SettingsPage } from "./components/settings/SettingsPage";
 import { CalendarPage } from "./components/calendar/CalendarPage";
 import { TasksPage } from "./components/tasks/TasksPage";
+import { HelpPage } from "./components/help/HelpPage";
 import { runMigrations } from "./services/db/migrations";
 import { loadDrafts, deleteDraft } from "./services/composer/draftAutoSave";
 import type { LocalDraft } from "./services/composer/draftAutoSave";
@@ -111,6 +112,10 @@ export function App() {
         <Route
           path="/settings"
           element={isAuthenticated ? <SettingsPage /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/help/:topic?"
+          element={isAuthenticated ? <HelpPage /> : <Navigate to="/login" />}
         />
         <Route
           path="/*"

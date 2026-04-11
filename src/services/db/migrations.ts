@@ -475,6 +475,39 @@ const MIGRATIONS = [
         ON scheduled_emails(status, scheduled_at);
     `,
   },
+  {
+    version: 21,
+    sql: `
+      CREATE TABLE IF NOT EXISTS smart_folders (
+        id TEXT PRIMARY KEY,
+        account_id TEXT NOT NULL,
+        name TEXT NOT NULL,
+        query TEXT NOT NULL,
+        icon TEXT,
+        sort_order INTEGER DEFAULT 0,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_smart_folders_account
+        ON smart_folders(account_id, sort_order);
+    `,
+  },
+  {
+    version: 22,
+    sql: `
+      CREATE TABLE IF NOT EXISTS quick_steps (
+        id TEXT PRIMARY KEY,
+        account_id TEXT NOT NULL,
+        name TEXT NOT NULL,
+        icon TEXT,
+        actions TEXT NOT NULL DEFAULT '[]',
+        shortcut TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+      );
+    `,
+  },
 ];
 
 export async function runMigrations(): Promise<void> {

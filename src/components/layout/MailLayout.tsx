@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { ThreadList } from "./ThreadList";
 import { ReadingPane } from "./ReadingPane";
+import { DndProvider } from "../dnd/DndProvider";
 import { Composer } from "../composer/Composer";
 import { CommandPalette } from "../search/CommandPalette";
 import { ShortcutsHelp } from "../search/ShortcutsHelp";
@@ -21,6 +22,7 @@ import { startFollowUpChecker, stopFollowUpChecker } from "../../services/follow
 import { startQueueProcessor, stopQueueProcessor, processQueue } from "../../services/queue/queueProcessor";
 import { startScheduledSendChecker, stopScheduledSendChecker } from "../../services/snooze/scheduledSendChecker";
 import { fetchSendAsAliases } from "../../services/gmail/sendAs";
+import { initDeepLinkHandler } from "../../services/deepLinkHandler";
 
 export function MailLayout() {
   const navigate = useNavigate();
@@ -122,6 +124,7 @@ export function MailLayout() {
     startScheduledSendChecker();
 
     let unlistenTray: (() => void) | undefined;
+    let cleanupDeepLink: (() => void) | undefined;
 
     if (typeof window !== "undefined" && "__TAURI_INTERNALS__" in window) {
       import("@tauri-apps/api/event").then(({ listen }) => {
@@ -130,6 +133,12 @@ export function MailLayout() {
         }).then((fn) => {
           unlistenTray = fn;
         });
+      });
+
+      initDeepLinkHandler().then((cleanup) => {
+        cleanupDeepLink = cleanup;
+      }).catch((err) => {
+        console.error("Failed to initialize deep link handler:", err);
       });
     }
 
@@ -141,10 +150,12 @@ export function MailLayout() {
       stopQueueProcessor();
       stopScheduledSendChecker();
       unlistenTray?.();
+      cleanupDeepLink?.();
     };
   }, [doSync, getActiveAccount]);
 
   return (
+    <DndProvider>
     <div className="flex h-screen bg-bg-primary" data-testid="mail-layout">
       <Sidebar />
       <div className="flex flex-1 flex-col overflow-hidden">
@@ -184,5 +195,6 @@ export function MailLayout() {
         />
       )}
     </div>
+    </DndProvider>
   );
 }

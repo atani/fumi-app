@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useDroppable } from "@dnd-kit/core";
 import {
   Inbox,
   Star,
@@ -18,6 +19,8 @@ import {
   Tag,
   PackageOpen,
   CheckSquare,
+  FolderSearch,
+  HelpCircle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useThreadStore } from "../../stores/threadStore";
@@ -25,11 +28,52 @@ import { useAccountStore } from "../../stores/accountStore";
 import { useUIStore } from "../../stores/uiStore";
 import { useComposerStore } from "../../stores/composerStore";
 import { useLabelStore } from "../../stores/labelStore";
+import { useSmartFolderStore } from "../../stores/smartFolderStore";
 import { AccountSwitcher } from "../accounts/AccountSwitcher";
 import { LabelForm } from "../labels/LabelForm";
 import { getBundleCounts } from "../../services/bundles/bundleManager";
+import { executeSmartFolder } from "../../services/search/smartFolderService";
+import type { LucideIcon } from "lucide-react";
 
-const LABELS = [
+interface DroppableLabelButtonProps {
+  labelId: string;
+  isActive: boolean;
+  onClick: () => void;
+  onContextMenu?: (e: React.MouseEvent) => void;
+  children: React.ReactNode;
+  testId: string;
+}
+
+function DroppableLabelButton({
+  labelId,
+  isActive,
+  onClick,
+  onContextMenu,
+  children,
+  testId,
+}: DroppableLabelButtonProps) {
+  const { isOver, setNodeRef } = useDroppable({ id: labelId });
+
+  return (
+    <button
+      ref={setNodeRef}
+      onClick={onClick}
+      onContextMenu={onContextMenu}
+      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
+        isOver
+          ? "bg-accent/20 ring-2 ring-accent ring-inset"
+          : isActive
+            ? "bg-bg-selected text-accent font-medium"
+            : "text-sidebar-text hover:bg-bg-hover"
+      }`}
+      data-testid={testId}
+    >
+      {children}
+    </button>
+  );
+}
+
+const LABELS: { id: string; name: string; icon: LucideIcon }[] = [
   { id: "INBOX", name: "Inbox", icon: Inbox },
   { id: "STARRED", name: "Starred", icon: Star },
   { id: "SNOOZED", name: "Snoozed", icon: Clock },
@@ -64,6 +108,8 @@ export function Sidebar() {
   const { theme, setTheme } = useUIStore();
   const { userLabels, loadLabels, createLabel, updateLabel, deleteLabel } =
     useLabelStore();
+  const { folders: smartFolders, loadFolders: loadSmartFolders, activeSmartFolderId, setActiveSmartFolderId } =
+    useSmartFolderStore();
   const navigate = useNavigate();
 
   // Bundles state
@@ -93,9 +139,10 @@ export function Sidebar() {
   useEffect(() => {
     if (activeAccountId) {
       void loadLabels(activeAccountId);
+      void loadSmartFolders(activeAccountId);
       void getBundleCounts(activeAccountId).then(setBundles);
     }
-  }, [activeAccountId, loadLabels]);
+  }, [activeAccountId, loadLabels, loadSmartFolders]);
 
   // Refresh bundle counts periodically
   useEffect(() => {
@@ -123,13 +170,27 @@ export function Sidebar() {
 
   const handleLabelClick = useCallback(
     async (labelId: string) => {
+      setActiveSmartFolderId(null);
       setActiveLabel(labelId);
       const account = getActiveAccount();
       if (account) {
         await loadThreads(account.id, labelId);
       }
     },
-    [setActiveLabel, getActiveAccount, loadThreads],
+    [setActiveLabel, setActiveSmartFolderId, getActiveAccount, loadThreads],
+  );
+
+  const handleSmartFolderClick = useCallback(
+    async (folderId: string) => {
+      const account = getActiveAccount();
+      if (!account) return;
+      const folder = smartFolders.find((f) => f.id === folderId);
+      if (!folder) return;
+      setActiveSmartFolderId(folderId);
+      const threads = await executeSmartFolder(account, folder);
+      useThreadStore.getState().setThreads(threads);
+    },
+    [getActiveAccount, smartFolders, setActiveSmartFolderId],
   );
 
   const handleContextMenu = useCallback(
@@ -202,19 +263,16 @@ export function Sidebar() {
 
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 py-2">
         {LABELS.map(({ id, name, icon: Icon }) => (
-          <button
+          <DroppableLabelButton
             key={id}
+            labelId={id}
+            isActive={activeLabel === id}
             onClick={() => void handleLabelClick(id)}
-            className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
-              activeLabel === id
-                ? "bg-bg-selected text-accent font-medium"
-                : "text-sidebar-text hover:bg-bg-hover"
-            }`}
-            data-testid={`sidebar-label-${id}`}
+            testId={`sidebar-label-${id}`}
           >
             <Icon className="h-4 w-4" />
             {name}
-          </button>
+          </DroppableLabelButton>
         ))}
 
         {/* User labels section */}
@@ -234,18 +292,15 @@ export function Sidebar() {
               </button>
             </div>
             {userLabels.map((label) => (
-              <button
+              <DroppableLabelButton
                 key={label.id}
+                labelId={label.id}
+                isActive={activeLabel === label.id}
                 onClick={() => void handleLabelClick(label.id)}
                 onContextMenu={(e) =>
                   handleContextMenu(e, label.id, label.name, label.color)
                 }
-                className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
-                  activeLabel === label.id
-                    ? "bg-bg-selected text-accent font-medium"
-                    : "text-sidebar-text hover:bg-bg-hover"
-                }`}
-                data-testid={`sidebar-label-${label.id}`}
+                testId={`sidebar-label-${label.id}`}
               >
                 {label.color ? (
                   <span
@@ -256,7 +311,7 @@ export function Sidebar() {
                   <Tag className="h-4 w-4 shrink-0" />
                 )}
                 <span className="truncate">{label.name}</span>
-              </button>
+              </DroppableLabelButton>
             ))}
           </>
         )}
@@ -302,6 +357,32 @@ export function Sidebar() {
             ))}
           </>
         )}
+
+        {/* Smart folders section */}
+        {smartFolders.length > 0 && (
+          <>
+            <div className="mt-3 mb-1 px-3">
+              <span className="text-xs font-medium uppercase tracking-wider text-text-tertiary">
+                Smart Folders
+              </span>
+            </div>
+            {smartFolders.map((folder) => (
+              <button
+                key={folder.id}
+                onClick={() => void handleSmartFolderClick(folder.id)}
+                className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
+                  activeSmartFolderId === folder.id
+                    ? "bg-bg-selected text-accent font-medium"
+                    : "text-sidebar-text hover:bg-bg-hover"
+                }`}
+                data-testid={`sidebar-smart-folder-${folder.id}`}
+              >
+                <FolderSearch className="h-4 w-4 shrink-0" />
+                <span className="truncate">{folder.name}</span>
+              </button>
+            ))}
+          </>
+        )}
       </nav>
 
       <div className="border-t border-border-primary px-2 py-2">
@@ -320,6 +401,14 @@ export function Sidebar() {
         >
           <Calendar className="h-4 w-4" />
           Calendar
+        </button>
+        <button
+          onClick={() => navigate("/help")}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-text transition-colors hover:bg-bg-hover"
+          data-testid="sidebar-help"
+        >
+          <HelpCircle className="h-4 w-4" />
+          Help
         </button>
         <button
           onClick={() => navigate("/settings")}

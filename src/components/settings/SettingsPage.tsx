@@ -19,6 +19,8 @@ import { TemplateEditor } from "./TemplateEditor";
 import { SignatureEditor } from "./SignatureEditor";
 import { FilterEditor } from "./FilterEditor";
 import { BundleEditor } from "./BundleEditor";
+import { QuickStepEditor } from "./QuickStepEditor";
+import { SmartFolderEditor } from "./SmartFolderEditor";
 import { getDb } from "../../services/db/connection";
 import { getVips, addVip, removeVip } from "../../services/notifications/notificationManager";
 import type { NotificationVip } from "../../types";
@@ -507,6 +509,16 @@ export function SettingsPage() {
           {/* Bundle Rules */}
           <Section title="Bundle Rules">
             <BundleEditor />
+          </Section>
+
+          {/* Smart Folders */}
+          <Section title="Smart Folders">
+            <SmartFolderEditor />
+          </Section>
+
+          {/* Quick Steps */}
+          <Section title="Quick Steps">
+            <QuickStepEditor />
           </Section>
 
           {/* Phishing Detection */}

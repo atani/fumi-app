@@ -41,6 +41,11 @@
     ]
   },
   "plugins": {
+    "deep-link": {
+      "desktop": {
+        "schemes": ["mailto"]
+      }
+    },
     "sql": {
       "preload": ["sqlite:fumi.db"]
     }
