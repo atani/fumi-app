@@ -50,9 +50,10 @@ export async function setThreadLabels(
     "DELETE FROM thread_labels WHERE thread_id = $1 AND account_id = $2",
     [threadId, accountId],
   );
-  for (const labelId of labelIds) {
+  const uniqueLabels = [...new Set(labelIds)];
+  for (const labelId of uniqueLabels) {
     await db.execute(
-      "INSERT INTO thread_labels (thread_id, label_id, account_id) VALUES ($1, $2, $3)",
+      "INSERT OR IGNORE INTO thread_labels (thread_id, label_id, account_id) VALUES ($1, $2, $3)",
       [threadId, labelId, accountId],
     );
   }
