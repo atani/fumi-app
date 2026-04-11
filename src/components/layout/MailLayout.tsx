@@ -36,9 +36,14 @@ export function MailLayout() {
   }, [doSync]);
 
   return (
-    <div className="flex h-screen bg-bg-primary" data-testid="mail-layout">
-      <Sidebar />
+    <div className="flex h-screen flex-col bg-bg-primary" data-testid="mail-layout">
+      {/* Drag region for window movement */}
+      <div
+        className="h-12 shrink-0 border-b border-border-primary"
+        data-tauri-drag-region
+      />
       <div className="flex flex-1 overflow-hidden">
+        <Sidebar />
         <ThreadList />
         {selectedThreadId && <ReadingPane />}
       </div>

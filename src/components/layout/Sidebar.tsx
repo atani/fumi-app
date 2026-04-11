@@ -34,13 +34,10 @@ export function Sidebar() {
 
   return (
     <aside
-      className="flex w-56 flex-col border-r border-border-primary bg-sidebar-bg"
+      className="flex w-56 shrink-0 flex-col border-r border-border-primary bg-sidebar-bg"
       data-testid="sidebar"
     >
-      <div
-        className="flex h-12 items-center px-5 font-bold text-text-primary"
-        data-tauri-drag-region
-      >
+      <div className="flex h-10 items-center px-5 font-bold text-text-primary">
         Fumi
       </div>
 
