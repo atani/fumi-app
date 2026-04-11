@@ -47,3 +47,30 @@ export async function getThreadLabelIds(
   );
   return rows.map((r) => r.label_id);
 }
+
+/**
+ * Batch fetch label IDs for multiple threads in a single query.
+ * Returns a map of threadId -> labelId[].
+ */
+export async function getThreadLabelIdsForThreads(
+  accountId: string,
+  threadIds: string[],
+): Promise<Record<string, string[]>> {
+  if (threadIds.length === 0) return {};
+
+  const db = await getDb();
+  const placeholders = threadIds.map((_, i) => `$${i + 2}`).join(",");
+  const rows = await db.select<{ thread_id: string; label_id: string }[]>(
+    `SELECT thread_id, label_id FROM thread_labels WHERE account_id = $1 AND thread_id IN (${placeholders})`,
+    [accountId, ...threadIds],
+  );
+
+  const result: Record<string, string[]> = {};
+  for (const id of threadIds) {
+    result[id] = [];
+  }
+  for (const row of rows) {
+    result[row.thread_id]?.push(row.label_id);
+  }
+  return result;
+}

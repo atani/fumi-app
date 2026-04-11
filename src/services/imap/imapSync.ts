@@ -12,7 +12,7 @@ import { mapAllFolders, type FolderMapping } from "./folderMapper";
 import { buildThreads, type ThreadGroup } from "../threading/threadBuilder";
 import { getDb } from "../db/connection";
 import { upsertMessage } from "../db/messages";
-import { upsertThread, setThreadLabels } from "../db/threads";
+import { upsertThread, setThreadLabelsBatch } from "../db/threads";
 import { recordContactsFromMessages } from "../contacts/contactService";
 
 const BATCH_SIZE = 50;
@@ -225,6 +225,7 @@ export async function initialSyncFolder(
   const syncedThreads: Thread[] = [];
   const newThreads: Thread[] = [];
   const allMessages: Message[] = [];
+  const pendingThreadLabels: { threadId: string; labelIds: string[] }[] = [];
 
   for (const group of threadGroups) {
     const thread = threadGroupToThread(group, account.id);
@@ -238,13 +239,16 @@ export async function initialSyncFolder(
 
     const isNew = !existingIds.has(thread.id);
     await upsertThread(thread);
-    await setThreadLabels(thread.id, account.id, [labelId]);
+    pendingThreadLabels.push({ threadId: thread.id, labelIds: [labelId] });
 
     syncedThreads.push(thread);
     if (isNew && !thread.is_read) {
       newThreads.push(thread);
     }
   }
+
+  // Batch set all thread labels in a single transaction
+  await setThreadLabelsBatch(account.id, pendingThreadLabels);
 
   // Record contacts
   await recordContactsFromMessages(account.id, allMessages);
@@ -333,6 +337,7 @@ export async function deltaSyncFolder(
   const syncedThreads: Thread[] = [];
   const newThreads: Thread[] = [];
   const persistedMessages: Message[] = [];
+  const pendingThreadLabels: { threadId: string; labelIds: string[] }[] = [];
 
   for (const group of threadGroups) {
     // Only process groups that contain at least one new message
@@ -351,13 +356,16 @@ export async function deltaSyncFolder(
 
     const isNew = !existingThreadIds.has(thread.id);
     await upsertThread(thread);
-    await setThreadLabels(thread.id, account.id, [labelId]);
+    pendingThreadLabels.push({ threadId: thread.id, labelIds: [labelId] });
 
     syncedThreads.push(thread);
     if (isNew && !thread.is_read) {
       newThreads.push(thread);
     }
   }
+
+  // Batch set all thread labels in a single transaction
+  await setThreadLabelsBatch(account.id, pendingThreadLabels);
 
   // Record contacts from new messages only
   const newMsgSet = new Set(messages.map((m) => m.id));

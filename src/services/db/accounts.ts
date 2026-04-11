@@ -1,5 +1,10 @@
 import { getDb } from "./connection";
-import type { Account } from "../../types";
+import type { Account, AccountSummary } from "../../types";
+
+const ACCOUNT_SUMMARY_COLUMNS = `id, email, name, picture, provider,
+  imap_host, imap_port, imap_security, imap_username,
+  smtp_host, smtp_port, smtp_security,
+  created_at, updated_at`;
 
 export async function getAllAccounts(): Promise<Account[]> {
   const db = await getDb();
@@ -10,6 +15,34 @@ export async function getAccount(id: string): Promise<Account | null> {
   const db = await getDb();
   const rows = await db.select<Account[]>(
     "SELECT * FROM accounts WHERE id = $1",
+    [id],
+  );
+  return rows[0] ?? null;
+}
+
+/**
+ * Returns all accounts without sensitive credential fields.
+ * Use this for UI display, account lists, and anywhere tokens are not needed.
+ */
+export async function getAccountsWithoutCredentials(): Promise<
+  AccountSummary[]
+> {
+  const db = await getDb();
+  return db.select<AccountSummary[]>(
+    `SELECT ${ACCOUNT_SUMMARY_COLUMNS} FROM accounts ORDER BY created_at`,
+  );
+}
+
+/**
+ * Returns a single account without sensitive credential fields.
+ * Use this for UI display where tokens are not needed.
+ */
+export async function getAccountWithoutCredentials(
+  id: string,
+): Promise<AccountSummary | null> {
+  const db = await getDb();
+  const rows = await db.select<AccountSummary[]>(
+    `SELECT ${ACCOUNT_SUMMARY_COLUMNS} FROM accounts WHERE id = $1`,
     [id],
   );
   return rows[0] ?? null;

@@ -19,6 +19,12 @@ export interface Account {
   updated_at?: string;
 }
 
+/** Account without sensitive credential fields, safe for UI display. */
+export type AccountSummary = Omit<
+  Account,
+  "access_token" | "refresh_token" | "token_expiry" | "imap_password"
+>;
+
 export interface Thread {
   id: string;
   account_id: string;

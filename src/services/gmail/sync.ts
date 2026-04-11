@@ -1,5 +1,5 @@
 import { authenticatedFetch, getHeader, getMessageBody } from "./api";
-import { upsertThread, setThreadLabels } from "../db/threads";
+import { upsertThread, setThreadLabelsBatch } from "../db/threads";
 import { upsertMessage } from "../db/messages";
 import { getDb } from "../db/connection";
 import { recordContactsFromMessages } from "../contacts/contactService";
@@ -96,6 +96,7 @@ export async function syncInbox(
   const syncedThreads: Thread[] = [];
   const newThreads: Thread[] = [];
   const allParsedMessages: Message[] = [];
+  const pendingThreadLabels: { threadId: string; labelIds: string[] }[] = [];
 
   for (const item of threadList) {
     // Skip threads with pending local operations to avoid conflicts
@@ -130,7 +131,7 @@ export async function syncInbox(
     const isNew = !existingIds.has(thread.id);
 
     await upsertThread(thread);
-    await setThreadLabels(thread.id, account.id, labelIds);
+    pendingThreadLabels.push({ threadId: thread.id, labelIds });
 
     for (const gmailMsg of messages) {
       const message = parseGmailMessage(gmailMsg, account.id);
@@ -144,6 +145,9 @@ export async function syncInbox(
       newThreads.push(thread);
     }
   }
+
+  // Batch set all thread labels in a single transaction
+  await setThreadLabelsBatch(account.id, pendingThreadLabels);
 
   // Record contacts from all synced messages
   await recordContactsFromMessages(account.id, allParsedMessages);

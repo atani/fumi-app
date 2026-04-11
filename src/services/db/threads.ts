@@ -116,10 +116,68 @@ export async function setThreadLabels(
     [threadId, accountId],
   );
   const uniqueLabels = [...new Set(labelIds)];
+  if (uniqueLabels.length === 0) return;
+
+  // Batch INSERT all labels in a single statement
+  const placeholders: string[] = [];
+  const params: unknown[] = [];
+  let idx = 1;
   for (const labelId of uniqueLabels) {
+    placeholders.push(`($${idx}, $${idx + 1}, $${idx + 2})`);
+    params.push(threadId, labelId, accountId);
+    idx += 3;
+  }
+  await db.execute(
+    `INSERT OR IGNORE INTO thread_labels (thread_id, label_id, account_id) VALUES ${placeholders.join(", ")}`,
+    params,
+  );
+}
+
+/**
+ * Batch set labels for multiple threads in fewer DB round-trips.
+ * Each entry maps a threadId to its labelIds.
+ * Runs all operations within a single transaction.
+ */
+export async function setThreadLabelsBatch(
+  accountId: string,
+  threadLabels: { threadId: string; labelIds: string[] }[],
+): Promise<void> {
+  if (threadLabels.length === 0) return;
+
+  const db = await getDb();
+  await db.execute("BEGIN TRANSACTION", []);
+  try {
+    // Delete old labels for all threads
+    const threadIds = threadLabels.map((t) => t.threadId);
+    const delPlaceholders = threadIds.map((_, i) => `$${i + 2}`).join(",");
     await db.execute(
-      "INSERT OR IGNORE INTO thread_labels (thread_id, label_id, account_id) VALUES ($1, $2, $3)",
-      [threadId, labelId, accountId],
+      `DELETE FROM thread_labels WHERE account_id = $1 AND thread_id IN (${delPlaceholders})`,
+      [accountId, ...threadIds],
     );
+
+    // Build a single multi-row INSERT for all thread-label pairs
+    const insertPlaceholders: string[] = [];
+    const insertParams: unknown[] = [];
+    let idx = 1;
+    for (const { threadId, labelIds } of threadLabels) {
+      const uniqueLabels = [...new Set(labelIds)];
+      for (const labelId of uniqueLabels) {
+        insertPlaceholders.push(`($${idx}, $${idx + 1}, $${idx + 2})`);
+        insertParams.push(threadId, labelId, accountId);
+        idx += 3;
+      }
+    }
+
+    if (insertPlaceholders.length > 0) {
+      await db.execute(
+        `INSERT OR IGNORE INTO thread_labels (thread_id, label_id, account_id) VALUES ${insertPlaceholders.join(", ")}`,
+        insertParams,
+      );
+    }
+
+    await db.execute("COMMIT", []);
+  } catch (e) {
+    await db.execute("ROLLBACK", []);
+    throw e;
   }
 }
