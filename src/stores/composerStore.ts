@@ -1,11 +1,12 @@
 import { create } from "zustand";
-import type { Message } from "../types";
+import type { Message, ComposerAttachment } from "../types";
 
 export type ComposerMode = "compose" | "reply" | "replyAll" | "forward";
 
 interface ComposerState {
   isOpen: boolean;
   mode: ComposerMode;
+  draftId: string | null;
   to: string;
   cc: string;
   bcc: string;
@@ -14,13 +15,27 @@ interface ComposerState {
   replyToMessage: Message | null;
   inReplyTo: string | null;
   references: string | null;
+  attachments: ComposerAttachment[];
 
   openCompose: () => void;
   openReply: (message: Message) => void;
   openReplyAll: (message: Message, selfEmail: string) => void;
   openForward: (message: Message) => void;
+  restoreDraft: (draft: {
+    id: string;
+    mode: ComposerMode;
+    to: string;
+    cc: string;
+    bcc: string;
+    subject: string;
+    body: string;
+    inReplyTo: string | null;
+    references: string | null;
+  }) => void;
   close: () => void;
   updateField: (field: "to" | "cc" | "bcc" | "subject" | "body", value: string) => void;
+  addAttachment: (attachment: ComposerAttachment) => void;
+  removeAttachment: (id: string) => void;
 }
 
 function buildQuotedBody(message: Message): string {
@@ -80,9 +95,14 @@ function buildReplyAllTo(message: Message, selfEmail: string): { to: string; cc:
   };
 }
 
+function generateDraftId(): string {
+  return `draft-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
 const initialState = {
   isOpen: false,
   mode: "compose" as ComposerMode,
+  draftId: null as string | null,
   to: "",
   cc: "",
   bcc: "",
@@ -91,6 +111,7 @@ const initialState = {
   replyToMessage: null as Message | null,
   inReplyTo: null as string | null,
   references: null as string | null,
+  attachments: [] as ComposerAttachment[],
 };
 
 export const useComposerStore = create<ComposerState>((set) => ({
@@ -101,6 +122,7 @@ export const useComposerStore = create<ComposerState>((set) => ({
       ...initialState,
       isOpen: true,
       mode: "compose",
+      draftId: generateDraftId(),
     }),
 
   openReply: (message) =>
@@ -108,6 +130,7 @@ export const useComposerStore = create<ComposerState>((set) => ({
       ...initialState,
       isOpen: true,
       mode: "reply",
+      draftId: generateDraftId(),
       to: message.from_address ?? "",
       subject: buildReplySubject(message.subject),
       body: buildQuotedBody(message),
@@ -122,6 +145,7 @@ export const useComposerStore = create<ComposerState>((set) => ({
       ...initialState,
       isOpen: true,
       mode: "replyAll",
+      draftId: generateDraftId(),
       to,
       cc,
       subject: buildReplySubject(message.subject),
@@ -137,6 +161,7 @@ export const useComposerStore = create<ComposerState>((set) => ({
       ...initialState,
       isOpen: true,
       mode: "forward",
+      draftId: generateDraftId(),
       subject: buildForwardSubject(message.subject),
       body: buildQuotedBody(message),
       replyToMessage: message,
@@ -144,7 +169,30 @@ export const useComposerStore = create<ComposerState>((set) => ({
       references: null,
     }),
 
+  restoreDraft: (draft) =>
+    set({
+      ...initialState,
+      isOpen: true,
+      draftId: draft.id,
+      mode: draft.mode,
+      to: draft.to,
+      cc: draft.cc,
+      bcc: draft.bcc,
+      subject: draft.subject,
+      body: draft.body,
+      inReplyTo: draft.inReplyTo,
+      references: draft.references,
+    }),
+
   close: () => set(initialState),
 
   updateField: (field, value) => set({ [field]: value }),
+
+  addAttachment: (attachment) =>
+    set((state) => ({ attachments: [...state.attachments, attachment] })),
+
+  removeAttachment: (id) =>
+    set((state) => ({
+      attachments: state.attachments.filter((a) => a.id !== id),
+    })),
 }));

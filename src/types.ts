@@ -28,6 +28,7 @@ export interface Thread {
   message_count: number;
   is_read: boolean;
   is_starred: boolean;
+  snoozed_until: string | null;
 }
 
 export interface Message {
@@ -55,6 +56,16 @@ export interface Label {
   name: string;
   type: "system" | "user";
   color: string | null;
+}
+
+export interface Contact {
+  id: number;
+  email: string;
+  name: string | null;
+  frequency: number;
+  first_contacted_at: string;
+  last_contacted_at: string;
+  account_id: string;
 }
 
 export interface GmailTokenResponse {
@@ -94,7 +105,30 @@ export interface GmailMessage {
 }
 
 export interface GmailMessagePart {
+  partId?: string;
   mimeType: string;
-  body?: { data?: string; size: number };
+  filename?: string;
+  headers?: { name: string; value: string }[];
+  body?: { attachmentId?: string; data?: string; size: number };
   parts?: GmailMessagePart[];
+}
+
+export interface Attachment {
+  id: string;
+  message_id: string;
+  account_id: string;
+  filename: string;
+  mime_type: string;
+  size: number;
+  content_id: string | null;
+  cached_at: string | null;
+  cache_size: number | null;
+}
+
+export interface ComposerAttachment {
+  id: string;
+  filename: string;
+  mime_type: string;
+  size: number;
+  data: string; // base64-encoded file content
 }

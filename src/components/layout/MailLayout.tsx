@@ -11,6 +11,7 @@ import { syncInbox, syncLabels } from "../../services/gmail/sync";
 import { initNotifications, notifyNewMessages } from "../../services/notifications/notificationManager";
 import { updateBadgeCount } from "../../services/notifications/badgeManager";
 import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts";
+import { startSnoozeChecker, stopSnoozeChecker } from "../../services/snooze/snoozeChecker";
 
 export function MailLayout() {
   const { activeAccountId, getActiveAccount } = useAccountStore();
@@ -69,6 +70,8 @@ export function MailLayout() {
 
     const interval = setInterval(doSync, 60_000);
 
+    startSnoozeChecker(() => getActiveAccount());
+
     let unlistenTray: (() => void) | undefined;
 
     if (typeof window !== "undefined" && "__TAURI_INTERNALS__" in window) {
@@ -83,9 +86,10 @@ export function MailLayout() {
 
     return () => {
       clearInterval(interval);
+      stopSnoozeChecker();
       unlistenTray?.();
     };
-  }, [doSync]);
+  }, [doSync, getActiveAccount]);
 
   return (
     <div className="flex h-screen bg-bg-primary" data-testid="mail-layout">

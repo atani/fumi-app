@@ -36,6 +36,7 @@ describe("threadStore", () => {
         message_count: 1,
         is_read: false,
         is_starred: false,
+        snoozed_until: null,
       },
     ];
     useThreadStore.getState().setThreads(threads);

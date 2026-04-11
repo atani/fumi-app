@@ -3,11 +3,19 @@ import { Send, X, ChevronUp, Minus } from "lucide-react";
 import { useComposerStore } from "../../stores/composerStore";
 import { useAccountStore } from "../../stores/accountStore";
 import { sendEmail } from "../../services/gmail/send";
+import {
+  startAutoSave,
+  stopAutoSave,
+  deleteDraft,
+} from "../../services/composer/draftAutoSave";
+import { AddressInput } from "./AddressInput";
+import { AttachmentPicker } from "./AttachmentPicker";
 
 export function Composer() {
   const {
     isOpen,
     mode,
+    draftId,
     to,
     cc,
     bcc,
@@ -16,6 +24,7 @@ export function Composer() {
     replyToMessage,
     inReplyTo,
     references,
+    attachments,
     updateField,
     close,
   } = useComposerStore();
@@ -26,6 +35,8 @@ export function Composer() {
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isMinimized, setIsMinimized] = useState(false);
+  const [draftSaved, setDraftSaved] = useState(false);
+  const draftSavedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const bodyRef = useRef<HTMLTextAreaElement>(null);
 
@@ -44,6 +55,29 @@ export function Composer() {
       setIsMinimized(false);
     }
   }, [isOpen]);
+
+  // Auto-save lifecycle
+  useEffect(() => {
+    if (!isOpen) return;
+
+    startAutoSave(
+      () => getActiveAccount()?.id ?? null,
+      () => {
+        setDraftSaved(true);
+        if (draftSavedTimerRef.current) clearTimeout(draftSavedTimerRef.current);
+        draftSavedTimerRef.current = setTimeout(() => setDraftSaved(false), 2000);
+      },
+    );
+
+    return () => {
+      stopAutoSave();
+      if (draftSavedTimerRef.current) {
+        clearTimeout(draftSavedTimerRef.current);
+        draftSavedTimerRef.current = null;
+      }
+      setDraftSaved(false);
+    };
+  }, [isOpen, getActiveAccount]);
 
   const handleSend = useCallback(async () => {
     const account = getActiveAccount();
@@ -69,14 +103,20 @@ export function Composer() {
         inReplyTo,
         references,
         threadId: replyToMessage?.thread_id ?? null,
+        attachments: attachments.length > 0 ? attachments : undefined,
       });
+      if (draftId) {
+        await deleteDraft(draftId).catch((err: unknown) => {
+          console.error("Failed to delete draft after send:", err);
+        });
+      }
       close();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to send email");
     } finally {
       setIsSending(false);
     }
-  }, [getActiveAccount, to, cc, bcc, subject, body, inReplyTo, references, replyToMessage, close]);
+  }, [getActiveAccount, to, cc, bcc, subject, body, inReplyTo, references, replyToMessage, draftId, attachments, close]);
 
   // Ctrl+Enter to send
   const handleKeyDown = useCallback(
@@ -150,12 +190,10 @@ export function Composer() {
             <label className="w-12 shrink-0 text-xs text-text-tertiary">
               To
             </label>
-            <input
-              type="text"
-              className="flex-1 bg-transparent text-sm text-text-primary outline-none placeholder:text-text-tertiary"
-              placeholder="recipient@example.com"
+            <AddressInput
               value={to}
-              onChange={(e) => updateField("to", e.target.value)}
+              onChange={(v) => updateField("to", v)}
+              placeholder="recipient@example.com"
               autoFocus={mode === "compose"}
             />
             <div className="flex gap-1 text-xs text-text-tertiary">
@@ -184,11 +222,10 @@ export function Composer() {
               <label className="w-12 shrink-0 text-xs text-text-tertiary">
                 Cc
               </label>
-              <input
-                type="text"
-                className="flex-1 bg-transparent text-sm text-text-primary outline-none placeholder:text-text-tertiary"
+              <AddressInput
                 value={cc}
-                onChange={(e) => updateField("cc", e.target.value)}
+                onChange={(v) => updateField("cc", v)}
+                placeholder=""
               />
               <button
                 className="text-xs text-text-tertiary hover:text-text-primary"
@@ -208,11 +245,10 @@ export function Composer() {
               <label className="w-12 shrink-0 text-xs text-text-tertiary">
                 Bcc
               </label>
-              <input
-                type="text"
-                className="flex-1 bg-transparent text-sm text-text-primary outline-none placeholder:text-text-tertiary"
+              <AddressInput
                 value={bcc}
-                onChange={(e) => updateField("bcc", e.target.value)}
+                onChange={(v) => updateField("bcc", v)}
+                placeholder=""
               />
               <button
                 className="text-xs text-text-tertiary hover:text-text-primary"
@@ -249,6 +285,11 @@ export function Composer() {
             autoFocus={mode !== "compose"}
           />
 
+          {/* Attachments */}
+          <div className="px-4">
+            <AttachmentPicker />
+          </div>
+
           {/* Error */}
           {error && (
             <div className="px-4 pb-2 text-xs text-red-500">{error}</div>
@@ -265,6 +306,11 @@ export function Composer() {
               {isSending ? "Sending..." : "Send"}
             </button>
             <span className="text-xs text-text-tertiary">
+              {draftSaved && (
+                <span className="mr-2 text-green-500" data-testid="draft-saved-indicator">
+                  Draft saved
+                </span>
+              )}
               {navigator.platform.includes("Mac") ? "Cmd" : "Ctrl"}+Enter to
               send
             </span>

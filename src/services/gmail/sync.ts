@@ -2,6 +2,7 @@ import { authenticatedFetch, getHeader, getMessageBody } from "./api";
 import { upsertThread, setThreadLabels } from "../db/threads";
 import { upsertMessage } from "../db/messages";
 import { getDb } from "../db/connection";
+import { recordContactsFromMessages } from "../contacts/contactService";
 import type { Account, Thread, Message, GmailMessage, GmailThread } from "../../types";
 
 export interface SyncResult {
@@ -83,6 +84,7 @@ export async function syncInbox(
 
   const syncedThreads: Thread[] = [];
   const newThreads: Thread[] = [];
+  const allParsedMessages: Message[] = [];
 
   for (const item of threadList) {
     const gmailThread = await authenticatedFetch<GmailThread>(
@@ -107,6 +109,7 @@ export async function syncInbox(
       message_count: messages.length,
       is_read: !labelIds.includes("UNREAD"),
       is_starred: labelIds.includes("STARRED"),
+      snoozed_until: null,
     };
 
     const isNew = !existingIds.has(thread.id);
@@ -117,6 +120,7 @@ export async function syncInbox(
     for (const gmailMsg of messages) {
       const message = parseGmailMessage(gmailMsg, account.id);
       await upsertMessage(message);
+      allParsedMessages.push(message);
     }
 
     syncedThreads.push(thread);
@@ -125,6 +129,9 @@ export async function syncInbox(
       newThreads.push(thread);
     }
   }
+
+  // Record contacts from all synced messages
+  await recordContactsFromMessages(account.id, allParsedMessages);
 
   return { threads: syncedThreads, newThreads };
 }

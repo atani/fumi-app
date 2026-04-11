@@ -1,4 +1,4 @@
-import type { Account, GmailThread, GmailMessage } from "../../types";
+import type { Account, GmailThread, GmailMessage, GmailMessagePart, Attachment } from "../../types";
 import { withTokenRefresh } from "./tokenManager";
 
 const BASE_URL = "https://gmail.googleapis.com/gmail/v1/users/me";
@@ -104,6 +104,61 @@ export function getHeader(
   return message.payload.headers.find(
     (h) => h.name.toLowerCase() === name.toLowerCase(),
   )?.value;
+}
+
+/**
+ * Fetch the raw bytes of a Gmail attachment as a base64url-encoded string.
+ */
+export async function getAttachmentData(
+  account: Account,
+  messageId: string,
+  attachmentId: string,
+): Promise<string> {
+  const result = await authenticatedFetch<{ data: string }>(
+    account,
+    `/messages/${messageId}/attachments/${attachmentId}`,
+  );
+  return result.data;
+}
+
+/**
+ * Extract attachment metadata from a Gmail message's payload parts.
+ */
+export function extractAttachments(
+  message: GmailMessage,
+  accountId: string,
+): Attachment[] {
+  const attachments: Attachment[] = [];
+
+  function walk(parts: GmailMessagePart[] | undefined): void {
+    if (!parts) return;
+    for (const part of parts) {
+      if (part.filename && part.filename.length > 0 && part.body) {
+        const contentIdHeader = part.headers?.find(
+          (h) => h.name.toLowerCase() === "content-id",
+        );
+        attachments.push({
+          id: part.body.attachmentId ?? `${message.id}-${part.partId ?? "0"}`,
+          message_id: message.id,
+          account_id: accountId,
+          filename: part.filename,
+          mime_type: part.mimeType,
+          size: part.body.size,
+          content_id: contentIdHeader?.value ?? null,
+          cached_at: null,
+          cache_size: null,
+        });
+      }
+      if (part.parts) {
+        walk(part.parts);
+      }
+    }
+  }
+
+  // Check top-level parts
+  walk(message.payload.parts);
+
+  return attachments;
 }
 
 export function getMessageBody(message: GmailMessage): string {

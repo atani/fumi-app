@@ -169,6 +169,68 @@ const MIGRATIONS = [
       ALTER TABLE labels ADD COLUMN imap_special_use TEXT;
     `,
   },
+  {
+    version: 4,
+    sql: `
+      CREATE TABLE IF NOT EXISTS attachments (
+        id TEXT PRIMARY KEY,
+        message_id TEXT NOT NULL,
+        account_id TEXT NOT NULL,
+        filename TEXT NOT NULL DEFAULT '',
+        mime_type TEXT NOT NULL DEFAULT 'application/octet-stream',
+        size INTEGER NOT NULL DEFAULT 0,
+        content_id TEXT,
+        cached_at TEXT,
+        cache_size INTEGER,
+        FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_attachments_message
+        ON attachments(message_id, account_id);
+    `,
+  },
+  {
+    version: 5,
+    sql: `
+      CREATE TABLE IF NOT EXISTS local_drafts (
+        id TEXT PRIMARY KEY,
+        account_id TEXT,
+        mode TEXT,
+        to_addresses TEXT,
+        cc TEXT,
+        bcc TEXT,
+        subject TEXT,
+        body TEXT,
+        reply_to_message_id TEXT,
+        in_reply_to TEXT,
+        reference_headers TEXT,
+        created_at TEXT DEFAULT (datetime('now')),
+        updated_at TEXT DEFAULT (datetime('now'))
+      );
+    `,
+  },
+  {
+    version: 6,
+    sql: `
+      ALTER TABLE threads ADD COLUMN snoozed_until TEXT;
+      CREATE INDEX idx_threads_snoozed ON threads(snoozed_until) WHERE snoozed_until IS NOT NULL;
+    `,
+  },
+  {
+    version: 7,
+    sql: `
+      CREATE TABLE IF NOT EXISTS contacts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT NOT NULL,
+        name TEXT,
+        frequency INTEGER DEFAULT 1,
+        first_contacted_at TEXT DEFAULT (datetime('now')),
+        last_contacted_at TEXT DEFAULT (datetime('now')),
+        account_id TEXT,
+        UNIQUE(email, account_id)
+      );
+    `,
+  },
 ];
 
 export async function runMigrations(): Promise<void> {
