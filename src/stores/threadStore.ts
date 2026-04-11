@@ -15,6 +15,8 @@ interface ThreadState {
   setActiveLabel: (labelId: string) => void;
   setThreads: (threads: Thread[]) => void;
   setSyncing: (syncing: boolean) => void;
+  updateThread: (threadId: string, updates: Partial<Pick<Thread, "is_read" | "is_starred">>) => void;
+  removeThread: (threadId: string) => void;
 }
 
 export const useThreadStore = create<ThreadState>((set, get) => ({
@@ -47,4 +49,33 @@ export const useThreadStore = create<ThreadState>((set, get) => ({
   setThreads: (threads) => set({ threads }),
 
   setSyncing: (syncing) => set({ isSyncing: syncing }),
+
+  updateThread: (threadId, updates) =>
+    set((state) => ({
+      threads: state.threads.map((t) =>
+        t.id === threadId ? { ...t, ...updates } : t,
+      ),
+    })),
+
+  removeThread: (threadId) =>
+    set((state) => {
+      const idx = state.threads.findIndex((t) => t.id === threadId);
+      const filtered = state.threads.filter((t) => t.id !== threadId);
+
+      // Auto-select the next thread (or previous if last item was removed)
+      let nextSelectedId: string | null = null;
+      if (state.selectedThreadId === threadId && filtered.length > 0) {
+        const nextIdx = Math.min(idx, filtered.length - 1);
+        nextSelectedId = filtered[nextIdx]?.id ?? null;
+      } else {
+        nextSelectedId = state.selectedThreadId;
+      }
+
+      return {
+        threads: filtered,
+        selectedThreadId: nextSelectedId,
+        // Clear messages if the removed thread was selected
+        messages: state.selectedThreadId === threadId ? [] : state.messages,
+      };
+    }),
 }));

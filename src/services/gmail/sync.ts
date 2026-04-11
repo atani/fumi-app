@@ -4,6 +4,11 @@ import { upsertMessage } from "../db/messages";
 import { getDb } from "../db/connection";
 import type { Account, Thread, Message, GmailMessage, GmailThread } from "../../types";
 
+export interface SyncResult {
+  threads: Thread[];
+  newThreads: Thread[];
+}
+
 function parseGmailMessage(
   gmailMsg: GmailMessage,
   accountId: string,
@@ -52,8 +57,9 @@ export async function syncLabels(account: Account): Promise<void> {
 export async function syncInbox(
   account: Account,
   maxResults = 50,
-): Promise<Thread[]> {
-  if (!account.access_token && !account.refresh_token) return [];
+): Promise<SyncResult> {
+  if (!account.access_token && !account.refresh_token)
+    return { threads: [], newThreads: [] };
 
   const params = new URLSearchParams({
     maxResults: String(maxResults),
@@ -65,9 +71,18 @@ export async function syncInbox(
     nextPageToken?: string;
   }>(account, `/threads?${params}`);
 
-  if (!threadList?.length) return [];
+  if (!threadList?.length) return { threads: [], newThreads: [] };
+
+  // Collect existing thread IDs so we can detect genuinely new threads
+  const db = await getDb();
+  const existingRows = await db.select<{ id: string }[]>(
+    "SELECT id FROM threads WHERE account_id = $1",
+    [account.id],
+  );
+  const existingIds = new Set(existingRows.map((r) => r.id));
 
   const syncedThreads: Thread[] = [];
+  const newThreads: Thread[] = [];
 
   for (const item of threadList) {
     const gmailThread = await authenticatedFetch<GmailThread>(
@@ -94,6 +109,8 @@ export async function syncInbox(
       is_starred: labelIds.includes("STARRED"),
     };
 
+    const isNew = !existingIds.has(thread.id);
+
     await upsertThread(thread);
     await setThreadLabels(thread.id, account.id, labelIds);
 
@@ -103,7 +120,11 @@ export async function syncInbox(
     }
 
     syncedThreads.push(thread);
+
+    if (isNew && !thread.is_read) {
+      newThreads.push(thread);
+    }
   }
 
-  return syncedThreads;
+  return { threads: syncedThreads, newThreads };
 }

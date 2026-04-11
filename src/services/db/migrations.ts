@@ -1,5 +1,42 @@
 import { getDb } from "./connection";
 
+/**
+ * Split SQL text into individual statements, respecting BEGIN...END blocks
+ * (used by triggers). Statements are separated by `;` but `;` inside
+ * BEGIN...END pairs are kept together with their enclosing statement.
+ */
+export function splitStatements(sql: string): string[] {
+  const results: string[] = [];
+  let current = "";
+  let depth = 0;
+
+  for (const raw of sql.split(";")) {
+    const trimmed = raw.trim();
+    if (!trimmed && depth === 0) continue;
+
+    current += (current ? ";" : "") + raw;
+
+    const upper = trimmed.toUpperCase();
+    if (upper.includes("BEGIN")) depth++;
+    if (upper.includes("END") && depth > 0) depth--;
+
+    if (depth === 0) {
+      const stmt = current.trim();
+      if (stmt.length > 0) {
+        results.push(stmt);
+      }
+      current = "";
+    }
+  }
+
+  const remaining = current.trim();
+  if (remaining.length > 0) {
+    results.push(remaining);
+  }
+
+  return results;
+}
+
 const MIGRATIONS = [
   {
     version: 1,
@@ -80,6 +117,36 @@ const MIGRATIONS = [
       );
     `,
   },
+  {
+    version: 2,
+    sql: `
+      CREATE VIRTUAL TABLE IF NOT EXISTS messages_fts USING fts5(
+        subject,
+        body_text,
+        from_address,
+        to_addresses,
+        content='messages',
+        content_rowid='rowid'
+      );
+
+      CREATE TRIGGER IF NOT EXISTS messages_fts_insert AFTER INSERT ON messages BEGIN
+        INSERT INTO messages_fts(rowid, subject, body_text, from_address, to_addresses)
+        VALUES (NEW.rowid, NEW.subject, NEW.body_text, NEW.from_address, NEW.to_addresses);
+      END;
+
+      CREATE TRIGGER IF NOT EXISTS messages_fts_delete AFTER DELETE ON messages BEGIN
+        INSERT INTO messages_fts(messages_fts, rowid, subject, body_text, from_address, to_addresses)
+        VALUES ('delete', OLD.rowid, OLD.subject, OLD.body_text, OLD.from_address, OLD.to_addresses);
+      END;
+
+      CREATE TRIGGER IF NOT EXISTS messages_fts_update AFTER UPDATE ON messages BEGIN
+        INSERT INTO messages_fts(messages_fts, rowid, subject, body_text, from_address, to_addresses)
+        VALUES ('delete', OLD.rowid, OLD.subject, OLD.body_text, OLD.from_address, OLD.to_addresses);
+        INSERT INTO messages_fts(rowid, subject, body_text, from_address, to_addresses)
+        VALUES (NEW.rowid, NEW.subject, NEW.body_text, NEW.from_address, NEW.to_addresses);
+      END
+    `,
+  },
 ];
 
 export async function runMigrations(): Promise<void> {
@@ -100,10 +167,7 @@ export async function runMigrations(): Promise<void> {
   for (const migration of MIGRATIONS) {
     if (appliedVersions.has(migration.version)) continue;
 
-    const statements = migration.sql
-      .split(";")
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0);
+    const statements = splitStatements(migration.sql);
 
     for (const statement of statements) {
       await db.execute(statement);
