@@ -3,13 +3,14 @@ import { useThreadStore } from "../../stores/threadStore";
 import { useAccountStore } from "../../stores/accountStore";
 import { useComposerStore } from "../../stores/composerStore";
 import { useLabelStore } from "../../stores/labelStore";
-import { Reply, ReplyAll, Forward, Archive, Trash2, Star, Clock, Tag, X, ExternalLink, BellRing, VolumeX, Volume2 } from "lucide-react";
+import { Reply, ReplyAll, Forward, Archive, Trash2, Star, Clock, Tag, X, ExternalLink, BellRing, VolumeX, Volume2, User, ArrowLeft } from "lucide-react";
 import { ThreadSummary } from "../email/ThreadSummary";
 import { SmartReplySuggestions } from "../email/SmartReplySuggestions";
 import { MessageItem } from "../email/MessageItem";
 import { SnoozeDialog } from "../email/SnoozeDialog";
 import { FollowUpDialog } from "../email/FollowUpDialog";
 import { MoveToLabelDialog } from "../email/MoveToLabelDialog";
+import { ContactSidebar } from "../email/ContactSidebar";
 import {
   markAsRead,
   toggleStar,
@@ -27,7 +28,12 @@ import { removeLabelFromThread } from "../../services/gmail/labels";
 import { getDb } from "../../services/db/connection";
 import type { Attachment } from "../../types";
 
-export function ReadingPane() {
+interface ReadingPaneProps {
+  onBack?: () => void;
+  showBackButton?: boolean;
+}
+
+export function ReadingPane({ onBack, showBackButton }: ReadingPaneProps = {}) {
   const { threads, selectedThreadId, messages } = useThreadStore();
   const accounts = useAccountStore((s) => s.accounts);
   const activeAccountId = useAccountStore((s) => s.activeAccountId);
@@ -46,6 +52,7 @@ export function ReadingPane() {
   );
   const [markAsReadBehavior, setMarkAsReadBehavior] = useState<string>("immediately");
   const [defaultReplyMode, setDefaultReplyMode] = useState<string>("reply");
+  const [isContactSidebarOpen, setIsContactSidebarOpen] = useState(false);
 
   const account = accounts.find((a) => a.id === activeAccountId) ?? null;
   const thread = threads.find((t) => t.id === selectedThreadId) ?? null;
@@ -183,6 +190,10 @@ export function ReadingPane() {
     [account, selectedThreadId],
   );
 
+  // Derive sender info from the first message for the contact sidebar
+  const senderEmail = messages[0]?.from_address ?? null;
+  const senderName = messages[0]?.from_name ?? null;
+
   if (messages.length === 0) {
     return (
       <div className="flex flex-1 items-center justify-center bg-bg-primary">
@@ -234,13 +245,23 @@ export function ReadingPane() {
   };
 
   return (
+    <div className="flex flex-1 overflow-hidden" data-testid="reading-pane">
     <div
-      className="flex flex-1 flex-col overflow-hidden bg-bg-primary"
-      data-testid="reading-pane"
+      className="flex flex-1 min-w-0 flex-col overflow-hidden bg-bg-primary"
     >
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border-primary px-6 py-3">
         <div className="flex items-center gap-3 min-w-0">
+          {showBackButton && onBack && (
+            <button
+              onClick={onBack}
+              className="shrink-0 rounded-lg p-2 text-text-secondary hover:bg-bg-hover hover:text-text-primary"
+              aria-label="Back to thread list"
+              data-testid="reading-pane-back-btn"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </button>
+          )}
           <h2 className="truncate text-lg font-semibold text-text-primary">
             {lastMessage?.subject || "(No subject)"}
           </h2>
@@ -253,6 +274,18 @@ export function ReadingPane() {
           )}
         </div>
         <div className="flex items-center gap-1">
+          <button
+            onClick={() => setIsContactSidebarOpen((prev) => !prev)}
+            title={isContactSidebarOpen ? "Hide contact info" : "Show contact info"}
+            className={`rounded-lg p-2 hover:bg-bg-hover ${
+              isContactSidebarOpen
+                ? "text-accent"
+                : "text-text-secondary hover:text-text-primary"
+            }`}
+            data-testid="contact-sidebar-toggle"
+          >
+            <User className="h-4 w-4" />
+          </button>
           <button
             onClick={() => {
               if (selectedThreadId && activeAccountId) {
@@ -485,6 +518,17 @@ export function ReadingPane() {
           accountId={activeAccountId}
         />
       )}
+    </div>
+
+    {/* Contact sidebar */}
+    {isContactSidebarOpen && senderEmail && activeAccountId && (
+      <ContactSidebar
+        email={senderEmail}
+        name={senderName}
+        accountId={activeAccountId}
+        onClose={() => setIsContactSidebarOpen(false)}
+      />
+    )}
     </div>
   );
 }

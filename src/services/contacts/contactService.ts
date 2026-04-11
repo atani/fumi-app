@@ -1,5 +1,5 @@
 import { getDb } from "../db/connection";
-import type { Contact, Message } from "../../types";
+import type { Contact, Message, Thread } from "../../types";
 
 /**
  * Parse a raw address string like `"John Doe" <john@example.com>` or `john@example.com`
@@ -98,6 +98,46 @@ export function extractContactsFromMessage(
   contacts.push(...parseAddressList(message.bcc_addresses));
 
   return contacts;
+}
+
+/**
+ * Look up a single contact by email for a given account.
+ */
+export async function getContactByEmail(
+  accountId: string,
+  email: string,
+): Promise<Contact | null> {
+  const db = await getDb();
+  const rows = await db.select<Contact[]>(
+    `SELECT id, email, name, frequency, first_contacted_at, last_contacted_at, account_id
+     FROM contacts
+     WHERE account_id = $1 AND email = $2
+     LIMIT 1`,
+    [accountId, email.trim().toLowerCase()],
+  );
+  return rows[0] ?? null;
+}
+
+/**
+ * Fetch recent threads that involve a given email address (as sender).
+ */
+export async function getRecentThreadsWithContact(
+  accountId: string,
+  email: string,
+  limit = 5,
+): Promise<Thread[]> {
+  const db = await getDb();
+  return db.select<Thread[]>(
+    `SELECT DISTINCT t.id, t.account_id, t.snippet, t.subject,
+            t.last_message_at, t.message_count, t.is_read, t.is_starred,
+            t.is_muted, t.snoozed_until
+     FROM threads t
+     JOIN messages m ON m.thread_id = t.id AND m.account_id = t.account_id
+     WHERE t.account_id = $1 AND LOWER(m.from_address) = $2
+     ORDER BY t.last_message_at DESC
+     LIMIT $3`,
+    [accountId, email.trim().toLowerCase(), limit],
+  );
 }
 
 /**

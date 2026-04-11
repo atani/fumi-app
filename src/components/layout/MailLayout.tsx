@@ -29,6 +29,7 @@ export function MailLayout() {
   const { activeAccountId, getActiveAccount } = useAccountStore();
   const { loadThreads, setThreads, setSyncing, selectedThreadId, messages, selectThread } =
     useThreadStore();
+  const readingPanePosition = useUIStore((s) => s.readingPanePosition);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isShortcutsHelpOpen, setIsShortcutsHelpOpen] = useState(false);
   const [isTaskExtractOpen, setIsTaskExtractOpen] = useState(false);
@@ -171,9 +172,15 @@ export function MailLayout() {
             Sync error: {syncError}
           </div>
         )}
-        <div className="flex flex-1 overflow-hidden">
-          <ThreadList onOpenSearch={() => setIsCommandPaletteOpen(true)} />
-          {selectedThreadId && <ReadingPane />}
+        <div className={`flex flex-1 overflow-hidden ${readingPanePosition === "bottom" ? "flex-col" : "flex-row"}`}>
+          {readingPanePosition === "hidden" && selectedThreadId ? (
+            <ReadingPane onBack={() => selectThread(null)} showBackButton />
+          ) : (
+            <>
+              <ThreadList onOpenSearch={() => setIsCommandPaletteOpen(true)} />
+              {selectedThreadId && readingPanePosition !== "hidden" && <ReadingPane />}
+            </>
+          )}
         </div>
       </div>
       <Composer />

@@ -23,6 +23,7 @@ export function App() {
     const init = async () => {
       await runMigrations();
       await useUIStore.getState().initTheme();
+      await useUIStore.getState().initReadingPanePosition();
       await loadAccounts();
 
       // Check for unsent drafts

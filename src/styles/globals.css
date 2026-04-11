@@ -13,9 +13,9 @@
   --color-text-tertiary: #9ca3af;
   --color-border-primary: #e5e7eb;
   --color-border-secondary: #f3f4f6;
-  --color-accent: #4f46e5;
-  --color-accent-hover: #4338ca;
-  --color-accent-light: #eef2ff;
+  --color-accent: var(--theme-accent, #4f46e5);
+  --color-accent-hover: var(--theme-accent-hover, #4338ca);
+  --color-accent-light: var(--theme-accent-light, #eef2ff);
   --color-danger: #ef4444;
   --color-warning: #f59e0b;
   --color-success: #10b981;
@@ -44,9 +44,9 @@ body {
   --color-text-tertiary: #64748b;
   --color-border-primary: #334155;
   --color-border-secondary: #1e293b;
-  --color-accent: #818cf8;
-  --color-accent-hover: #6366f1;
-  --color-accent-light: #1e1b4b;
+  --color-accent: var(--theme-accent, #818cf8);
+  --color-accent-hover: var(--theme-accent-hover, #6366f1);
+  --color-accent-light: var(--theme-accent-light, #1e1b4b);
   --color-sidebar-bg: #1e293b;
   --color-sidebar-text: #cbd5e1;
 }
@@ -74,4 +74,18 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-text-tertiary);
+}
+
+/* Font scaling */
+html.font-scale-small {
+  font-size: 13px;
+}
+html.font-scale-default {
+  font-size: 14px;
+}
+html.font-scale-large {
+  font-size: 16px;
+}
+html.font-scale-xlarge {
+  font-size: 18px;
 }
