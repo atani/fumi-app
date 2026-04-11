@@ -26,6 +26,8 @@ import {
   markThreadsAsUnread,
 } from "../../services/emailActions";
 import type { Thread } from "../../types";
+import { EmptyState } from "../ui/EmptyState";
+import { InboxClearIllustration } from "../ui/illustrations";
 
 type EmailDensity = "compact" | "default" | "comfortable";
 
@@ -158,7 +160,7 @@ export function ThreadList({ onOpenSearch }: ThreadListProps) {
     categoryMap,
   } = useThreadStore();
   const { activeAccountId } = useAccountStore();
-  const { emailDensity, readingPanePosition, setReadingPanePosition } = useUIStore();
+  const { emailDensity, readingPanePosition, setReadingPanePosition, emailListWidth } = useUIStore();
 
   const isInbox = activeLabel === "INBOX";
   const isMultiSelect = selectedThreadIds.size > 0;
@@ -271,7 +273,7 @@ export function ThreadList({ onOpenSearch }: ThreadListProps) {
   }, [selectedThreadIds]);
 
   const threadListClasses = readingPanePosition === "right"
-    ? "flex w-80 flex-col border-r border-border-primary bg-bg-primary"
+    ? "flex shrink-0 flex-col border-r border-border-primary bg-bg-primary"
     : readingPanePosition === "bottom"
       ? "flex flex-col border-b border-border-primary bg-bg-primary h-1/2"
       : "flex flex-1 flex-col bg-bg-primary";
@@ -279,6 +281,7 @@ export function ThreadList({ onOpenSearch }: ThreadListProps) {
   return (
     <div
       className={threadListClasses}
+      style={readingPanePosition === "right" ? { width: emailListWidth } : undefined}
       data-testid="thread-list"
     >
       <div className="flex h-12 items-center justify-between border-b border-border-primary px-4">
@@ -382,9 +385,11 @@ export function ThreadList({ onOpenSearch }: ThreadListProps) {
             <p className="text-sm text-text-tertiary">Loading...</p>
           </div>
         ) : filteredThreads.length === 0 ? (
-          <div className="flex items-center justify-center py-12">
-            <p className="text-sm text-text-tertiary">No messages</p>
-          </div>
+          <EmptyState
+            illustration={<InboxClearIllustration />}
+            title="All clear!"
+            description="No messages to show"
+          />
         ) : (
           filteredThreads.map((thread) => (
             <DraggableThreadItem

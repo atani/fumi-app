@@ -1,11 +1,14 @@
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback, useState } from "react";
 import DOMPurify from "dompurify";
+import { ShieldCheck } from "lucide-react";
 
 interface EmailRendererProps {
   html: string | null;
   text: string | null;
   /** When true, remote images are loaded instead of blocked. */
   allowRemoteImages?: boolean;
+  /** Called when user clicks "Load images from this sender". */
+  onAllowSender?: () => void;
 }
 
 /**
@@ -16,8 +19,10 @@ export function EmailRenderer({
   html,
   text,
   allowRemoteImages = false,
+  onAllowSender,
 }: EmailRendererProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [hasBlockedImages, setHasBlockedImages] = useState(false);
 
   const sanitize = useCallback(
     (dirty: string): string => {
@@ -125,6 +130,10 @@ export function EmailRenderer({
 
     let sanitizedHtml = sanitize(html);
 
+    // Detect whether any images were blocked
+    const blocked = !allowRemoteImages && sanitizedHtml.includes("data-blocked-src");
+    setHasBlockedImages(blocked);
+
     // If the HTML has no block-level elements, it's likely plain text
     // wrapped in HTML. Convert \n to <br> to preserve line breaks.
     const hasBlockElements = /<(div|p|br|table|ul|ol|li|h[1-6]|blockquote|section|article|header|footer|pre)\b/i.test(sanitizedHtml);
@@ -162,13 +171,31 @@ export function EmailRenderer({
   }
 
   return (
-    <iframe
-      ref={iframeRef}
-      sandbox="allow-same-origin"
-      title="Email content"
-      data-testid="email-renderer-iframe"
-      className="block w-full border-none"
-      style={{ minHeight: "50px" }}
-    />
+    <div>
+      {hasBlockedImages && onAllowSender && (
+        <div
+          className="mb-2 flex items-center gap-2 rounded-lg border border-border-secondary bg-bg-secondary px-3 py-2 text-xs text-text-secondary"
+          data-testid="blocked-images-banner"
+        >
+          <ShieldCheck className="h-4 w-4 flex-shrink-0 text-text-tertiary" />
+          <span>Images from this sender are blocked.</span>
+          <button
+            onClick={onAllowSender}
+            className="ml-auto whitespace-nowrap rounded px-2 py-1 text-xs font-medium text-accent hover:bg-bg-hover"
+            data-testid="allow-sender-images-btn"
+          >
+            Load images from this sender
+          </button>
+        </div>
+      )}
+      <iframe
+        ref={iframeRef}
+        sandbox="allow-same-origin"
+        title="Email content"
+        data-testid="email-renderer-iframe"
+        className="block w-full border-none"
+        style={{ minHeight: "50px" }}
+      />
+    </div>
   );
 }

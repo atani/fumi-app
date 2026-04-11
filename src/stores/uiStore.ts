@@ -18,6 +18,7 @@ interface UIState {
   sidebarCollapsed: boolean;
   isOnline: boolean;
   readingPanePosition: ReadingPanePosition;
+  emailListWidth: number;
   setTheme: (theme: Theme) => void;
   setColorTheme: (colorTheme: string) => void;
   setEmailDensity: (density: EmailDensity) => void;
@@ -25,8 +26,10 @@ interface UIState {
   toggleSidebar: () => void;
   setOnline: (online: boolean) => void;
   setReadingPanePosition: (position: ReadingPanePosition) => void;
+  setEmailListWidth: (width: number) => void;
   initTheme: () => Promise<void>;
   initReadingPanePosition: () => Promise<void>;
+  initEmailListWidth: () => Promise<void>;
 }
 
 function applyFontScaleClass(scale: FontScale): void {
@@ -111,6 +114,7 @@ export const useUIStore = create<UIState>((set) => ({
   sidebarCollapsed: false,
   isOnline: typeof navigator !== "undefined" ? navigator.onLine : true,
   readingPanePosition: "right" as ReadingPanePosition,
+  emailListWidth: 320,
 
   setColorTheme: (colorTheme: string) => {
     set({ colorTheme });
@@ -148,6 +152,12 @@ export const useUIStore = create<UIState>((set) => ({
     void saveSetting("reading_pane_position", position);
   },
 
+  setEmailListWidth: (width: number) => {
+    const clamped = Math.max(200, Math.min(600, width));
+    set({ emailListWidth: clamped });
+    void saveSetting("email_list_width", String(clamped));
+  },
+
   initReadingPanePosition: async () => {
     try {
       const db = await getDb();
@@ -157,6 +167,24 @@ export const useUIStore = create<UIState>((set) => ({
       const row = rows[0];
       if (row && VALID_READING_PANE_POSITIONS.includes(row.value as ReadingPanePosition)) {
         set({ readingPanePosition: row.value as ReadingPanePosition });
+      }
+    } catch {
+      // DB not available — use default
+    }
+  },
+
+  initEmailListWidth: async () => {
+    try {
+      const db = await getDb();
+      const rows = await db.select<{ value: string }[]>(
+        "SELECT value FROM settings WHERE key = 'email_list_width'",
+      );
+      const row = rows[0];
+      if (row) {
+        const parsed = parseInt(row.value, 10);
+        if (!Number.isNaN(parsed) && parsed >= 200 && parsed <= 600) {
+          set({ emailListWidth: parsed });
+        }
       }
     } catch {
       // DB not available — use default

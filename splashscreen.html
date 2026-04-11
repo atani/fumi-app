@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fumi</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #fff;
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .logo {
+      font-size: 64px;
+      margin-bottom: 16px;
+    }
+    .title {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-bottom: 24px;
+    }
+    .loading {
+      font-size: 14px;
+      opacity: 0.8;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="logo">&#x2709;&#xFE0F;</div>
+  <div class="title">Fumi</div>
+  <div class="loading">Loading...</div>
+</body>
+</html>

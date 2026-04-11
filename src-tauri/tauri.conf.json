@@ -18,7 +18,19 @@
         "minWidth": 800,
         "minHeight": 600,
         "titleBarStyle": "Overlay",
-        "hiddenTitle": true
+        "hiddenTitle": true,
+        "visible": false
+      },
+      {
+        "label": "splashscreen",
+        "url": "splashscreen.html",
+        "title": "Fumi",
+        "width": 400,
+        "height": 300,
+        "decorations": false,
+        "center": true,
+        "alwaysOnTop": true,
+        "visible": true
       }
     ],
     "trayIcon": {

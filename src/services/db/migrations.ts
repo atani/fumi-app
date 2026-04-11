@@ -508,6 +508,32 @@ const MIGRATIONS = [
       );
     `,
   },
+  {
+    version: 23,
+    sql: `
+      CREATE TABLE IF NOT EXISTS image_allowlist (
+        sender TEXT NOT NULL,
+        account_id TEXT NOT NULL,
+        domain TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        PRIMARY KEY (sender, account_id)
+      );
+    `,
+  },
+  {
+    version: 24,
+    sql: `
+      CREATE TABLE IF NOT EXISTS folder_sync_state (
+        folder TEXT NOT NULL,
+        account_id TEXT NOT NULL,
+        uidvalidity INTEGER,
+        last_uid INTEGER,
+        modseq INTEGER,
+        PRIMARY KEY (folder, account_id),
+        FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+      );
+    `,
+  },
 ];
 
 export async function runMigrations(): Promise<void> {

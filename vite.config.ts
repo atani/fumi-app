@@ -13,6 +13,14 @@ export default defineConfig(async () => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, "index.html"),
+        splashscreen: path.resolve(__dirname, "splashscreen.html"),
+      },
+    },
+  },
   clearScreen: false,
   server: {
     port: 1420,

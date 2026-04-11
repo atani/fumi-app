@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { ThreadList } from "./ThreadList";
@@ -8,6 +8,8 @@ import { Composer } from "../composer/Composer";
 import { CommandPalette } from "../search/CommandPalette";
 import { ShortcutsHelp } from "../search/ShortcutsHelp";
 import { OfflineBanner } from "../ui/OfflineBanner";
+import { EmptyState } from "../ui/EmptyState";
+import { ReadingPaneIllustration } from "../ui/illustrations";
 import { AiTaskExtractDialog } from "../tasks/AiTaskExtractDialog";
 import { useAccountStore } from "../../stores/accountStore";
 import { useThreadStore } from "../../stores/threadStore";
@@ -30,6 +32,8 @@ export function MailLayout() {
   const { loadThreads, setThreads, setSyncing, selectedThreadId, messages, selectThread } =
     useThreadStore();
   const readingPanePosition = useUIStore((s) => s.readingPanePosition);
+  const emailListWidth = useUIStore((s) => s.emailListWidth);
+  const setEmailListWidth = useUIStore((s) => s.setEmailListWidth);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isShortcutsHelpOpen, setIsShortcutsHelpOpen] = useState(false);
   const [isTaskExtractOpen, setIsTaskExtractOpen] = useState(false);
@@ -48,6 +52,46 @@ export function MailLayout() {
       }
     }, [selectedThreadId]),
   });
+
+  // --- Email list resize handle ---
+  const dragRef = useRef<{ startX: number; startWidth: number } | null>(null);
+  const [isDraggingHandle, setIsDraggingHandle] = useState(false);
+
+  useEffect(() => {
+    if (!isDraggingHandle) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!dragRef.current) return;
+      const newWidth = dragRef.current.startWidth + (e.clientX - dragRef.current.startX);
+      setEmailListWidth(Math.max(200, Math.min(600, newWidth)));
+    };
+
+    const handleMouseUp = () => {
+      dragRef.current = null;
+      setIsDraggingHandle(false);
+      document.body.style.userSelect = "";
+      document.body.style.cursor = "";
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isDraggingHandle, setEmailListWidth]);
+
+  const handleResizeMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      dragRef.current = { startX: e.clientX, startWidth: emailListWidth };
+      setIsDraggingHandle(true);
+      document.body.style.userSelect = "none";
+      document.body.style.cursor = "col-resize";
+    },
+    [emailListWidth],
+  );
 
   const doSync = useCallback(async () => {
     const account = getActiveAccount();
@@ -178,7 +222,26 @@ export function MailLayout() {
           ) : (
             <>
               <ThreadList onOpenSearch={() => setIsCommandPaletteOpen(true)} />
-              {selectedThreadId && readingPanePosition !== "hidden" && <ReadingPane />}
+              {readingPanePosition === "right" && (
+                <div
+                  onMouseDown={handleResizeMouseDown}
+                  className="w-1 shrink-0 cursor-col-resize bg-transparent transition-colors hover:bg-accent/40"
+                  data-testid="email-list-resize-handle"
+                />
+              )}
+              {readingPanePosition !== "hidden" && (
+                selectedThreadId ? (
+                  <ReadingPane />
+                ) : (
+                  <div className="flex flex-1 items-center justify-center bg-bg-primary">
+                    <EmptyState
+                      illustration={<ReadingPaneIllustration />}
+                      title="Select a conversation"
+                      description="Choose a thread from the list to read it here"
+                    />
+                  </div>
+                )
+              )}
             </>
           )}
         </div>

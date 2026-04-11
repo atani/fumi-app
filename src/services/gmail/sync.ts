@@ -40,6 +40,11 @@ function parseGmailMessage(
     auth_results: getHeader(gmailMsg, "Authentication-Results") ?? null,
     list_unsubscribe: getHeader(gmailMsg, "List-Unsubscribe") ?? null,
     list_unsubscribe_post: getHeader(gmailMsg, "List-Unsubscribe-Post") ?? null,
+    imap_uid: null,
+    imap_folder: null,
+    message_id_header: null,
+    references_header: null,
+    in_reply_to_header: null,
   };
 }
 

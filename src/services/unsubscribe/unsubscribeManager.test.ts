@@ -23,6 +23,11 @@ function makeMessage(overrides: Partial<Message> = {}): Message {
     auth_results: null,
     list_unsubscribe: null,
     list_unsubscribe_post: null,
+    imap_uid: null,
+    imap_folder: null,
+    message_id_header: null,
+    references_header: null,
+    in_reply_to_header: null,
     ...overrides,
   };
 }

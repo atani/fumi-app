@@ -1,13 +1,15 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { Reply, ReplyAll, Forward, ChevronDown, ChevronRight, MailMinus } from "lucide-react";
 import { EmailRenderer } from "./EmailRenderer";
 import { AttachmentList } from "./AttachmentList";
+import { InlineAttachmentPreview } from "./InlineAttachmentPreview";
 import { AuthBadge } from "./AuthBadge";
 import { PhishingBanner } from "./PhishingBanner";
 import { useComposerStore } from "../../stores/composerStore";
 import { parseAuthResults } from "../../services/security/authParser";
 import { analyzeMessage, getOverallRisk } from "../../services/security/phishingDetector";
 import { getUnsubscribeInfo, unsubscribe } from "../../services/unsubscribe/unsubscribeManager";
+import { isAllowed, addToAllowlist } from "../../services/email/imageAllowlist";
 import type { Account, Message, Attachment, PhishingSensitivity } from "../../types";
 
 interface MessageItemProps {
@@ -115,6 +117,40 @@ export function MessageItem({
   const [showQuoted, setShowQuoted] = useState(false);
   const [trustedSender, setTrustedSender] = useState(false);
   const [unsubscribeStatus, setUnsubscribeStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [allowRemoteImages, setAllowRemoteImages] = useState(false);
+
+  // Check image allowlist on mount / sender change
+  useEffect(() => {
+    if (!account || !message.from_address) return;
+    let cancelled = false;
+    isAllowed(account.id, message.from_address).then((allowed) => {
+      if (!cancelled) setAllowRemoteImages(allowed);
+    }).catch(() => {
+      // Ignore errors — images stay blocked by default
+    });
+    return () => { cancelled = true; };
+  }, [account, message.from_address]);
+
+  const handleAllowSender = useCallback(() => {
+    if (!account || !message.from_address) return;
+    setAllowRemoteImages(true);
+    void addToAllowlist(account.id, message.from_address);
+  }, [account, message.from_address]);
+
+  // Split attachments into inline (image/pdf with content_id) and regular
+  const inlineAttachments = useMemo(
+    () => attachments.filter(
+      (a) => a.content_id != null && (a.mime_type.startsWith("image/") || a.mime_type === "application/pdf"),
+    ),
+    [attachments],
+  );
+
+  const regularAttachments = useMemo(
+    () => attachments.filter(
+      (a) => a.content_id == null || (!a.mime_type.startsWith("image/") && a.mime_type !== "application/pdf"),
+    ),
+    [attachments],
+  );
 
   const unsubscribeInfo = useMemo(
     () => getUnsubscribeInfo(message),
@@ -274,6 +310,8 @@ export function MessageItem({
             <EmailRenderer
               html={hasQuotedContent && !showQuoted ? quotedContent.main : message.body_html}
               text={null}
+              allowRemoteImages={allowRemoteImages}
+              onAllowSender={handleAllowSender}
             />
             {hasQuotedContent && (
               <button
@@ -310,9 +348,18 @@ export function MessageItem({
         )}
       </div>
 
-      {/* Attachments */}
-      {account && attachments.length > 0 && (
-        <AttachmentList attachments={attachments} account={account} />
+      {/* Inline attachment previews (images & PDFs with content_id) */}
+      {account && inlineAttachments.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-2" data-testid="inline-attachment-previews">
+          {inlineAttachments.map((att) => (
+            <InlineAttachmentPreview key={att.id} attachment={att} account={account} />
+          ))}
+        </div>
+      )}
+
+      {/* Regular attachments */}
+      {account && regularAttachments.length > 0 && (
+        <AttachmentList attachments={regularAttachments} account={account} />
       )}
 
       {/* Per-message action buttons */}

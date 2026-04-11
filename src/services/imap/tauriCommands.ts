@@ -88,6 +88,54 @@ export async function smtpTestConnection(
   return invoke<boolean>("smtp_test_connection", { ...params });
 }
 
+export interface ImapFolderStatus {
+  uidvalidity: number;
+  uidnext: number;
+  messages: number;
+}
+
+export async function imapFetchNewUids(
+  params: ImapConnectionParams & { folder: string; lastUid: number },
+): Promise<ImapMessage[]> {
+  return invoke<ImapMessage[]>("imap_fetch_new_uids", {
+    ...params,
+    last_uid: params.lastUid,
+  });
+}
+
+export async function imapGetFolderStatus(
+  params: ImapConnectionParams & { folder: string },
+): Promise<ImapFolderStatus> {
+  return invoke<ImapFolderStatus>("imap_get_folder_status", { ...params });
+}
+
+export async function imapSetFlags(
+  params: ImapConnectionParams & {
+    folder: string;
+    uids: number[];
+    flags: string[];
+    add: boolean;
+  },
+): Promise<void> {
+  return invoke<void>("imap_set_flags", { ...params });
+}
+
+export async function imapMoveMessages(
+  params: ImapConnectionParams & {
+    folder: string;
+    uids: number[];
+    destination: string;
+  },
+): Promise<void> {
+  return invoke<void>("imap_move_messages", { ...params });
+}
+
+export async function imapDeleteMessages(
+  params: ImapConnectionParams & { folder: string; uids: number[] },
+): Promise<void> {
+  return invoke<void>("imap_delete_messages", { ...params });
+}
+
 export async function smtpSendEmail(
   params: SmtpConnectionParams & {
     from: EmailRecipient;

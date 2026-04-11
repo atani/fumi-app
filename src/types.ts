@@ -57,6 +57,11 @@ export interface Message {
   auth_results: string | null;
   list_unsubscribe: string | null;
   list_unsubscribe_post: string | null;
+  imap_uid: number | null;
+  imap_folder: string | null;
+  message_id_header: string | null;
+  references_header: string | null;
+  in_reply_to_header: string | null;
 }
 
 export interface Label {
@@ -342,4 +347,12 @@ export interface SmartFolder {
   icon: string | null;
   sort_order: number;
   created_at: string;
+}
+
+export interface FolderSyncState {
+  folder: string;
+  account_id: string;
+  uidvalidity: number;
+  last_uid: number;
+  modseq: number | null;
 }

@@ -104,9 +104,29 @@ async fn start_oauth_server(app: tauri::AppHandle) -> Result<u16, String> {
     Err("Could not bind to any port".to_string())
 }
 
+#[tauri::command]
+async fn close_splashscreen(app: tauri::AppHandle) {
+    if let Some(splash) = app.get_webview_window("splashscreen") {
+        let _ = splash.close();
+    }
+    if let Some(main) = app.get_webview_window("main") {
+        let _ = main.show();
+        let _ = main.set_focus();
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
+            // Focus the existing main window when a second instance is launched
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.show();
+                let _ = window.set_focus();
+            }
+            // Forward args for deep linking
+            let _ = app.emit("single-instance-args", args);
+        }))
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_sql::Builder::new().build())
         .plugin(tauri_plugin_http::init())
@@ -121,6 +141,16 @@ pub fn run() {
             code_verifier: Mutex::new(None),
         })
         .setup(|app| {
+            // Set Windows AUMID for proper notification identity
+            #[cfg(windows)]
+            {
+                use windows::core::w;
+                use windows::Win32::UI::Shell::SetCurrentProcessExplicitAppUserModelID;
+                unsafe {
+                    let _ = SetCurrentProcessExplicitAppUserModelID(w!("app.fumi.mail"));
+                }
+            }
+
             let show = MenuItemBuilder::with_id("show", "Show Fumi").build(app)?;
             let check_mail = MenuItemBuilder::with_id("check_mail", "Check Mail").build(app)?;
             let separator = PredefinedMenuItem::separator(app)?;
@@ -169,16 +199,19 @@ pub fn run() {
             Ok(())
         })
         .on_window_event(|window, event| {
-            if let WindowEvent::CloseRequested { api, .. } = event {
-                // Hide the window instead of closing it (minimize to tray)
-                let _ = window.hide();
-                api.prevent_close();
+            if window.label() == "main" {
+                if let WindowEvent::CloseRequested { api, .. } = event {
+                    // Hide the window instead of closing it (minimize to tray)
+                    let _ = window.hide();
+                    api.prevent_close();
+                }
             }
         })
         .invoke_handler(tauri::generate_handler![
             start_oauth_server,
             get_oauth_params,
             get_code_verifier,
+            close_splashscreen,
             imap::imap_test_connection,
             imap::imap_list_folders,
             imap::imap_fetch_messages,

@@ -24,6 +24,7 @@ export function App() {
       await runMigrations();
       await useUIStore.getState().initTheme();
       await useUIStore.getState().initReadingPanePosition();
+      await useUIStore.getState().initEmailListWidth();
       await loadAccounts();
 
       // Check for unsent drafts
