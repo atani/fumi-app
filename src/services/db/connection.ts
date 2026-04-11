@@ -1,7 +1,7 @@
 let db: import("@tauri-apps/plugin-sql").default | null = null;
 
 function isTauri(): boolean {
-  return typeof window !== "undefined" && "__TAURI__" in window;
+  return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 }
 
 // In-memory fallback for browser-only mode (testing, dev without Tauri)
