@@ -28,7 +28,13 @@ export interface Thread {
   message_count: number;
   is_read: boolean;
   is_starred: boolean;
+  is_muted: boolean;
   snoozed_until: string | null;
+}
+
+export interface NotificationVip {
+  email: string;
+  account_id: string;
 }
 
 export interface Message {
@@ -268,4 +274,27 @@ export interface FollowUpReminder {
   remind_after_hours: number;
   created_at: string;
   reminded_at: string | null;
+}
+
+export interface ScheduledEmail {
+  id: string;
+  account_id: string;
+  to_addresses: string;
+  cc: string | null;
+  bcc: string | null;
+  subject: string;
+  body: string;
+  attachments: string | null;
+  scheduled_at: string;
+  status: "pending" | "sent" | "failed";
+  error: string | null;
+  created_at: string;
+}
+
+export interface SendAsAlias {
+  email: string;
+  account_id: string;
+  display_name: string;
+  is_default: boolean;
+  is_primary: boolean;
 }

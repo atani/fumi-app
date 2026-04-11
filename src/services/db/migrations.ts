@@ -425,6 +425,56 @@ const MIGRATIONS = [
         ON follow_up_reminders(thread_id, account_id);
     `,
   },
+  {
+    version: 18,
+    sql: `
+      ALTER TABLE threads ADD COLUMN is_muted INTEGER DEFAULT 0;
+
+      CREATE TABLE IF NOT EXISTS notification_vips (
+        email TEXT NOT NULL,
+        account_id TEXT NOT NULL,
+        PRIMARY KEY (email, account_id),
+        FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+      );
+    `,
+  },
+  {
+    version: 19,
+    sql: `
+      CREATE TABLE IF NOT EXISTS send_as_aliases (
+        email TEXT NOT NULL,
+        account_id TEXT NOT NULL,
+        display_name TEXT NOT NULL DEFAULT '',
+        is_default INTEGER DEFAULT 0,
+        is_primary INTEGER DEFAULT 0,
+        PRIMARY KEY (email, account_id),
+        FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+      );
+    `,
+  },
+  {
+    version: 20,
+    sql: `
+      CREATE TABLE IF NOT EXISTS scheduled_emails (
+        id TEXT PRIMARY KEY,
+        account_id TEXT NOT NULL,
+        to_addresses TEXT NOT NULL,
+        cc TEXT,
+        bcc TEXT,
+        subject TEXT NOT NULL DEFAULT '',
+        body TEXT NOT NULL DEFAULT '',
+        attachments TEXT,
+        scheduled_at TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'pending',
+        error TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_scheduled_emails_status
+        ON scheduled_emails(status, scheduled_at);
+    `,
+  },
 ];
 
 export async function runMigrations(): Promise<void> {

@@ -1,8 +1,24 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useThreadStore } from "../../stores/threadStore";
 import { useAccountStore } from "../../stores/accountStore";
 import { CategoryTabs } from "../email/CategoryTabs";
-import { RefreshCw, Star, Search } from "lucide-react";
+import {
+  RefreshCw,
+  Star,
+  Search,
+  Archive,
+  Trash2,
+  Mail,
+  MailOpen,
+  Tag,
+  X,
+} from "lucide-react";
+import {
+  archiveThreads,
+  trashThreads,
+  markThreadsAsRead,
+  markThreadsAsUnread,
+} from "../../services/emailActions";
 
 interface ThreadListProps {
   onOpenSearch?: () => void;
@@ -12,7 +28,12 @@ export function ThreadList({ onOpenSearch }: ThreadListProps) {
   const {
     threads,
     selectedThreadId,
+    selectedThreadIds,
+    lastSelectedThreadId,
     selectThread,
+    toggleSelectThread,
+    selectRange,
+    clearSelection,
     isLoading,
     isSyncing,
     activeLabel,
@@ -22,6 +43,7 @@ export function ThreadList({ onOpenSearch }: ThreadListProps) {
   const { activeAccountId } = useAccountStore();
 
   const isInbox = activeLabel === "INBOX";
+  const isMultiSelect = selectedThreadIds.size > 0;
 
   const filteredThreads = useMemo(() => {
     if (!isInbox || activeCategory === null) return threads;
@@ -41,6 +63,63 @@ export function ThreadList({ onOpenSearch }: ThreadListProps) {
     }
     return date.toLocaleDateString([], { month: "short", day: "numeric" });
   };
+
+  const handleThreadClick = useCallback(
+    (e: React.MouseEvent, threadId: string) => {
+      if (e.shiftKey && lastSelectedThreadId) {
+        e.preventDefault();
+        selectRange(lastSelectedThreadId, threadId);
+      } else if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        toggleSelectThread(threadId);
+      } else if (isMultiSelect) {
+        toggleSelectThread(threadId);
+      } else {
+        void selectThread(threadId, activeAccountId ?? undefined);
+      }
+    },
+    [lastSelectedThreadId, selectRange, toggleSelectThread, isMultiSelect, selectThread, activeAccountId],
+  );
+
+  const handleCheckboxClick = useCallback(
+    (e: React.MouseEvent, threadId: string) => {
+      e.stopPropagation();
+      if (e.shiftKey && lastSelectedThreadId) {
+        selectRange(lastSelectedThreadId, threadId);
+      } else {
+        toggleSelectThread(threadId);
+      }
+    },
+    [lastSelectedThreadId, selectRange, toggleSelectThread],
+  );
+
+  const handleBulkArchive = useCallback(async () => {
+    const account = useAccountStore.getState().getActiveAccount();
+    if (!account) return;
+    const ids = Array.from(selectedThreadIds);
+    clearSelection();
+    await archiveThreads(account, ids);
+  }, [selectedThreadIds, clearSelection]);
+
+  const handleBulkTrash = useCallback(async () => {
+    const account = useAccountStore.getState().getActiveAccount();
+    if (!account) return;
+    const ids = Array.from(selectedThreadIds);
+    clearSelection();
+    await trashThreads(account, ids);
+  }, [selectedThreadIds, clearSelection]);
+
+  const handleBulkMarkRead = useCallback(async () => {
+    const account = useAccountStore.getState().getActiveAccount();
+    if (!account) return;
+    await markThreadsAsRead(account, Array.from(selectedThreadIds));
+  }, [selectedThreadIds]);
+
+  const handleBulkMarkUnread = useCallback(async () => {
+    const account = useAccountStore.getState().getActiveAccount();
+    if (!account) return;
+    await markThreadsAsUnread(account, Array.from(selectedThreadIds));
+  }, [selectedThreadIds]);
 
   return (
     <div
@@ -66,6 +145,66 @@ export function ThreadList({ onOpenSearch }: ThreadListProps) {
         </div>
       </div>
 
+      {isMultiSelect && (
+        <div
+          className="flex items-center gap-1 border-b border-border-primary bg-bg-secondary px-3 py-2"
+          data-testid="bulk-action-bar"
+        >
+          <span className="mr-2 text-xs font-medium text-text-secondary">
+            {selectedThreadIds.size} selected
+          </span>
+          <button
+            onClick={() => void handleBulkArchive()}
+            className="rounded p-1.5 text-text-secondary hover:bg-bg-hover hover:text-text-primary"
+            aria-label="Archive selected"
+            title="Archive selected"
+          >
+            <Archive className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => void handleBulkTrash()}
+            className="rounded p-1.5 text-text-secondary hover:bg-bg-hover hover:text-text-primary"
+            aria-label="Trash selected"
+            title="Trash selected"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => void handleBulkMarkRead()}
+            className="rounded p-1.5 text-text-secondary hover:bg-bg-hover hover:text-text-primary"
+            aria-label="Mark selected as read"
+            title="Mark as read"
+          >
+            <MailOpen className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => void handleBulkMarkUnread()}
+            className="rounded p-1.5 text-text-secondary hover:bg-bg-hover hover:text-text-primary"
+            aria-label="Mark selected as unread"
+            title="Mark as unread"
+          >
+            <Mail className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent("velo-move-to-folder"))}
+            className="rounded p-1.5 text-text-secondary hover:bg-bg-hover hover:text-text-primary"
+            aria-label="Label selected"
+            title="Move to label"
+          >
+            <Tag className="h-4 w-4" />
+          </button>
+          <div className="flex-1" />
+          <button
+            onClick={clearSelection}
+            className="rounded p-1.5 text-text-secondary hover:bg-bg-hover hover:text-text-primary"
+            aria-label="Clear selection"
+            title="Clear selection"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
       {isInbox && <CategoryTabs />}
 
       <div className="flex-1 overflow-y-auto">
@@ -78,55 +217,75 @@ export function ThreadList({ onOpenSearch }: ThreadListProps) {
             <p className="text-sm text-text-tertiary">No messages</p>
           </div>
         ) : (
-          filteredThreads.map((thread) => (
-            <button
-              key={thread.id}
-              onClick={() => selectThread(thread.id, activeAccountId ?? undefined)}
-              className={`w-full border-b border-border-secondary px-4 py-3 text-left transition-colors ${
-                selectedThreadId === thread.id
-                  ? "bg-bg-selected"
-                  : "hover:bg-bg-hover"
-              } ${!thread.is_read ? "bg-bg-secondary" : ""}`}
-              data-testid={`thread-item-${thread.id}`}
-            >
-              <div className="flex items-baseline justify-between">
-                <div className="flex min-w-0 items-center gap-1.5">
-                  {!thread.is_read && (
-                    <span className="h-2 w-2 shrink-0 rounded-full bg-accent" />
-                  )}
-                  <span
-                    className={`truncate text-sm ${
-                      !thread.is_read
-                        ? "font-semibold text-text-primary"
-                        : "text-text-primary"
-                    }`}
-                  >
-                    {thread.subject || "(No subject)"}
-                  </span>
-                </div>
-                <div className="ml-2 flex shrink-0 items-center gap-1">
-                  {thread.is_starred && (
-                    <Star
-                      className="h-3 w-3 text-yellow-500"
-                      fill="currentColor"
-                    />
-                  )}
-                  <span className="text-xs text-text-tertiary">
-                    {formatDate(thread.last_message_at)}
-                  </span>
-                </div>
-              </div>
-              <p
-                className={`mt-1 truncate text-xs ${
-                  !thread.is_read
-                    ? "font-medium text-text-secondary"
-                    : "text-text-secondary"
-                }`}
+          filteredThreads.map((thread) => {
+            const isSelected = selectedThreadIds.has(thread.id);
+            return (
+              <button
+                key={thread.id}
+                onClick={(e) => handleThreadClick(e, thread.id)}
+                className={`group w-full border-b border-border-secondary px-4 py-3 text-left transition-colors ${
+                  selectedThreadId === thread.id
+                    ? "bg-bg-selected"
+                    : isSelected
+                      ? "bg-accent-light"
+                      : "hover:bg-bg-hover"
+                } ${!thread.is_read ? "bg-bg-secondary" : ""}`}
+                data-testid={`thread-item-${thread.id}`}
               >
-                {thread.snippet}
-              </p>
-            </button>
-          ))
+                <div className="flex items-baseline justify-between">
+                  <div className="flex min-w-0 items-center gap-1.5">
+                    <span
+                      className={`shrink-0 ${isMultiSelect ? "block" : "hidden group-hover:block"}`}
+                      onClick={(e) => handleCheckboxClick(e, thread.id)}
+                      role="checkbox"
+                      aria-checked={isSelected}
+                      data-testid={`thread-checkbox-${thread.id}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        readOnly
+                        className="pointer-events-none h-3.5 w-3.5 rounded border-border-primary accent-accent"
+                        tabIndex={-1}
+                      />
+                    </span>
+                    {!thread.is_read && !isMultiSelect && (
+                      <span className="h-2 w-2 shrink-0 rounded-full bg-accent group-hover:hidden" />
+                    )}
+                    <span
+                      className={`truncate text-sm ${
+                        !thread.is_read
+                          ? "font-semibold text-text-primary"
+                          : "text-text-primary"
+                      }`}
+                    >
+                      {thread.subject || "(No subject)"}
+                    </span>
+                  </div>
+                  <div className="ml-2 flex shrink-0 items-center gap-1">
+                    {thread.is_starred && (
+                      <Star
+                        className="h-3 w-3 text-yellow-500"
+                        fill="currentColor"
+                      />
+                    )}
+                    <span className="text-xs text-text-tertiary">
+                      {formatDate(thread.last_message_at)}
+                    </span>
+                  </div>
+                </div>
+                <p
+                  className={`mt-1 truncate text-xs ${
+                    !thread.is_read
+                      ? "font-medium text-text-secondary"
+                      : "text-text-secondary"
+                  }`}
+                >
+                  {thread.snippet}
+                </p>
+              </button>
+            );
+          })
         )}
       </div>
     </div>

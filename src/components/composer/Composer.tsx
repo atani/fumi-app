@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Send, X, ChevronUp, Minus } from "lucide-react";
+import { Send, X, ChevronUp, Minus, ChevronDown } from "lucide-react";
 import { useComposerStore } from "../../stores/composerStore";
 import { useAccountStore } from "../../stores/accountStore";
 import { sendEmail } from "../../services/gmail/send";
+import { archiveThread } from "../../services/emailActions";
 import { scheduleSend } from "../../services/gmail/scheduledSend";
 import type { ScheduledSend } from "../../services/gmail/scheduledSend";
 import {
@@ -16,6 +17,9 @@ import { AttachmentPicker } from "./AttachmentPicker";
 import { TemplatePicker } from "./TemplatePicker";
 import { SignatureSelector } from "./SignatureSelector";
 import { UndoSendToast } from "./UndoSendToast";
+import { ScheduleSendDialog } from "./ScheduleSendDialog";
+import { createScheduledEmail } from "../../services/db/scheduledEmails";
+import { FromSelector } from "./FromSelector";
 
 export function Composer() {
   const {
@@ -36,6 +40,7 @@ export function Composer() {
   } = useComposerStore();
   const { getActiveAccount } = useAccountStore();
 
+  const [fromAddress, setFromAddress] = useState("");
   const [showCc, setShowCc] = useState(false);
   const [showBcc, setShowBcc] = useState(false);
   const [isSending, setIsSending] = useState(false);
@@ -43,7 +48,9 @@ export function Composer() {
   const [isMinimized, setIsMinimized] = useState(false);
   const [draftSaved, setDraftSaved] = useState(false);
   const [undoSendDelayMs, setUndoSendDelayMs] = useState(0);
+  const [sendAndArchiveEnabled, setSendAndArchiveEnabled] = useState(false);
   const [showUndoToast, setShowUndoToast] = useState(false);
+  const [showScheduleDialog, setShowScheduleDialog] = useState(false);
   const scheduledSendRef = useRef<ScheduledSend | null>(null);
   const undoSnapshotRef = useRef<{
     mode: typeof mode;
@@ -60,24 +67,35 @@ export function Composer() {
 
   const bodyRef = useRef<HTMLTextAreaElement>(null);
 
-  // Load undo send delay setting
+  // Load undo send delay and send & archive settings
   useEffect(() => {
     let cancelled = false;
-    const loadDelay = async () => {
+    const loadSettings = async () => {
       try {
         const db = await getDb();
-        const rows = await db.select<{ value: string }[]>(
-          "SELECT value FROM settings WHERE key = $1",
-          ["undo_send_delay"],
-        );
-        if (!cancelled && rows[0]?.value) {
-          setUndoSendDelayMs(Number(rows[0].value) * 1000);
+        const [delayRows, archiveRows] = await Promise.all([
+          db.select<{ value: string }[]>(
+            "SELECT value FROM settings WHERE key = $1",
+            ["undo_send_delay"],
+          ),
+          db.select<{ value: string }[]>(
+            "SELECT value FROM settings WHERE key = $1",
+            ["send_and_archive"],
+          ),
+        ]);
+        if (!cancelled) {
+          if (delayRows[0]?.value) {
+            setUndoSendDelayMs(Number(delayRows[0].value) * 1000);
+          }
+          if (archiveRows[0]?.value) {
+            setSendAndArchiveEnabled(archiveRows[0].value === "true");
+          }
         }
       } catch {
-        // Use default (off)
+        // Use defaults
       }
     };
-    loadDelay();
+    loadSettings();
     return () => { cancelled = true; };
   }, []);
 
@@ -90,12 +108,16 @@ export function Composer() {
     }
   }, [isOpen, isMinimized, cc]);
 
-  // Reset minimized state when composer opens
+  // Reset minimized state and initialize from address when composer opens
   useEffect(() => {
     if (isOpen) {
       setIsMinimized(false);
+      const account = getActiveAccount();
+      if (account) {
+        setFromAddress(account.email);
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, getActiveAccount]);
 
   // Auto-save lifecycle
   useEffect(() => {
@@ -170,6 +192,7 @@ export function Composer() {
       bcc: bcc.trim() || undefined,
       subject,
       body,
+      from: fromAddress || undefined,
       inReplyTo,
       references,
       threadId: replyToMessage?.thread_id ?? null,
@@ -198,12 +221,20 @@ export function Composer() {
       setIsSending(false);
       setShowUndoToast(true);
 
+      // Capture thread ID for archive after send
+      const threadIdForArchive = replyToMessage?.thread_id ?? null;
+
       // Handle send completion in background
       scheduled.promise
         .then(async () => {
           if (draftId) {
             await deleteDraft(draftId).catch((err: unknown) => {
               console.error("Failed to delete draft after send:", err);
+            });
+          }
+          if (sendAndArchiveEnabled && threadIdForArchive) {
+            await archiveThread(account, threadIdForArchive).catch((err: unknown) => {
+              console.error("Failed to archive thread after send:", err);
             });
           }
         })
@@ -221,6 +252,11 @@ export function Composer() {
             console.error("Failed to delete draft after send:", err);
           });
         }
+        if (sendAndArchiveEnabled && replyToMessage?.thread_id) {
+          await archiveThread(account, replyToMessage.thread_id).catch((err: unknown) => {
+            console.error("Failed to archive thread after send:", err);
+          });
+        }
         close();
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to send email");
@@ -228,7 +264,48 @@ export function Composer() {
         setIsSending(false);
       }
     }
-  }, [getActiveAccount, to, cc, bcc, subject, body, inReplyTo, references, replyToMessage, draftId, attachments, close, mode, undoSendDelayMs]);
+  }, [getActiveAccount, to, cc, bcc, subject, body, fromAddress, inReplyTo, references, replyToMessage, draftId, attachments, close, mode, undoSendDelayMs, sendAndArchiveEnabled]);
+
+
+  const handleScheduleSend = useCallback(async (scheduledDate: Date) => {
+    const account = getActiveAccount();
+    if (!account) {
+      setError("No active account");
+      return;
+    }
+    if (!to.trim()) {
+      setError("Recipient is required");
+      return;
+    }
+
+    setError(null);
+    setShowScheduleDialog(false);
+
+    try {
+      const id = `sched-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+      await createScheduledEmail({
+        id,
+        account_id: account.id,
+        to_addresses: to.trim(),
+        cc: cc.trim() || null,
+        bcc: bcc.trim() || null,
+        subject,
+        body,
+        attachments: attachments.length > 0 ? JSON.stringify(attachments) : null,
+        scheduled_at: scheduledDate.toISOString(),
+      });
+
+      if (draftId) {
+        await deleteDraft(draftId).catch((err: unknown) => {
+          console.error("Failed to delete draft after scheduling:", err);
+        });
+      }
+
+      close();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to schedule email");
+    }
+  }, [getActiveAccount, to, cc, bcc, subject, body, attachments, draftId, close]);
 
   // Ctrl+Enter to send
   const handleKeyDown = useCallback(
@@ -261,6 +338,8 @@ export function Composer() {
         : mode === "replyAll"
           ? "Reply All"
           : "Forward";
+
+  const activeAccount = getActiveAccount();
 
   return (
     <div
@@ -307,6 +386,16 @@ export function Composer() {
       {/* Collapsible body */}
       {!isMinimized && (
         <div className="flex flex-col">
+          {/* From selector — only visible when account has multiple send-as aliases */}
+          {activeAccount && (
+            <FromSelector
+              accountId={activeAccount.id}
+              accountEmail={activeAccount.email}
+              value={fromAddress}
+              onChange={setFromAddress}
+            />
+          )}
+
           {/* To field */}
           <div className="flex items-center border-b border-border-secondary px-4 py-1.5">
             <label className="w-12 shrink-0 text-xs text-text-tertiary">
@@ -420,14 +509,24 @@ export function Composer() {
           {/* Footer */}
           <div className="flex items-center justify-between border-t border-border-secondary px-4 py-2">
             <div className="flex items-center gap-1">
-              <button
-                className="flex items-center gap-2 rounded-lg bg-accent px-4 py-1.5 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
-                onClick={handleSend}
-                disabled={isSending}
-              >
-                <Send className="h-4 w-4" />
-                {isSending ? "Sending..." : "Send"}
-              </button>
+              <div className="flex items-center">
+                <button
+                  className="flex items-center gap-2 rounded-l-lg bg-accent px-4 py-1.5 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
+                  onClick={handleSend}
+                  disabled={isSending}
+                >
+                  <Send className="h-4 w-4" />
+                  {isSending ? "Sending..." : "Send"}
+                </button>
+                <button
+                  className="flex items-center rounded-r-lg border-l border-white/20 bg-accent px-1.5 py-1.5 text-white hover:bg-accent-hover disabled:opacity-50"
+                  onClick={() => setShowScheduleDialog(true)}
+                  disabled={isSending}
+                  aria-label="Schedule send"
+                >
+                  <ChevronDown className="h-4 w-4" />
+                </button>
+              </div>
               <TemplatePicker />
               <SignatureSelector />
             </div>
@@ -443,6 +542,11 @@ export function Composer() {
           </div>
         </div>
       )}
+      <ScheduleSendDialog
+        isOpen={showScheduleDialog}
+        onClose={() => setShowScheduleDialog(false)}
+        onSchedule={handleScheduleSend}
+      />
     </div>
   );
 }

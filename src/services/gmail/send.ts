@@ -7,6 +7,7 @@ export interface SendEmailOptions {
   bcc?: string;
   subject: string;
   body: string;
+  from?: string;
   inReplyTo?: string | null;
   references?: string | null;
   threadId?: string | null;
@@ -103,7 +104,7 @@ export async function sendEmail(
   account: Account,
   options: SendEmailOptions,
 ): Promise<void> {
-  const rawMessage = buildRfc2822(account.email, options);
+  const rawMessage = buildRfc2822(options.from ?? account.email, options);
   const encodedMessage = encodeBase64Url(rawMessage);
 
   const body: Record<string, string> = { raw: encodedMessage };

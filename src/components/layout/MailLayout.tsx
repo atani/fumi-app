@@ -19,6 +19,8 @@ import { startSnoozeChecker, stopSnoozeChecker } from "../../services/snooze/sno
 import { startBundleChecker, stopBundleChecker } from "../../services/bundles/bundleChecker";
 import { startFollowUpChecker, stopFollowUpChecker } from "../../services/followup/followupChecker";
 import { startQueueProcessor, stopQueueProcessor, processQueue } from "../../services/queue/queueProcessor";
+import { startScheduledSendChecker, stopScheduledSendChecker } from "../../services/snooze/scheduledSendChecker";
+import { fetchSendAsAliases } from "../../services/gmail/sendAs";
 
 export function MailLayout() {
   const navigate = useNavigate();
@@ -59,7 +61,7 @@ export function MailLayout() {
       await loadThreads(account.id);
 
       if (newThreads.length > 0) {
-        await notifyNewMessages(newThreads);
+        await notifyNewMessages(newThreads, account.id);
       }
       await updateBadgeCount(account.id);
     } catch (err) {
@@ -71,11 +73,19 @@ export function MailLayout() {
     }
   }, [getActiveAccount, activeAccountId, loadThreads, setThreads, setSyncing]);
 
-  // When the active account changes, clear selection and re-sync
+  // When the active account changes, clear selection, re-sync, and fetch send-as aliases
   useEffect(() => {
     if (!activeAccountId) return;
     selectThread(null);
     doSync();
+
+    // Fetch send-as aliases for Gmail API accounts
+    const account = getActiveAccount();
+    if (account?.provider === "gmail_api") {
+      fetchSendAsAliases(account).catch((err) => {
+        console.error("Failed to fetch send-as aliases:", err);
+      });
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeAccountId]);
 
@@ -109,6 +119,7 @@ export function MailLayout() {
     startBundleChecker(() => getActiveAccount());
     startFollowUpChecker(() => getActiveAccount());
     startQueueProcessor();
+    startScheduledSendChecker();
 
     let unlistenTray: (() => void) | undefined;
 
@@ -128,6 +139,7 @@ export function MailLayout() {
       stopBundleChecker();
       stopFollowUpChecker();
       stopQueueProcessor();
+      stopScheduledSendChecker();
       unlistenTray?.();
     };
   }, [doSync, getActiveAccount]);

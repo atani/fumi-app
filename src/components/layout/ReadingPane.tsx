@@ -3,7 +3,7 @@ import { useThreadStore } from "../../stores/threadStore";
 import { useAccountStore } from "../../stores/accountStore";
 import { useComposerStore } from "../../stores/composerStore";
 import { useLabelStore } from "../../stores/labelStore";
-import { Reply, ReplyAll, Forward, Archive, Trash2, Star, Clock, Tag, X, ExternalLink, BellRing } from "lucide-react";
+import { Reply, ReplyAll, Forward, Archive, Trash2, Star, Clock, Tag, X, ExternalLink, BellRing, VolumeX, Volume2 } from "lucide-react";
 import { ThreadSummary } from "../email/ThreadSummary";
 import { SmartReplySuggestions } from "../email/SmartReplySuggestions";
 import { MessageItem } from "../email/MessageItem";
@@ -15,6 +15,8 @@ import {
   toggleStar,
   archiveThread,
   trashThread,
+  muteThread,
+  unmuteThread,
 } from "../../services/emailActions";
 import { snoozeThread } from "../../services/snooze/snoozeService";
 import { addFollowUp } from "../../services/followup/followupManager";
@@ -42,9 +44,39 @@ export function ReadingPane() {
   const [expandedMessageIds, setExpandedMessageIds] = useState<Set<string>>(
     new Set(),
   );
+  const [markAsReadBehavior, setMarkAsReadBehavior] = useState<string>("immediately");
+  const [defaultReplyMode, setDefaultReplyMode] = useState<string>("reply");
 
   const account = accounts.find((a) => a.id === activeAccountId) ?? null;
   const thread = threads.find((t) => t.id === selectedThreadId) ?? null;
+
+  // Load email behavior settings
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const db = await getDb();
+        const [markReadRows, replyRows] = await Promise.all([
+          db.select<{ value: string }[]>(
+            "SELECT value FROM settings WHERE key = $1",
+            ["mark_as_read_behavior"],
+          ),
+          db.select<{ value: string }[]>(
+            "SELECT value FROM settings WHERE key = $1",
+            ["default_reply_mode"],
+          ),
+        ]);
+        if (!cancelled) {
+          if (markReadRows[0]?.value) setMarkAsReadBehavior(markReadRows[0].value);
+          if (replyRows[0]?.value) setDefaultReplyMode(replyRows[0].value);
+        }
+      } catch {
+        // Use defaults
+      }
+    };
+    void load();
+    return () => { cancelled = true; };
+  }, []);
 
   // Default expand state: only the last message is expanded
   useEffect(() => {
@@ -72,10 +104,21 @@ export function ReadingPane() {
 
   // Auto-mark as read when a thread is selected
   useEffect(() => {
-    if (account && thread && !thread.is_read) {
-      void markAsRead(account, thread.id);
+    if (!account || !thread || thread.is_read) return;
+    if (markAsReadBehavior === "manually") return;
+
+    const threadId = thread.id;
+
+    if (markAsReadBehavior === "after_2s") {
+      const timer = setTimeout(() => {
+        void markAsRead(account, threadId);
+      }, 2000);
+      return () => clearTimeout(timer);
     }
-  }, [account, thread?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // "immediately" (default)
+    void markAsRead(account, threadId);
+  }, [account, thread?.id, thread?.is_read, markAsReadBehavior]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Load attachments for all messages in the thread
   useEffect(() => {
@@ -180,6 +223,16 @@ export function ReadingPane() {
     }
   };
 
+  const handleMuteToggle = () => {
+    if (account && thread) {
+      if (thread.is_muted) {
+        void unmuteThread(account, thread.id);
+      } else {
+        void muteThread(account, thread.id);
+      }
+    }
+  };
+
   return (
     <div
       className="flex flex-1 flex-col overflow-hidden bg-bg-primary"
@@ -255,6 +308,22 @@ export function ReadingPane() {
             data-testid="follow-up-btn"
           >
             <BellRing className="h-4 w-4" />
+          </button>
+          <button
+            onClick={handleMuteToggle}
+            title={thread?.is_muted ? "Unmute (m)" : "Mute (m)"}
+            className={`rounded-lg p-2 hover:bg-bg-hover ${
+              thread?.is_muted
+                ? "text-warning"
+                : "text-text-secondary hover:text-text-primary"
+            }`}
+            data-testid="mute-btn"
+          >
+            {thread?.is_muted ? (
+              <VolumeX className="h-4 w-4" />
+            ) : (
+              <Volume2 className="h-4 w-4" />
+            )}
           </button>
           <button
             onClick={handleTrash}
@@ -335,24 +404,49 @@ export function ReadingPane() {
 
       {/* Quick reply actions */}
       <div className="flex gap-2 border-t border-border-primary px-6 py-3">
-        <button
-          onClick={() => {
-            if (lastMessage) useComposerStore.getState().openReply(lastMessage);
-          }}
-          className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary hover:bg-bg-hover"
-        >
-          <Reply className="h-4 w-4" /> Reply
-        </button>
-        <button
-          onClick={() => {
-            if (lastMessage && account) {
-              useComposerStore.getState().openReplyAll(lastMessage, account.email);
-            }
-          }}
-          className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary hover:bg-bg-hover"
-        >
-          <ReplyAll className="h-4 w-4" /> Reply All
-        </button>
+        {defaultReplyMode === "reply_all" ? (
+          <>
+            <button
+              onClick={() => {
+                if (lastMessage && account) {
+                  useComposerStore.getState().openReplyAll(lastMessage, account.email);
+                }
+              }}
+              className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary hover:bg-bg-hover"
+            >
+              <ReplyAll className="h-4 w-4" /> Reply All
+            </button>
+            <button
+              onClick={() => {
+                if (lastMessage) useComposerStore.getState().openReply(lastMessage);
+              }}
+              className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary hover:bg-bg-hover"
+            >
+              <Reply className="h-4 w-4" /> Reply
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              onClick={() => {
+                if (lastMessage) useComposerStore.getState().openReply(lastMessage);
+              }}
+              className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary hover:bg-bg-hover"
+            >
+              <Reply className="h-4 w-4" /> Reply
+            </button>
+            <button
+              onClick={() => {
+                if (lastMessage && account) {
+                  useComposerStore.getState().openReplyAll(lastMessage, account.email);
+                }
+              }}
+              className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary hover:bg-bg-hover"
+            >
+              <ReplyAll className="h-4 w-4" /> Reply All
+            </button>
+          </>
+        )}
         <button
           onClick={() => {
             if (lastMessage) useComposerStore.getState().openForward(lastMessage);

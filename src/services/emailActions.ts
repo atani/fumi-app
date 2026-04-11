@@ -30,12 +30,12 @@ async function modifyThreadLabels(
 }
 
 /**
- * Persist is_read / is_starred changes to the local SQLite DB.
+ * Persist is_read / is_starred / is_muted changes to the local SQLite DB.
  */
 async function updateThreadInDb(
   threadId: string,
   accountId: string,
-  updates: { is_read?: boolean; is_starred?: boolean },
+  updates: { is_read?: boolean; is_starred?: boolean; is_muted?: boolean },
 ): Promise<void> {
   const db = await getDb();
   const setClauses: string[] = [];
@@ -50,6 +50,11 @@ async function updateThreadInDb(
   if (updates.is_starred !== undefined) {
     setClauses.push(`is_starred = $${idx}`);
     params.push(updates.is_starred ? 1 : 0);
+    idx++;
+  }
+  if (updates.is_muted !== undefined) {
+    setClauses.push(`is_muted = $${idx}`);
+    params.push(updates.is_muted ? 1 : 0);
     idx++;
   }
 
@@ -177,5 +182,146 @@ export async function trashThread(
     modifyThreadLabels(account, threadId, ["TRASH"], ["INBOX"]),
     addThreadLabelInDb(threadId, account.id, "TRASH"),
     removeThreadLabelInDb(threadId, account.id, "INBOX"),
+  ]);
+}
+
+// ---------------------------------------------------------------------------
+// Bulk operations
+// ---------------------------------------------------------------------------
+
+/**
+ * Archive multiple threads. Optimistic UI removes all from list.
+ */
+export async function archiveThreads(
+  account: Account,
+  threadIds: string[],
+): Promise<void> {
+  useThreadStore.getState().removeThreads(threadIds);
+
+  await Promise.all(
+    threadIds.flatMap((threadId) => [
+      modifyThreadLabels(account, threadId, [], ["INBOX"]),
+      removeThreadLabelInDb(threadId, account.id, "INBOX"),
+    ]),
+  );
+}
+
+/**
+ * Trash multiple threads. Optimistic UI removes all from list.
+ */
+export async function trashThreads(
+  account: Account,
+  threadIds: string[],
+): Promise<void> {
+  useThreadStore.getState().removeThreads(threadIds);
+
+  await Promise.all(
+    threadIds.flatMap((threadId) => [
+      modifyThreadLabels(account, threadId, ["TRASH"], ["INBOX"]),
+      addThreadLabelInDb(threadId, account.id, "TRASH"),
+      removeThreadLabelInDb(threadId, account.id, "INBOX"),
+    ]),
+  );
+}
+
+/**
+ * Mark multiple threads as read. Optimistic UI update, then Gmail API + local DB.
+ */
+export async function markThreadsAsRead(
+  account: Account,
+  threadIds: string[],
+): Promise<void> {
+  useThreadStore.getState().updateThreads(threadIds, { is_read: true });
+
+  await Promise.all(
+    threadIds.flatMap((threadId) => [
+      modifyThreadLabels(account, threadId, [], ["UNREAD"]),
+      updateThreadInDb(threadId, account.id, { is_read: true }),
+    ]),
+  );
+}
+
+/**
+ * Mark multiple threads as unread. Optimistic UI update, then Gmail API + local DB.
+ */
+export async function markThreadsAsUnread(
+  account: Account,
+  threadIds: string[],
+): Promise<void> {
+  useThreadStore.getState().updateThreads(threadIds, { is_read: false });
+
+  await Promise.all(
+    threadIds.flatMap((threadId) => [
+      modifyThreadLabels(account, threadId, ["UNREAD"], []),
+      updateThreadInDb(threadId, account.id, { is_read: false }),
+    ]),
+  );
+}
+
+/**
+ * Star multiple threads. Optimistic UI update, then Gmail API + local DB.
+ */
+export async function starThreads(
+  account: Account,
+  threadIds: string[],
+): Promise<void> {
+  useThreadStore.getState().updateThreads(threadIds, { is_starred: true });
+
+  await Promise.all(
+    threadIds.flatMap((threadId) => [
+      modifyThreadLabels(account, threadId, ["STARRED"], []),
+      updateThreadInDb(threadId, account.id, { is_starred: true }),
+    ]),
+  );
+}
+
+/**
+ * Unstar multiple threads. Optimistic UI update, then Gmail API + local DB.
+ */
+export async function unstarThreads(
+  account: Account,
+  threadIds: string[],
+): Promise<void> {
+  useThreadStore.getState().updateThreads(threadIds, { is_starred: false });
+
+  await Promise.all(
+    threadIds.flatMap((threadId) => [
+      modifyThreadLabels(account, threadId, [], ["STARRED"]),
+      updateThreadInDb(threadId, account.id, { is_starred: false }),
+    ]),
+  );
+}
+
+/**
+ * Mute a thread: sets is_muted=1 and archives (removes from INBOX).
+ * Muted threads suppress notifications during delta sync.
+ */
+export async function muteThread(
+  account: Account,
+  threadId: string,
+): Promise<void> {
+  useThreadStore.getState().updateThread(threadId, { is_muted: true });
+  useThreadStore.getState().removeThread(threadId);
+
+  await Promise.all([
+    modifyThreadLabels(account, threadId, [], ["INBOX"]),
+    updateThreadInDb(threadId, account.id, { is_muted: true }),
+    removeThreadLabelInDb(threadId, account.id, "INBOX"),
+  ]);
+}
+
+/**
+ * Unmute a thread: sets is_muted=0 and moves back to INBOX.
+ */
+export async function unmuteThread(
+  account: Account,
+  threadId: string,
+): Promise<void> {
+  useThreadStore.getState().updateThread(threadId, { is_muted: false });
+
+  await Promise.all([
+    modifyThreadLabels(account, threadId, ["INBOX"], []),
+    updateThreadInDb(threadId, account.id, { is_muted: false }),
+    addThreadLabelInDb(threadId, account.id, "INBOX"),
   ]);
 }

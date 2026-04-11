@@ -118,6 +118,7 @@ export async function syncInbox(
       message_count: messages.length,
       is_read: !labelIds.includes("UNREAD"),
       is_starred: labelIds.includes("STARRED"),
+      is_muted: false,
       snoozed_until: null,
     };
 

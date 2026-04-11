@@ -9,6 +9,8 @@ import {
   ExternalLink,
   Eye,
   EyeOff,
+  Plus,
+  X,
 } from "lucide-react";
 import { useAccountStore } from "../../stores/accountStore";
 import { useUIStore } from "../../stores/uiStore";
@@ -18,6 +20,8 @@ import { SignatureEditor } from "./SignatureEditor";
 import { FilterEditor } from "./FilterEditor";
 import { BundleEditor } from "./BundleEditor";
 import { getDb } from "../../services/db/connection";
+import { getVips, addVip, removeVip } from "../../services/notifications/notificationManager";
+import type { NotificationVip } from "../../types";
 
 type Theme = "system" | "light" | "dark";
 
@@ -72,6 +76,15 @@ export function SettingsPage() {
 
   const [phishingSensitivity, setPhishingSensitivity] = useState<string>("default");
 
+  // Email behavior settings
+  const [markAsReadBehavior, setMarkAsReadBehavior] = useState<string>("immediately");
+  const [defaultReplyMode, setDefaultReplyMode] = useState<string>("reply");
+  const [sendAndArchive, setSendAndArchive] = useState(false);
+
+  // VIP notification settings
+  const [vips, setVips] = useState<NotificationVip[]>([]);
+  const [newVipEmail, setNewVipEmail] = useState("");
+
   // AI settings state
   const [aiProvider, setAiProvider] = useState<string>("claude");
   const [aiApiKey, setAiApiKey] = useState("");
@@ -95,6 +108,9 @@ export function SettingsPage() {
         storedAiReplies,
         storedAiCategory,
         storedPhishingSensitivity,
+        storedMarkAsRead,
+        storedDefaultReply,
+        storedSendAndArchive,
       ] = await Promise.all([
           loadSetting("sync_interval"),
           loadSetting("notifications_enabled"),
@@ -107,6 +123,9 @@ export function SettingsPage() {
           loadSetting("ai_replies_enabled"),
           loadSetting("ai_category_enabled"),
           loadSetting("phishing_sensitivity"),
+          loadSetting("mark_as_read_behavior"),
+          loadSetting("default_reply_mode"),
+          loadSetting("send_and_archive"),
         ]);
 
       if (interval) setSyncInterval(Number(interval));
@@ -120,6 +139,19 @@ export function SettingsPage() {
       if (storedAiReplies !== null) setAiRepliesEnabled(storedAiReplies !== "false");
       if (storedAiCategory !== null) setAiCategoryEnabled(storedAiCategory !== "false");
       if (storedPhishingSensitivity) setPhishingSensitivity(storedPhishingSensitivity);
+      if (storedMarkAsRead) setMarkAsReadBehavior(storedMarkAsRead);
+      if (storedDefaultReply) setDefaultReplyMode(storedDefaultReply);
+      if (storedSendAndArchive !== null) setSendAndArchive(storedSendAndArchive === "true");
+
+      // Load VIPs for the first account (or all accounts)
+      if (accounts.length > 0) {
+        const allVips: NotificationVip[] = [];
+        for (const acc of accounts) {
+          const accountVips = await getVips(acc.id);
+          allVips.push(...accountVips);
+        }
+        setVips(allVips);
+      }
 
       // Check autostart status
       if (
@@ -190,6 +222,21 @@ export function SettingsPage() {
     await saveSetting("phishing_sensitivity", value);
   }, []);
 
+  const handleMarkAsReadChange = useCallback(async (value: string) => {
+    setMarkAsReadBehavior(value);
+    await saveSetting("mark_as_read_behavior", value);
+  }, []);
+
+  const handleDefaultReplyChange = useCallback(async (value: string) => {
+    setDefaultReplyMode(value);
+    await saveSetting("default_reply_mode", value);
+  }, []);
+
+  const handleSendAndArchiveToggle = useCallback(async (enabled: boolean) => {
+    setSendAndArchive(enabled);
+    await saveSetting("send_and_archive", String(enabled));
+  }, []);
+
   const handleClientIdSave = useCallback(
     async (value: string) => {
       setClientId(value);
@@ -229,6 +276,22 @@ export function SettingsPage() {
   const handleAiCategoryToggle = useCallback(async (enabled: boolean) => {
     setAiCategoryEnabled(enabled);
     await saveSetting("ai_category_enabled", String(enabled));
+  }, []);
+
+  const handleAddVip = useCallback(async () => {
+    const email = newVipEmail.trim().toLowerCase();
+    if (!email) return;
+    // Add to first account by default, or all accounts
+    const targetAccount = accounts[0];
+    if (!targetAccount) return;
+    await addVip(targetAccount.id, email);
+    setVips((prev) => [...prev, { email, account_id: targetAccount.id }]);
+    setNewVipEmail("");
+  }, [newVipEmail, accounts]);
+
+  const handleRemoveVip = useCallback(async (email: string, accountId: string) => {
+    await removeVip(accountId, email);
+    setVips((prev) => prev.filter((v) => !(v.email === email && v.account_id === accountId)));
   }, []);
 
   return (
@@ -382,6 +445,60 @@ export function SettingsPage() {
             </p>
           </Section>
 
+          {/* Email Behavior */}
+          <Section title="Email Behavior">
+            <div className="space-y-4">
+              <div>
+                <label className="mb-2 block text-sm text-text-secondary">
+                  Mark as read
+                </label>
+                <select
+                  value={markAsReadBehavior}
+                  onChange={(e) =>
+                    void handleMarkAsReadChange(e.target.value)
+                  }
+                  className="rounded-lg border border-border-primary bg-bg-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent"
+                  data-testid="mark-as-read-select"
+                >
+                  <option value="immediately">Immediately</option>
+                  <option value="after_2s">After 2 seconds</option>
+                  <option value="manually">Manually</option>
+                </select>
+                <p className="mt-1.5 text-xs text-text-tertiary">
+                  When to mark emails as read after opening them.
+                </p>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm text-text-secondary">
+                  Default reply
+                </label>
+                <select
+                  value={defaultReplyMode}
+                  onChange={(e) =>
+                    void handleDefaultReplyChange(e.target.value)
+                  }
+                  className="rounded-lg border border-border-primary bg-bg-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent"
+                  data-testid="default-reply-select"
+                >
+                  <option value="reply">Reply</option>
+                  <option value="reply_all">Reply All</option>
+                </select>
+                <p className="mt-1.5 text-xs text-text-tertiary">
+                  The default reply action when pressing the reply button or keyboard shortcut.
+                </p>
+              </div>
+
+              <ToggleRow
+                label="Send & Archive"
+                description="Automatically archive threads after sending a reply"
+                enabled={sendAndArchive}
+                onToggle={handleSendAndArchiveToggle}
+                testId="send-and-archive-toggle"
+              />
+            </div>
+          </Section>
+
           {/* Filter Rules */}
           <Section title="Filter Rules">
             <FilterEditor />
@@ -423,6 +540,57 @@ export function SettingsPage() {
               onToggle={handleNotificationsToggle}
               testId="notifications-toggle"
             />
+          </Section>
+
+          {/* VIP Notifications */}
+          <Section title="VIP Notifications">
+            <p className="mb-3 text-xs text-text-tertiary">
+              When VIP senders are configured, only emails from these addresses trigger desktop notifications. If the list is empty, all non-muted emails produce notifications.
+            </p>
+            <div className="space-y-2">
+              {vips.map((vip) => (
+                <div
+                  key={`${vip.email}-${vip.account_id}`}
+                  className="flex items-center justify-between rounded-lg border border-border-primary bg-bg-secondary px-3 py-2"
+                  data-testid={`vip-${vip.email}`}
+                >
+                  <span className="text-sm text-text-primary">{vip.email}</span>
+                  <button
+                    onClick={() => void handleRemoveVip(vip.email, vip.account_id)}
+                    className="rounded-md p-1 text-text-tertiary transition-colors hover:bg-bg-hover hover:text-danger"
+                    title={`Remove ${vip.email}`}
+                    data-testid={`remove-vip-${vip.email}`}
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+            <div className="mt-3 flex gap-2">
+              <input
+                type="email"
+                value={newVipEmail}
+                onChange={(e) => setNewVipEmail(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    void handleAddVip();
+                  }
+                }}
+                placeholder="Add VIP email address"
+                className="flex-1 rounded-lg border border-border-primary bg-bg-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent"
+                data-testid="vip-email-input"
+              />
+              <button
+                onClick={() => void handleAddVip()}
+                disabled={!newVipEmail.trim()}
+                className="flex items-center gap-1.5 rounded-lg bg-accent px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
+                data-testid="add-vip-btn"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Add
+              </button>
+            </div>
           </Section>
 
           {/* Autostart */}

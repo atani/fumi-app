@@ -6,6 +6,12 @@ import {
   archiveThread,
   toggleStar,
   trashThread,
+  muteThread,
+  unmuteThread,
+  archiveThreads,
+  trashThreads,
+  starThreads,
+  unstarThreads,
 } from "@/services/emailActions";
 import { unsubscribe, getUnsubscribeInfo } from "@/services/unsubscribe/unsubscribeManager";
 
@@ -44,14 +50,23 @@ export function useKeyboardShortcuts({
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (isEditableTarget(e.target)) return;
-      if (e.ctrlKey || e.metaKey || e.altKey) {
-        // Allow Ctrl+K / Cmd+K for search
-        if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+
+      // Ctrl/Cmd shortcuts
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === "k") {
           e.preventDefault();
           onOpenSearch();
+          return;
+        }
+        if (e.key === "a" && !e.altKey) {
+          e.preventDefault();
+          useThreadStore.getState().selectAllThreads();
+          return;
         }
         return;
       }
+
+      if (e.altKey) return;
 
       const key = e.key;
 
@@ -72,6 +87,38 @@ export function useKeyboardShortcuts({
         e.preventDefault();
         pendingPrefixRef.current = "g";
         prefixTimerRef.current = setTimeout(clearPrefix, 1000);
+        return;
+      }
+
+      // Multi-select aware shortcuts
+      const { isMultiSelectMode } = useThreadStore.getState();
+      if (isMultiSelectMode()) {
+        switch (key) {
+          case "e":
+            e.preventDefault();
+            void archiveSelectedThreads();
+            break;
+          case "s":
+            e.preventDefault();
+            void starSelectedThreads();
+            break;
+          case "#":
+          case "Delete":
+          case "Backspace":
+            e.preventDefault();
+            void trashSelectedThreads();
+            break;
+          case "v":
+            e.preventDefault();
+            window.dispatchEvent(new CustomEvent("velo-move-to-folder"));
+            break;
+          case "Escape":
+            e.preventDefault();
+            useThreadStore.getState().clearSelection();
+            break;
+          default:
+            break;
+        }
         return;
       }
 
@@ -119,6 +166,10 @@ export function useKeyboardShortcuts({
         case "f":
           e.preventDefault();
           replyToThread("forward");
+          break;
+        case "m":
+          e.preventDefault();
+          void toggleMuteSelectedThread();
           break;
         case "u":
           e.preventDefault();
@@ -193,7 +244,7 @@ function openCurrentThread(): void {
 }
 
 // ---------------------------------------------------------------------------
-// Actions on selected thread
+// Actions on selected thread (single)
 // ---------------------------------------------------------------------------
 
 function getSelectedThread() {
@@ -223,6 +274,17 @@ async function trashSelectedThread(): Promise<void> {
   await trashThread(account, thread.id);
 }
 
+async function toggleMuteSelectedThread(): Promise<void> {
+  const thread = getSelectedThread();
+  const account = useAccountStore.getState().getActiveAccount();
+  if (!thread || !account) return;
+  if (thread.is_muted) {
+    await unmuteThread(account, thread.id);
+  } else {
+    await muteThread(account, thread.id);
+  }
+}
+
 async function unsubscribeSelectedThread(): Promise<void> {
   const account = useAccountStore.getState().getActiveAccount();
   if (!account) return;
@@ -235,6 +297,46 @@ async function unsubscribeSelectedThread(): Promise<void> {
   if (!target) return;
 
   await unsubscribe(account, target);
+}
+
+// ---------------------------------------------------------------------------
+// Bulk actions on multi-selected threads
+// ---------------------------------------------------------------------------
+
+async function archiveSelectedThreads(): Promise<void> {
+  const account = useAccountStore.getState().getActiveAccount();
+  if (!account) return;
+  const ids = Array.from(useThreadStore.getState().selectedThreadIds);
+  if (ids.length === 0) return;
+  useThreadStore.getState().clearSelection();
+  await archiveThreads(account, ids);
+}
+
+async function trashSelectedThreads(): Promise<void> {
+  const account = useAccountStore.getState().getActiveAccount();
+  if (!account) return;
+  const ids = Array.from(useThreadStore.getState().selectedThreadIds);
+  if (ids.length === 0) return;
+  useThreadStore.getState().clearSelection();
+  await trashThreads(account, ids);
+}
+
+async function starSelectedThreads(): Promise<void> {
+  const account = useAccountStore.getState().getActiveAccount();
+  if (!account) return;
+  const { selectedThreadIds, threads } = useThreadStore.getState();
+  const ids = Array.from(selectedThreadIds);
+  if (ids.length === 0) return;
+
+  // If any selected thread is unstarred, star all; otherwise unstar all
+  const idsSet = new Set(ids);
+  const anyUnstarred = threads.some((t) => idsSet.has(t.id) && !t.is_starred);
+
+  if (anyUnstarred) {
+    await starThreads(account, ids);
+  } else {
+    await unstarThreads(account, ids);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -274,7 +376,12 @@ function handleEscape(): void {
     return;
   }
 
-  const { selectedThreadId, selectThread } = useThreadStore.getState();
+  const { selectedThreadIds, clearSelection, selectedThreadId, selectThread } = useThreadStore.getState();
+  if (selectedThreadIds.size > 0) {
+    clearSelection();
+    return;
+  }
+
   if (selectedThreadId) {
     void selectThread(null);
   }
