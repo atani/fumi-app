@@ -3,9 +3,8 @@ import { useThreadStore } from "../../stores/threadStore";
 import { useAccountStore } from "../../stores/accountStore";
 import { useComposerStore } from "../../stores/composerStore";
 import { useLabelStore } from "../../stores/labelStore";
-import { Reply, ReplyAll, Forward, Archive, Trash2, Star, Clock, Tag, X } from "lucide-react";
-import { EmailRenderer } from "../email/EmailRenderer";
-import { AttachmentList } from "../email/AttachmentList";
+import { Reply, ReplyAll, Forward, Archive, Trash2, Star, Clock, Tag, X, ExternalLink } from "lucide-react";
+import { MessageItem } from "../email/MessageItem";
 import { SnoozeDialog } from "../email/SnoozeDialog";
 import { MoveToLabelDialog } from "../email/MoveToLabelDialog";
 import {
@@ -15,6 +14,7 @@ import {
   trashThread,
 } from "../../services/emailActions";
 import { snoozeThread } from "../../services/snooze/snoozeService";
+import { openThreadWindow } from "../../services/windowManager";
 import { getAttachmentsByThread } from "../../services/db/attachments";
 import { getThreadLabelIds } from "../../services/db/labels";
 import { removeLabelFromThread } from "../../services/gmail/labels";
@@ -34,9 +34,36 @@ export function ReadingPane() {
   const [attachmentMap, setAttachmentMap] = useState<Map<string, Attachment[]>>(
     new Map(),
   );
+  const [expandedMessageIds, setExpandedMessageIds] = useState<Set<string>>(
+    new Set(),
+  );
 
   const account = accounts.find((a) => a.id === activeAccountId) ?? null;
   const thread = threads.find((t) => t.id === selectedThreadId) ?? null;
+
+  // Default expand state: only the last message is expanded
+  useEffect(() => {
+    if (messages.length > 0) {
+      const lastMsg = messages[messages.length - 1];
+      if (lastMsg) {
+        setExpandedMessageIds(new Set([lastMsg.id]));
+      }
+    } else {
+      setExpandedMessageIds(new Set());
+    }
+  }, [messages]);
+
+  const toggleMessage = useCallback((messageId: string) => {
+    setExpandedMessageIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(messageId)) {
+        next.delete(messageId);
+      } else {
+        next.add(messageId);
+      }
+      return next;
+    });
+  }, []);
 
   // Auto-mark as read when a thread is selected
   useEffect(() => {
@@ -154,6 +181,18 @@ export function ReadingPane() {
         </h2>
         <div className="flex items-center gap-1">
           <button
+            onClick={() => {
+              if (selectedThreadId && activeAccountId) {
+                void openThreadWindow(selectedThreadId, activeAccountId);
+              }
+            }}
+            title="Pop out"
+            className="rounded-lg p-2 text-text-secondary hover:bg-bg-hover hover:text-text-primary"
+            data-testid="pop-out-btn"
+          >
+            <ExternalLink className="h-4 w-4" />
+          </button>
+          <button
             onClick={() => setIsMoveDialogOpen(true)}
             title="Apply labels (v)"
             className="rounded-lg p-2 text-text-secondary hover:bg-bg-hover hover:text-text-primary"
@@ -244,47 +283,14 @@ export function ReadingPane() {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto">
         {messages.map((message) => (
-          <div
+          <MessageItem
             key={message.id}
-            className="border-b border-border-secondary px-6 py-4"
-            data-testid={`message-${message.id}`}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="font-medium text-text-primary">
-                  {message.from_name || message.from_address}
-                </span>
-                {message.from_name && (
-                  <span className="ml-2 text-sm text-text-tertiary">
-                    &lt;{message.from_address}&gt;
-                  </span>
-                )}
-              </div>
-              <span className="text-xs text-text-tertiary">
-                {message.date
-                  ? new Date(message.date).toLocaleString()
-                  : ""}
-              </span>
-            </div>
-
-            <div className="mt-1 text-xs text-text-secondary">
-              To: {message.to_addresses}
-            </div>
-
-            <div className="mt-4 text-sm text-text-primary">
-              <EmailRenderer
-                html={message.body_html}
-                text={message.body_text ?? message.snippet}
-              />
-            </div>
-
-            {account && (attachmentMap.get(message.id)?.length ?? 0) > 0 && (
-              <AttachmentList
-                attachments={attachmentMap.get(message.id)!}
-                account={account}
-              />
-            )}
-          </div>
+            message={message}
+            isExpanded={expandedMessageIds.has(message.id)}
+            onToggle={() => toggleMessage(message.id)}
+            account={account}
+            attachments={attachmentMap.get(message.id) ?? []}
+          />
         ))}
       </div>
 

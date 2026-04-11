@@ -125,10 +125,52 @@ export interface Attachment {
   cache_size: number | null;
 }
 
+export interface Template {
+  id: string;
+  account_id: string | null;
+  name: string;
+  subject: string | null;
+  body: string | null;
+  created_at: string;
+}
+
+export interface Signature {
+  id: string;
+  account_id: string | null;
+  name: string;
+  body: string;
+  is_default: number;
+  created_at: string;
+}
+
 export interface ComposerAttachment {
   id: string;
   filename: string;
   mime_type: string;
   size: number;
   data: string; // base64-encoded file content
+}
+
+export interface FilterCriteria {
+  from?: string;
+  to?: string;
+  subject?: string;
+  hasAttachment?: boolean;
+}
+
+export interface FilterActions {
+  applyLabel?: string;
+  archive?: boolean;
+  trash?: boolean;
+  star?: boolean;
+  markRead?: boolean;
+}
+
+export interface FilterRule {
+  id: string;
+  account_id: string;
+  criteria: FilterCriteria;
+  actions: FilterActions;
+  enabled: boolean;
+  created_at: string;
 }

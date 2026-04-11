@@ -13,6 +13,9 @@ import {
 import { useAccountStore } from "../../stores/accountStore";
 import { useUIStore } from "../../stores/uiStore";
 import { AccountAvatar } from "../accounts/AccountAvatar";
+import { TemplateEditor } from "./TemplateEditor";
+import { SignatureEditor } from "./SignatureEditor";
+import { FilterEditor } from "./FilterEditor";
 import { getDb } from "../../services/db/connection";
 
 type Theme = "system" | "light" | "dark";
@@ -55,6 +58,7 @@ export function SettingsPage() {
   const { theme, setTheme } = useUIStore();
 
   const [syncInterval, setSyncInterval] = useState(60);
+  const [undoSendDelay, setUndoSendDelay] = useState(0);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [autostartEnabled, setAutostartEnabled] = useState(false);
   const [clientId, setClientId] = useState("");
@@ -68,18 +72,20 @@ export function SettingsPage() {
   // Load persisted settings
   useEffect(() => {
     const load = async () => {
-      const [interval, notif, storedClientId, storedClientSecret] =
+      const [interval, notif, storedClientId, storedClientSecret, storedUndoDelay] =
         await Promise.all([
           loadSetting("sync_interval"),
           loadSetting("notifications_enabled"),
           loadSetting("google_client_id"),
           loadSetting("google_client_secret"),
+          loadSetting("undo_send_delay"),
         ]);
 
       if (interval) setSyncInterval(Number(interval));
       if (notif !== null) setNotificationsEnabled(notif !== "false");
       if (storedClientId) setClientId(storedClientId);
       if (storedClientSecret) setClientSecret(storedClientSecret);
+      if (storedUndoDelay) setUndoSendDelay(Number(storedUndoDelay));
 
       // Check autostart status
       if (
@@ -114,6 +120,11 @@ export function SettingsPage() {
   const handleSyncIntervalChange = useCallback(async (value: number) => {
     setSyncInterval(value);
     await saveSetting("sync_interval", String(value));
+  }, []);
+
+  const handleUndoSendDelayChange = useCallback(async (value: number) => {
+    setUndoSendDelay(value);
+    await saveSetting("undo_send_delay", String(value));
   }, []);
 
   const handleNotificationsToggle = useCallback(async (enabled: boolean) => {
@@ -280,6 +291,34 @@ export function SettingsPage() {
             </select>
           </Section>
 
+          {/* Undo Send */}
+          <Section title="Undo Send">
+            <label className="mb-2 block text-sm text-text-secondary">
+              Undo send delay
+            </label>
+            <select
+              value={undoSendDelay}
+              onChange={(e) =>
+                handleUndoSendDelayChange(Number(e.target.value))
+              }
+              className="rounded-lg border border-border-primary bg-bg-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent"
+              data-testid="undo-send-delay-select"
+            >
+              <option value={0}>Off</option>
+              <option value={3}>3 seconds</option>
+              <option value={5}>5 seconds</option>
+              <option value={10}>10 seconds</option>
+            </select>
+            <p className="mt-1.5 text-xs text-text-tertiary">
+              Delay sending emails so you can undo within the chosen time window.
+            </p>
+          </Section>
+
+          {/* Filter Rules */}
+          <Section title="Filter Rules">
+            <FilterEditor />
+          </Section>
+
           {/* Notifications */}
           <Section title="Notifications">
             <ToggleRow
@@ -300,6 +339,16 @@ export function SettingsPage() {
               onToggle={handleAutostartToggle}
               testId="autostart-toggle"
             />
+          </Section>
+
+          {/* Templates */}
+          <Section title="Templates">
+            <TemplateEditor />
+          </Section>
+
+          {/* Signatures */}
+          <Section title="Signatures">
+            <SignatureEditor />
           </Section>
 
           {/* OAuth Credentials */}

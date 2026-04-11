@@ -3,13 +3,19 @@ import { Send, X, ChevronUp, Minus } from "lucide-react";
 import { useComposerStore } from "../../stores/composerStore";
 import { useAccountStore } from "../../stores/accountStore";
 import { sendEmail } from "../../services/gmail/send";
+import { scheduleSend } from "../../services/gmail/scheduledSend";
+import type { ScheduledSend } from "../../services/gmail/scheduledSend";
 import {
   startAutoSave,
   stopAutoSave,
   deleteDraft,
 } from "../../services/composer/draftAutoSave";
+import { getDb } from "../../services/db/connection";
 import { AddressInput } from "./AddressInput";
 import { AttachmentPicker } from "./AttachmentPicker";
+import { TemplatePicker } from "./TemplatePicker";
+import { SignatureSelector } from "./SignatureSelector";
+import { UndoSendToast } from "./UndoSendToast";
 
 export function Composer() {
   const {
@@ -36,9 +42,44 @@ export function Composer() {
   const [error, setError] = useState<string | null>(null);
   const [isMinimized, setIsMinimized] = useState(false);
   const [draftSaved, setDraftSaved] = useState(false);
+  const [undoSendDelayMs, setUndoSendDelayMs] = useState(0);
+  const [showUndoToast, setShowUndoToast] = useState(false);
+  const scheduledSendRef = useRef<ScheduledSend | null>(null);
+  const undoSnapshotRef = useRef<{
+    mode: typeof mode;
+    draftId: typeof draftId;
+    to: string;
+    cc: string;
+    bcc: string;
+    subject: string;
+    body: string;
+    inReplyTo: typeof inReplyTo;
+    references: typeof references;
+  } | null>(null);
   const draftSavedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const bodyRef = useRef<HTMLTextAreaElement>(null);
+
+  // Load undo send delay setting
+  useEffect(() => {
+    let cancelled = false;
+    const loadDelay = async () => {
+      try {
+        const db = await getDb();
+        const rows = await db.select<{ value: string }[]>(
+          "SELECT value FROM settings WHERE key = $1",
+          ["undo_send_delay"],
+        );
+        if (!cancelled && rows[0]?.value) {
+          setUndoSendDelayMs(Number(rows[0].value) * 1000);
+        }
+      } catch {
+        // Use default (off)
+      }
+    };
+    loadDelay();
+    return () => { cancelled = true; };
+  }, []);
 
   // Focus body on open for reply/forward, to field for compose
   useEffect(() => {
@@ -79,6 +120,36 @@ export function Composer() {
     };
   }, [isOpen, getActiveAccount]);
 
+  const handleUndoSend = useCallback(() => {
+    scheduledSendRef.current?.cancel();
+    scheduledSendRef.current = null;
+    setShowUndoToast(false);
+
+    // Restore composer state from snapshot
+    const snap = undoSnapshotRef.current;
+    if (snap) {
+      useComposerStore.setState({
+        isOpen: true,
+        mode: snap.mode,
+        draftId: snap.draftId,
+        to: snap.to,
+        cc: snap.cc,
+        bcc: snap.bcc,
+        subject: snap.subject,
+        body: snap.body,
+        inReplyTo: snap.inReplyTo,
+        references: snap.references,
+      });
+      undoSnapshotRef.current = null;
+    }
+  }, []);
+
+  const handleUndoToastDismiss = useCallback(() => {
+    setShowUndoToast(false);
+    scheduledSendRef.current = null;
+    undoSnapshotRef.current = null;
+  }, []);
+
   const handleSend = useCallback(async () => {
     const account = getActiveAccount();
     if (!account) {
@@ -93,30 +164,71 @@ export function Composer() {
     setIsSending(true);
     setError(null);
 
-    try {
-      await sendEmail(account, {
-        to: to.trim(),
-        cc: cc.trim() || undefined,
-        bcc: bcc.trim() || undefined,
+    const emailOptions = {
+      to: to.trim(),
+      cc: cc.trim() || undefined,
+      bcc: bcc.trim() || undefined,
+      subject,
+      body,
+      inReplyTo,
+      references,
+      threadId: replyToMessage?.thread_id ?? null,
+      attachments: attachments.length > 0 ? attachments : undefined,
+    };
+
+    if (undoSendDelayMs > 0) {
+      // Save snapshot for undo restore
+      undoSnapshotRef.current = {
+        mode,
+        draftId,
+        to,
+        cc,
+        bcc,
         subject,
         body,
         inReplyTo,
         references,
-        threadId: replyToMessage?.thread_id ?? null,
-        attachments: attachments.length > 0 ? attachments : undefined,
-      });
-      if (draftId) {
-        await deleteDraft(draftId).catch((err: unknown) => {
-          console.error("Failed to delete draft after send:", err);
-        });
-      }
+      };
+
+      const scheduled = scheduleSend(account, emailOptions, undoSendDelayMs);
+      scheduledSendRef.current = scheduled;
+
+      // Close composer and show undo toast
       close();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to send email");
-    } finally {
       setIsSending(false);
+      setShowUndoToast(true);
+
+      // Handle send completion in background
+      scheduled.promise
+        .then(async () => {
+          if (draftId) {
+            await deleteDraft(draftId).catch((err: unknown) => {
+              console.error("Failed to delete draft after send:", err);
+            });
+          }
+        })
+        .catch((err: unknown) => {
+          // "Send cancelled" is expected on undo — ignore it
+          if (err instanceof Error && err.message === "Send cancelled") return;
+          setError(err instanceof Error ? err.message : "Failed to send email");
+        });
+    } else {
+      // Send immediately (no undo delay)
+      try {
+        await sendEmail(account, emailOptions);
+        if (draftId) {
+          await deleteDraft(draftId).catch((err: unknown) => {
+            console.error("Failed to delete draft after send:", err);
+          });
+        }
+        close();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to send email");
+      } finally {
+        setIsSending(false);
+      }
     }
-  }, [getActiveAccount, to, cc, bcc, subject, body, inReplyTo, references, replyToMessage, draftId, attachments, close]);
+  }, [getActiveAccount, to, cc, bcc, subject, body, inReplyTo, references, replyToMessage, draftId, attachments, close, mode, undoSendDelayMs]);
 
   // Ctrl+Enter to send
   const handleKeyDown = useCallback(
@@ -129,7 +241,17 @@ export function Composer() {
     [handleSend],
   );
 
-  if (!isOpen) return null;
+  if (!isOpen && !showUndoToast) return null;
+
+  if (!isOpen && showUndoToast) {
+    return (
+      <UndoSendToast
+        delayMs={undoSendDelayMs}
+        onUndo={handleUndoSend}
+        onDismiss={handleUndoToastDismiss}
+      />
+    );
+  }
 
   const modeLabel =
     mode === "compose"
@@ -297,14 +419,18 @@ export function Composer() {
 
           {/* Footer */}
           <div className="flex items-center justify-between border-t border-border-secondary px-4 py-2">
-            <button
-              className="flex items-center gap-2 rounded-lg bg-accent px-4 py-1.5 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
-              onClick={handleSend}
-              disabled={isSending}
-            >
-              <Send className="h-4 w-4" />
-              {isSending ? "Sending..." : "Send"}
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                className="flex items-center gap-2 rounded-lg bg-accent px-4 py-1.5 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
+                onClick={handleSend}
+                disabled={isSending}
+              >
+                <Send className="h-4 w-4" />
+                {isSending ? "Sending..." : "Send"}
+              </button>
+              <TemplatePicker />
+              <SignatureSelector />
+            </div>
             <span className="text-xs text-text-tertiary">
               {draftSaved && (
                 <span className="mr-2 text-green-500" data-testid="draft-saved-indicator">

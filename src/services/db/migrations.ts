@@ -231,6 +231,42 @@ const MIGRATIONS = [
       );
     `,
   },
+  {
+    version: 8,
+    sql: `
+      CREATE TABLE IF NOT EXISTS templates (
+        id TEXT PRIMARY KEY,
+        account_id TEXT,
+        name TEXT NOT NULL,
+        subject TEXT,
+        body TEXT,
+        created_at TEXT DEFAULT (datetime('now'))
+      );
+
+      CREATE TABLE IF NOT EXISTS signatures (
+        id TEXT PRIMARY KEY,
+        account_id TEXT,
+        name TEXT NOT NULL,
+        body TEXT NOT NULL,
+        is_default INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT (datetime('now'))
+      );
+    `,
+  },
+  {
+    version: 9,
+    sql: `
+      CREATE TABLE IF NOT EXISTS filter_rules (
+        id TEXT PRIMARY KEY,
+        account_id TEXT NOT NULL,
+        criteria TEXT NOT NULL,
+        actions TEXT NOT NULL,
+        enabled INTEGER DEFAULT 1,
+        created_at TEXT DEFAULT (datetime('now')),
+        FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+      );
+    `,
+  },
 ];
 
 export async function runMigrations(): Promise<void> {

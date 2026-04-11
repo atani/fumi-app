@@ -3,6 +3,7 @@ import { upsertThread, setThreadLabels } from "../db/threads";
 import { upsertMessage } from "../db/messages";
 import { getDb } from "../db/connection";
 import { recordContactsFromMessages } from "../contacts/contactService";
+import { processFilters } from "../filters/filterEngine";
 import type { Account, Thread, Message, GmailMessage, GmailThread } from "../../types";
 
 export interface SyncResult {
@@ -132,6 +133,13 @@ export async function syncInbox(
 
   // Record contacts from all synced messages
   await recordContactsFromMessages(account.id, allParsedMessages);
+
+  // Auto-apply filter rules to messages from new threads
+  const newThreadIds = new Set(newThreads.map((t) => t.id));
+  const newMessages = allParsedMessages.filter((m) =>
+    newThreadIds.has(m.thread_id),
+  );
+  await processFilters(account, newMessages);
 
   return { threads: syncedThreads, newThreads };
 }

@@ -1,7 +1,7 @@
 import type { Account, ComposerAttachment } from "../../types";
 import { authenticatedFetch } from "./api";
 
-interface SendEmailOptions {
+export interface SendEmailOptions {
   to: string;
   cc?: string;
   bcc?: string;
