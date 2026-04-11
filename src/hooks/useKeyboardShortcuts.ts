@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback } from "react";
 import { useThreadStore } from "@/stores/threadStore";
 import { useComposerStore } from "@/stores/composerStore";
 import { useAccountStore } from "@/stores/accountStore";
+import { useShortcutStore } from "@/stores/shortcutStore";
 import {
   archiveThread,
   toggleStar,
@@ -30,6 +31,24 @@ function isEditableTarget(target: EventTarget | null): boolean {
   );
 }
 
+/** Convert a KeyboardEvent to the combo string used in the store's keyMap. */
+function eventToCombo(e: KeyboardEvent): string {
+  const parts: string[] = [];
+  if (e.ctrlKey || e.metaKey) parts.push("Ctrl");
+  if (e.altKey) parts.push("Alt");
+  if (e.shiftKey && e.key.length > 1) parts.push("Shift");
+  parts.push(e.key);
+  return parts.join("+");
+}
+
+// Map from g-sequence action IDs to the label IDs they navigate to.
+const G_SEQUENCE_LABEL_MAP: Record<string, string> = {
+  go_inbox: "INBOX",
+  go_starred: "STARRED",
+  go_sent: "SENT",
+  go_drafts: "DRAFT",
+};
+
 export function useKeyboardShortcuts({
   onOpenSearch,
   onToggleShortcutsHelp,
@@ -51,145 +70,76 @@ export function useKeyboardShortcuts({
     function handleKeyDown(e: KeyboardEvent) {
       if (isEditableTarget(e.target)) return;
 
-      // Ctrl/Cmd shortcuts
-      if (e.ctrlKey || e.metaKey) {
-        if (e.key === "k") {
-          e.preventDefault();
-          onOpenSearch();
-          return;
-        }
-        if (e.key === "a" && !e.altKey) {
-          e.preventDefault();
-          useThreadStore.getState().selectAllThreads();
-          return;
-        }
+      // Always read the latest keyMap from the store (no stale closure).
+      const { reverseMap, keyMap } = useShortcutStore.getState();
+
+      // --- Escape is non-customizable (hierarchical behavior) ---
+      if (e.key === "Escape") {
+        handleEscape();
         return;
       }
 
-      if (e.altKey) return;
+      // --- Ctrl+A (select all) is non-customizable ---
+      if ((e.ctrlKey || e.metaKey) && e.key === "a" && !e.altKey) {
+        e.preventDefault();
+        useThreadStore.getState().selectAllThreads();
+        return;
+      }
 
-      const key = e.key;
-
-      // Handle second key in a g-prefixed sequence
+      // --- Handle second key in a g-prefix sequence ---
       if (pendingPrefixRef.current === "g") {
         e.preventDefault();
         clearPrefix();
-        if (key === "k" && onNavigate) {
-          onNavigate("/tasks");
-        } else {
-          handleGSequence(key);
+        const gCombo = `g ${e.key}`;
+        const actionId = reverseMap.get(gCombo);
+        if (actionId) {
+          if (actionId === "go_tasks" && onNavigate) {
+            onNavigate("/tasks");
+          } else if (actionId === "go_attachments" && onNavigate) {
+            onNavigate("/attachments");
+          } else {
+            const labelId = G_SEQUENCE_LABEL_MAP[actionId];
+            if (labelId) {
+              handleGSequence(labelId);
+            }
+          }
         }
         return;
       }
 
-      // Start g-prefix sequence
-      if (key === "g") {
-        e.preventDefault();
-        pendingPrefixRef.current = "g";
-        prefixTimerRef.current = setTimeout(clearPrefix, 1000);
-        return;
+      // --- Start g-prefix sequence if any g-sequence binding exists ---
+      if (e.key === "g" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        // Check that at least one g-sequence action exists in the keyMap
+        const hasGBinding = Object.values(keyMap).some((combo) =>
+          combo.startsWith("g "),
+        );
+        if (hasGBinding) {
+          e.preventDefault();
+          pendingPrefixRef.current = "g";
+          prefixTimerRef.current = setTimeout(clearPrefix, 1000);
+          return;
+        }
       }
 
-      // Multi-select aware shortcuts
+      // --- Build combo string for this event ---
+      const combo = eventToCombo(e);
+
+      // --- Multi-select aware ---
       const { isMultiSelectMode } = useThreadStore.getState();
       if (isMultiSelectMode()) {
-        switch (key) {
-          case "e":
-            e.preventDefault();
-            void archiveSelectedThreads();
-            break;
-          case "s":
-            e.preventDefault();
-            void starSelectedThreads();
-            break;
-          case "#":
-          case "Delete":
-          case "Backspace":
-            e.preventDefault();
-            void trashSelectedThreads();
-            break;
-          case "v":
-            e.preventDefault();
-            window.dispatchEvent(new CustomEvent("velo-move-to-folder"));
-            break;
-          case "Escape":
-            e.preventDefault();
-            useThreadStore.getState().clearSelection();
-            break;
-          default:
-            break;
+        const actionId = reverseMap.get(combo);
+        if (actionId) {
+          e.preventDefault();
+          dispatchMultiSelectAction(actionId);
         }
         return;
       }
 
-      // Single-key shortcuts
-      switch (key) {
-        case "j":
-          e.preventDefault();
-          navigateThread(1);
-          break;
-        case "k":
-          e.preventDefault();
-          navigateThread(-1);
-          break;
-        case "o":
-        case "Enter":
-          e.preventDefault();
-          openCurrentThread();
-          break;
-        case "c":
-          e.preventDefault();
-          useComposerStore.getState().openCompose();
-          break;
-        case "e":
-          e.preventDefault();
-          void archiveSelectedThread();
-          break;
-        case "s":
-          e.preventDefault();
-          void toggleStarSelectedThread();
-          break;
-        case "#":
-        case "Delete":
-        case "Backspace":
-          e.preventDefault();
-          void trashSelectedThread();
-          break;
-        case "r":
-          e.preventDefault();
-          replyToThread("reply");
-          break;
-        case "a":
-          e.preventDefault();
-          replyToThread("replyAll");
-          break;
-        case "f":
-          e.preventDefault();
-          replyToThread("forward");
-          break;
-        case "m":
-          e.preventDefault();
-          void toggleMuteSelectedThread();
-          break;
-        case "u":
-          e.preventDefault();
-          void unsubscribeSelectedThread();
-          break;
-        case "t":
-          e.preventDefault();
-          if (onExtractTasks) onExtractTasks();
-          break;
-        case "/":
-          e.preventDefault();
-          onOpenSearch();
-          break;
-        case "?":
-          e.preventDefault();
-          onToggleShortcutsHelp();
-          break;
-        case "Escape":
-          handleEscape();
-          break;
+      // --- Single-key lookup ---
+      const actionId = reverseMap.get(combo);
+      if (actionId) {
+        e.preventDefault();
+        dispatchSingleAction(actionId, onOpenSearch, onToggleShortcutsHelp, onExtractTasks);
       }
     }
 
@@ -199,6 +149,90 @@ export function useKeyboardShortcuts({
       clearPrefix();
     };
   }, [onOpenSearch, onToggleShortcutsHelp, onNavigate, onExtractTasks, clearPrefix]);
+}
+
+// ---------------------------------------------------------------------------
+// Action dispatchers
+// ---------------------------------------------------------------------------
+
+function dispatchMultiSelectAction(actionId: string): void {
+  switch (actionId) {
+    case "archive":
+      void archiveSelectedThreads();
+      break;
+    case "toggle_star":
+      void starSelectedThreads();
+      break;
+    case "trash":
+      void trashSelectedThreads();
+      break;
+    case "move_to_folder":
+      window.dispatchEvent(new CustomEvent("velo-move-to-folder"));
+      break;
+    default:
+      break;
+  }
+}
+
+function dispatchSingleAction(
+  actionId: string,
+  onOpenSearch: () => void,
+  onToggleShortcutsHelp: () => void,
+  onExtractTasks?: () => void,
+): void {
+  switch (actionId) {
+    case "navigate_next":
+      navigateThread(1);
+      break;
+    case "navigate_prev":
+      navigateThread(-1);
+      break;
+    case "open_thread":
+      openCurrentThread();
+      break;
+    case "compose":
+      useComposerStore.getState().openCompose();
+      break;
+    case "archive":
+      void archiveSelectedThread();
+      break;
+    case "toggle_star":
+      void toggleStarSelectedThread();
+      break;
+    case "trash":
+      void trashSelectedThread();
+      break;
+    case "reply":
+      replyToThread("reply");
+      break;
+    case "reply_all":
+      replyToThread("replyAll");
+      break;
+    case "forward":
+      replyToThread("forward");
+      break;
+    case "mute":
+      void toggleMuteSelectedThread();
+      break;
+    case "unsubscribe":
+      void unsubscribeSelectedThread();
+      break;
+    case "move_to_folder":
+      window.dispatchEvent(new CustomEvent("velo-move-to-folder"));
+      break;
+    case "extract_tasks":
+      if (onExtractTasks) onExtractTasks();
+      break;
+    case "search":
+    case "search_ctrl":
+      onOpenSearch();
+      break;
+    case "shortcuts_help":
+      onToggleShortcutsHelp();
+      break;
+    default:
+      break;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -366,7 +400,7 @@ function replyToThread(mode: "reply" | "replyAll" | "forward"): void {
 }
 
 // ---------------------------------------------------------------------------
-// Escape (hierarchical)
+// Escape (hierarchical) — non-customizable
 // ---------------------------------------------------------------------------
 
 function handleEscape(): void {
@@ -391,17 +425,7 @@ function handleEscape(): void {
 // g-prefix navigation
 // ---------------------------------------------------------------------------
 
-const LABEL_MAP: Record<string, string> = {
-  i: "INBOX",
-  s: "STARRED",
-  t: "SENT",
-  d: "DRAFT",
-};
-
-function handleGSequence(key: string): void {
-  const labelId = LABEL_MAP[key];
-  if (!labelId) return;
-
+function handleGSequence(labelId: string): void {
   const { setActiveLabel, loadThreads } = useThreadStore.getState();
   const { activeAccountId } = useAccountStore.getState();
 

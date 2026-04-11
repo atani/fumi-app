@@ -356,3 +356,19 @@ export interface FolderSyncState {
   last_uid: number;
   modseq: number | null;
 }
+
+export interface WritingStyleProfile {
+  account_id: string;
+  style_summary: string;
+  sample_phrases: string;
+  updated_at: string;
+}
+
+export interface SmartLabelRule {
+  id: string;
+  account_id: string;
+  label_id: string;
+  description: string;
+  criteria: string;
+  enabled: boolean;
+}

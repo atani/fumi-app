@@ -5,7 +5,7 @@ import type { LinkAnalysis, PhishingRiskLevel } from "../../types";
 interface PhishingBannerProps {
   analyses: LinkAnalysis[];
   overallRisk: PhishingRiskLevel;
-  onTrustSender: () => void;
+  onTrustSender: () => Promise<void> | void;
   onReport: () => void;
 }
 

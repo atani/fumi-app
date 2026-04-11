@@ -1,6 +1,24 @@
 import { getDb } from "./connection";
 import type { Attachment } from "../../types";
 
+export interface AttachmentWithDate extends Attachment {
+  message_date: string | null;
+}
+
+export async function getAllAttachmentsByAccount(
+  accountId: string,
+): Promise<AttachmentWithDate[]> {
+  const db = await getDb();
+  return db.select<AttachmentWithDate[]>(
+    `SELECT a.*, m.date AS message_date
+     FROM attachments a
+     LEFT JOIN messages m ON a.message_id = m.id AND a.account_id = m.account_id
+     WHERE a.account_id = $1
+     ORDER BY m.date DESC`,
+    [accountId],
+  );
+}
+
 export async function getAttachmentsByMessage(
   accountId: string,
   messageId: string,

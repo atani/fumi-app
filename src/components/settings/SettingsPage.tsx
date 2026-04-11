@@ -25,6 +25,8 @@ import { FilterEditor } from "./FilterEditor";
 import { BundleEditor } from "./BundleEditor";
 import { QuickStepEditor } from "./QuickStepEditor";
 import { SmartFolderEditor } from "./SmartFolderEditor";
+import { SmartLabelEditor } from "./SmartLabelEditor";
+import { ShortcutEditor } from "./ShortcutEditor";
 import { getDb } from "../../services/db/connection";
 import { getVips, addVip, removeVip } from "../../services/notifications/notificationManager";
 import type { NotificationVip } from "../../types";
@@ -617,6 +619,11 @@ export function SettingsPage() {
             </div>
           </Section>
 
+          {/* Keyboard Shortcuts */}
+          <Section title="Keyboard Shortcuts">
+            <ShortcutEditor />
+          </Section>
+
           {/* Filter Rules */}
           <Section title="Filter Rules">
             <FilterEditor />
@@ -630,6 +637,11 @@ export function SettingsPage() {
           {/* Smart Folders */}
           <Section title="Smart Folders">
             <SmartFolderEditor />
+          </Section>
+
+          {/* Smart Labels */}
+          <Section title="Smart Labels">
+            <SmartLabelEditor />
           </Section>
 
           {/* Quick Steps */}

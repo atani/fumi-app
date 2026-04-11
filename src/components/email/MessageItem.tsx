@@ -10,6 +10,7 @@ import { parseAuthResults } from "../../services/security/authParser";
 import { analyzeMessage, getOverallRisk } from "../../services/security/phishingDetector";
 import { getUnsubscribeInfo, unsubscribe } from "../../services/unsubscribe/unsubscribeManager";
 import { isAllowed, addToAllowlist } from "../../services/email/imageAllowlist";
+import { addToPhishingAllowlist, isPhishingAllowed } from "../../services/security/phishingAllowlist";
 import type { Account, Message, Attachment, PhishingSensitivity } from "../../types";
 
 interface MessageItemProps {
@@ -116,6 +117,18 @@ export function MessageItem({
 }: MessageItemProps) {
   const [showQuoted, setShowQuoted] = useState(false);
   const [trustedSender, setTrustedSender] = useState(false);
+
+  // Check phishing allowlist on mount / sender change
+  useEffect(() => {
+    if (!account || !message.from_address) return;
+    let cancelled = false;
+    isPhishingAllowed(account.id, message.from_address).then((allowed) => {
+      if (!cancelled) setTrustedSender(allowed);
+    }).catch(() => {
+      // Ignore — keep default (untrusted)
+    });
+    return () => { cancelled = true; };
+  }, [account, message.from_address]);
   const [unsubscribeStatus, setUnsubscribeStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [allowRemoteImages, setAllowRemoteImages] = useState(false);
 
@@ -295,7 +308,12 @@ export function MessageItem({
         <PhishingBanner
           analyses={phishingAnalyses}
           overallRisk={overallRisk}
-          onTrustSender={() => setTrustedSender(true)}
+          onTrustSender={async () => {
+            setTrustedSender(true);
+            if (account && message.from_address) {
+              await addToPhishingAllowlist(account.id, message.from_address);
+            }
+          }}
           onReport={() => {
             // Placeholder: in a real app this would report the message
             console.warn("Phishing reported for message:", message.id);

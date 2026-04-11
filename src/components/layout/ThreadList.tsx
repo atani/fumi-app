@@ -3,6 +3,7 @@ import { useDraggable } from "@dnd-kit/core";
 import { useThreadStore } from "../../stores/threadStore";
 import { useAccountStore } from "../../stores/accountStore";
 import { useUIStore } from "../../stores/uiStore";
+import { useContextMenuStore } from "../../stores/contextMenuStore";
 import { CategoryTabs } from "../email/CategoryTabs";
 import {
   RefreshCw,
@@ -17,9 +18,17 @@ import {
   PanelRight,
   Rows2,
   EyeOff,
+  Reply,
+  Forward,
+  Clock,
+  VolumeX,
 } from "lucide-react";
 import type { ReadingPanePosition } from "../../stores/uiStore";
 import {
+  archiveThread,
+  trashThread,
+  toggleStar,
+  muteThread,
   archiveThreads,
   trashThreads,
   markThreadsAsRead,
@@ -48,6 +57,7 @@ interface DraggableThreadItemProps {
   onClick: (e: React.MouseEvent, threadId: string) => void;
   onDoubleClick?: (e: React.MouseEvent, threadId: string) => void;
   onCheckboxClick: (e: React.MouseEvent, threadId: string) => void;
+  onContextMenu: (e: React.MouseEvent, threadId: string) => void;
 }
 
 function DraggableThreadItem({
@@ -61,6 +71,7 @@ function DraggableThreadItem({
   onClick,
   onDoubleClick,
   onCheckboxClick,
+  onContextMenu,
 }: DraggableThreadItemProps) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: thread.id,
@@ -75,6 +86,7 @@ function DraggableThreadItem({
       {...attributes}
       onClick={(e) => onClick(e, thread.id)}
       onDoubleClick={onDoubleClick ? (e) => onDoubleClick(e, thread.id) : undefined}
+      onContextMenu={(e) => onContextMenu(e, thread.id)}
       className={`group w-full border-b border-border-secondary px-4 ${densityStyle.container} text-left transition-colors ${
         isActive
           ? "bg-bg-selected"
@@ -211,6 +223,76 @@ export function ThreadList({ onOpenSearch }: ThreadListProps) {
       }
     },
     [lastSelectedThreadId, selectRange, toggleSelectThread],
+  );
+
+  const showContextMenu = useContextMenuStore((s) => s.show);
+
+  const handleContextMenu = useCallback(
+    (e: React.MouseEvent, threadId: string) => {
+      e.preventDefault();
+      const account = useAccountStore.getState().getActiveAccount();
+      if (!account) return;
+
+      const thread = threads.find((t) => t.id === threadId);
+
+      showContextMenu(e.clientX, e.clientY, [
+        {
+          label: "Reply",
+          icon: Reply,
+          onClick: () => {
+            void selectThread(threadId, account.id);
+            // Reply is handled via the thread view once selected
+          },
+        },
+        {
+          label: "Forward",
+          icon: Forward,
+          onClick: () => {
+            void selectThread(threadId, account.id);
+            // Forward is handled via the thread view once selected
+          },
+        },
+        {
+          label: "Archive",
+          icon: Archive,
+          separator: true,
+          onClick: () => void archiveThread(account, threadId),
+        },
+        {
+          label: "Trash",
+          icon: Trash2,
+          onClick: () => void trashThread(account, threadId),
+        },
+        {
+          label: thread?.is_starred ? "Unstar" : "Star",
+          icon: Star,
+          separator: true,
+          onClick: () => void toggleStar(account, threadId, !thread?.is_starred),
+        },
+        {
+          label: "Label",
+          icon: Tag,
+          onClick: () => {
+            void selectThread(threadId, account.id);
+            window.dispatchEvent(new CustomEvent("velo-move-to-folder"));
+          },
+        },
+        {
+          label: "Snooze",
+          icon: Clock,
+          onClick: () => {
+            void selectThread(threadId, account.id);
+            // Snooze dialog is triggered via the thread view
+          },
+        },
+        {
+          label: thread?.is_muted ? "Unmute" : "Mute",
+          icon: VolumeX,
+          onClick: () => void muteThread(account, threadId),
+        },
+      ]);
+    },
+    [threads, showContextMenu, selectThread],
   );
 
   const handleThreadDoubleClick = useCallback(
@@ -404,6 +486,7 @@ export function ThreadList({ onOpenSearch }: ThreadListProps) {
               onClick={handleThreadClick}
               onDoubleClick={readingPanePosition === "hidden" ? handleThreadDoubleClick : undefined}
               onCheckboxClick={handleCheckboxClick}
+              onContextMenu={handleContextMenu}
             />
           ))
         )}

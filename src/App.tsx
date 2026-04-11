@@ -3,12 +3,14 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { useAccountStore } from "./stores/accountStore";
 import { useUIStore } from "./stores/uiStore";
 import { useComposerStore } from "./stores/composerStore";
+import { useShortcutStore } from "./stores/shortcutStore";
 import { LoginPage } from "./components/auth/LoginPage";
 import { MailLayout } from "./components/layout/MailLayout";
 import { SettingsPage } from "./components/settings/SettingsPage";
 import { CalendarPage } from "./components/calendar/CalendarPage";
 import { TasksPage } from "./components/tasks/TasksPage";
 import { HelpPage } from "./components/help/HelpPage";
+import { AttachmentLibrary } from "./components/attachments/AttachmentLibrary";
 import { runMigrations } from "./services/db/migrations";
 import { loadDrafts, deleteDraft } from "./services/composer/draftAutoSave";
 import type { LocalDraft } from "./services/composer/draftAutoSave";
@@ -25,6 +27,7 @@ export function App() {
       await useUIStore.getState().initTheme();
       await useUIStore.getState().initReadingPanePosition();
       await useUIStore.getState().initEmailListWidth();
+      await useShortcutStore.getState().loadKeyMap();
       await loadAccounts();
 
       // Check for unsent drafts
@@ -114,6 +117,10 @@ export function App() {
         <Route
           path="/settings"
           element={isAuthenticated ? <SettingsPage /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/attachments"
+          element={isAuthenticated ? <AttachmentLibrary /> : <Navigate to="/login" />}
         />
         <Route
           path="/help/:topic?"

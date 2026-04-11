@@ -237,16 +237,30 @@ export function scanLinks(
 
 /**
  * Scan all links in an HTML body and return analysis results.
+ *
+ * @param allowedEntries - Set of lowercased URLs or senders that have been
+ *   added to the phishing allowlist. When the sender or a link href matches,
+ *   the analysis is skipped and the link is treated as safe.
  */
 export function analyzeMessage(
   htmlBody: string,
   sensitivity: PhishingSensitivity = "default",
   senderEmail: string | null = null,
+  allowedEntries: ReadonlySet<string> = new Set(),
 ): LinkAnalysis[] {
+  // If the sender itself is in the allowlist, skip all analysis
+  if (senderEmail && allowedEntries.has(senderEmail.toLowerCase())) {
+    return [];
+  }
+
   const links = scanLinks(htmlBody);
-  return links.map(({ href, displayText }) =>
-    analyzeUrl(href, displayText, sensitivity, senderEmail),
-  );
+  return links.map(({ href, displayText }) => {
+    // Skip analysis for individually allowed URLs
+    if (allowedEntries.has(href.toLowerCase())) {
+      return { url: href, displayText, riskLevel: "safe" as const, reasons: [] };
+    }
+    return analyzeUrl(href, displayText, sensitivity, senderEmail);
+  });
 }
 
 /**

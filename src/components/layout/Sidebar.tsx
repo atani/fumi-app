@@ -21,6 +21,7 @@ import {
   CheckSquare,
   FolderSearch,
   HelpCircle,
+  Paperclip,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useThreadStore } from "../../stores/threadStore";
@@ -393,6 +394,14 @@ export function Sidebar() {
         >
           <CheckSquare className="h-4 w-4" />
           Tasks
+        </button>
+        <button
+          onClick={() => navigate("/attachments")}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-text transition-colors hover:bg-bg-hover"
+          data-testid="sidebar-attachments"
+        >
+          <Paperclip className="h-4 w-4" />
+          Attachments
         </button>
         <button
           onClick={() => navigate("/calendar")}

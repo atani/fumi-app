@@ -1,5 +1,7 @@
 import { getDb } from "../db/connection";
 import { authenticatedFetch } from "../gmail/api";
+import { parseSearchQuery } from "./searchParser";
+import { buildSqlQuery, canBuildQuery } from "./searchQueryBuilder";
 import type { Account, Thread } from "../../types";
 
 interface GmailSearchResponse {
@@ -8,28 +10,22 @@ interface GmailSearchResponse {
 }
 
 /**
- * Search messages locally via FTS5, returning matching threads.
+ * Search messages locally via FTS5 and/or structured operators,
+ * returning matching threads.
  */
 export async function searchLocal(
   accountId: string,
   query: string,
 ): Promise<Thread[]> {
   const db = await getDb();
+  const parsed = parseSearchQuery(query);
 
-  // FTS5 match query — escape double-quotes in user input
-  const sanitized = query.replace(/"/g, '""');
+  if (!canBuildQuery(parsed)) {
+    return [];
+  }
 
-  return db.select<Thread[]>(
-    `SELECT DISTINCT t.*
-     FROM messages_fts fts
-     JOIN messages m ON m.rowid = fts.rowid
-     JOIN threads t ON t.id = m.thread_id AND t.account_id = m.account_id
-     WHERE fts.messages_fts MATCH $1
-       AND m.account_id = $2
-     ORDER BY t.last_message_at DESC
-     LIMIT 50`,
-    [`"${sanitized}"`, accountId],
-  );
+  const { sql, params } = buildSqlQuery(accountId, parsed);
+  return db.select<Thread[]>(sql, params);
 }
 
 /**

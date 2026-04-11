@@ -3,7 +3,7 @@ import { useThreadStore } from "../../stores/threadStore";
 import { useAccountStore } from "../../stores/accountStore";
 import { useComposerStore } from "../../stores/composerStore";
 import { useLabelStore } from "../../stores/labelStore";
-import { Reply, ReplyAll, Forward, Archive, Trash2, Star, Clock, Tag, X, ExternalLink, BellRing, VolumeX, Volume2, User, ArrowLeft } from "lucide-react";
+import { Reply, ReplyAll, Forward, Archive, Trash2, Star, Clock, Tag, X, ExternalLink, BellRing, VolumeX, Volume2, User, ArrowLeft, Sparkles, Loader2 } from "lucide-react";
 import { ThreadSummary } from "../email/ThreadSummary";
 import { SmartReplySuggestions } from "../email/SmartReplySuggestions";
 import { MessageItem } from "../email/MessageItem";
@@ -22,6 +22,7 @@ import {
 import { snoozeThread } from "../../services/snooze/snoozeService";
 import { addFollowUp } from "../../services/followup/followupManager";
 import { openThreadWindow } from "../../services/windowManager";
+import { generateAutoReply } from "../../services/ai/writingStyleService";
 import { getAttachmentsByThread } from "../../services/db/attachments";
 import { getThreadLabelIds } from "../../services/db/labels";
 import { removeLabelFromThread } from "../../services/gmail/labels";
@@ -53,6 +54,7 @@ export function ReadingPane({ onBack, showBackButton }: ReadingPaneProps = {}) {
   const [markAsReadBehavior, setMarkAsReadBehavior] = useState<string>("immediately");
   const [defaultReplyMode, setDefaultReplyMode] = useState<string>("reply");
   const [isContactSidebarOpen, setIsContactSidebarOpen] = useState(false);
+  const [isAutoDrafting, setIsAutoDrafting] = useState(false);
 
   const account = accounts.find((a) => a.id === activeAccountId) ?? null;
   const thread = threads.find((t) => t.id === selectedThreadId) ?? null;
@@ -487,6 +489,34 @@ export function ReadingPane({ onBack, showBackButton }: ReadingPaneProps = {}) {
           className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary hover:bg-bg-hover"
         >
           <Forward className="h-4 w-4" /> Forward
+        </button>
+        <button
+          onClick={() => {
+            if (!account || !lastMessage || messages.length === 0) return;
+            setIsAutoDrafting(true);
+            void generateAutoReply(account, messages)
+              .then((draft) => {
+                useComposerStore.getState().openReply(lastMessage);
+                useComposerStore.getState().updateField("body", draft);
+              })
+              .catch((err) => {
+                console.error("Auto-draft failed:", err);
+              })
+              .finally(() => {
+                setIsAutoDrafting(false);
+              });
+          }}
+          disabled={isAutoDrafting}
+          className="flex items-center gap-2 rounded-lg border border-accent/30 bg-accent/5 px-4 py-2 text-sm text-accent hover:bg-accent/10 disabled:opacity-50"
+          data-testid="auto-draft-btn"
+          title="Auto-draft reply using AI"
+        >
+          {isAutoDrafting ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Sparkles className="h-4 w-4" />
+          )}
+          Auto-draft
         </button>
       </div>
 

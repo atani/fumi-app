@@ -25,6 +25,7 @@ import { startQueueProcessor, stopQueueProcessor, processQueue } from "../../ser
 import { startScheduledSendChecker, stopScheduledSendChecker } from "../../services/snooze/scheduledSendChecker";
 import { fetchSendAsAliases } from "../../services/gmail/sendAs";
 import { initDeepLinkHandler } from "../../services/deepLinkHandler";
+import { initGlobalShortcut } from "../../services/globalShortcut";
 
 export function MailLayout() {
   const navigate = useNavigate();
@@ -170,6 +171,7 @@ export function MailLayout() {
 
     let unlistenTray: (() => void) | undefined;
     let cleanupDeepLink: (() => void) | undefined;
+    let cleanupGlobalShortcut: (() => void) | undefined;
 
     if (typeof window !== "undefined" && "__TAURI_INTERNALS__" in window) {
       import("@tauri-apps/api/event").then(({ listen }) => {
@@ -185,6 +187,12 @@ export function MailLayout() {
       }).catch((err) => {
         console.error("Failed to initialize deep link handler:", err);
       });
+
+      initGlobalShortcut().then((cleanup) => {
+        cleanupGlobalShortcut = cleanup;
+      }).catch((err) => {
+        console.error("Failed to initialize global shortcut:", err);
+      });
     }
 
     return () => {
@@ -196,6 +204,7 @@ export function MailLayout() {
       stopScheduledSendChecker();
       unlistenTray?.();
       cleanupDeepLink?.();
+      cleanupGlobalShortcut?.();
     };
   }, [doSync, getActiveAccount]);
 

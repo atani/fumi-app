@@ -534,6 +534,69 @@ const MIGRATIONS = [
       );
     `,
   },
+  {
+    version: 25,
+    sql: `
+      CREATE TABLE IF NOT EXISTS phishing_allowlist (
+        url_or_sender TEXT NOT NULL,
+        account_id TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        PRIMARY KEY (url_or_sender, account_id)
+      );
+    `,
+  },
+  {
+    version: 26,
+    sql: `
+      CREATE TABLE IF NOT EXISTS calendar_events (
+        id TEXT PRIMARY KEY,
+        account_id TEXT NOT NULL,
+        calendar_id TEXT NOT NULL,
+        title TEXT NOT NULL DEFAULT '',
+        start_time TEXT,
+        end_time TEXT,
+        description TEXT,
+        color TEXT,
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_calendar_events_account
+        ON calendar_events(account_id, calendar_id);
+
+      CREATE INDEX IF NOT EXISTS idx_calendar_events_time
+        ON calendar_events(start_time, end_time);
+    `,
+  },
+  {
+    version: 27,
+    sql: `
+      CREATE TABLE IF NOT EXISTS writing_style_profiles (
+        account_id TEXT PRIMARY KEY,
+        style_summary TEXT NOT NULL DEFAULT '',
+        sample_phrases TEXT NOT NULL DEFAULT '',
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+      );
+    `,
+  },
+  {
+    version: 28,
+    sql: `
+      CREATE TABLE IF NOT EXISTS smart_label_rules (
+        id TEXT PRIMARY KEY,
+        account_id TEXT NOT NULL,
+        label_id TEXT NOT NULL,
+        description TEXT NOT NULL DEFAULT '',
+        criteria TEXT NOT NULL DEFAULT '{}',
+        enabled INTEGER NOT NULL DEFAULT 1,
+        FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_smart_label_rules_account
+        ON smart_label_rules(account_id, enabled);
+    `,
+  },
 ];
 
 export async function runMigrations(): Promise<void> {

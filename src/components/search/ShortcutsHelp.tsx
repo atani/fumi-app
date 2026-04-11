@@ -1,56 +1,18 @@
 import { useEffect } from "react";
+import {
+  useShortcutStore,
+  SHORTCUT_SECTIONS,
+  SHORTCUT_LABELS,
+} from "../../stores/shortcutStore";
 
 interface ShortcutsHelpProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-interface ShortcutEntry {
-  keys: string[];
-  description: string;
-}
-
-const SHORTCUT_SECTIONS: { title: string; shortcuts: ShortcutEntry[] }[] = [
-  {
-    title: "Navigation",
-    shortcuts: [
-      { keys: ["j"], description: "Next thread" },
-      { keys: ["k"], description: "Previous thread" },
-      { keys: ["o", "Enter"], description: "Open thread" },
-      { keys: ["g i"], description: "Go to Inbox" },
-      { keys: ["g s"], description: "Go to Starred" },
-      { keys: ["g t"], description: "Go to Sent" },
-      { keys: ["g d"], description: "Go to Drafts" },
-    ],
-  },
-  {
-    title: "Actions",
-    shortcuts: [
-      { keys: ["e"], description: "Archive" },
-      { keys: ["s"], description: "Toggle star" },
-      { keys: ["#"], description: "Trash" },
-    ],
-  },
-  {
-    title: "Compose",
-    shortcuts: [
-      { keys: ["c"], description: "Compose new email" },
-      { keys: ["r"], description: "Reply" },
-      { keys: ["a"], description: "Reply all" },
-      { keys: ["f"], description: "Forward" },
-    ],
-  },
-  {
-    title: "Other",
-    shortcuts: [
-      { keys: ["/", "Ctrl+K"], description: "Search" },
-      { keys: ["?"], description: "Keyboard shortcuts" },
-      { keys: ["Esc"], description: "Close / Deselect" },
-    ],
-  },
-];
-
 export function ShortcutsHelp({ isOpen, onClose }: ShortcutsHelpProps) {
+  const keyMap = useShortcutStore((s) => s.keyMap);
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -101,26 +63,22 @@ export function ShortcutsHelp({ isOpen, onClose }: ShortcutsHelpProps) {
                 {section.title}
               </h3>
               <ul className="space-y-1">
-                {section.shortcuts.map((shortcut) => (
-                  <li
-                    key={shortcut.description}
-                    className="flex items-center justify-between text-sm"
-                  >
-                    <span className="text-text-primary">
-                      {shortcut.description}
-                    </span>
-                    <span className="flex gap-1">
-                      {shortcut.keys.map((key) => (
-                        <kbd
-                          key={key}
-                          className="rounded bg-bg-secondary px-1.5 py-0.5 font-mono text-xs text-text-secondary"
-                        >
-                          {key}
-                        </kbd>
-                      ))}
-                    </span>
-                  </li>
-                ))}
+                {section.actions.map((actionId) => {
+                  const label = SHORTCUT_LABELS[actionId];
+                  const combo = keyMap[actionId];
+                  if (!label || !combo) return null;
+                  return (
+                    <li
+                      key={actionId}
+                      className="flex items-center justify-between text-sm"
+                    >
+                      <span className="text-text-primary">{label}</span>
+                      <kbd className="rounded bg-bg-secondary px-1.5 py-0.5 font-mono text-xs text-text-secondary">
+                        {combo}
+                      </kbd>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           ))}
