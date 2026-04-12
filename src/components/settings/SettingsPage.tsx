@@ -2,22 +2,14 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
-  Sun,
-  Moon,
-  Monitor,
   Trash2,
   ExternalLink,
   Eye,
   EyeOff,
   Plus,
   X,
-  PanelRight,
-  Rows2,
 } from "lucide-react";
-import type { ReadingPanePosition } from "../../stores/uiStore";
 import { useAccountStore } from "../../stores/accountStore";
-import { useUIStore } from "../../stores/uiStore";
-import { COLOR_THEMES } from "../../constants/themes";
 import { AccountAvatar } from "../accounts/AccountAvatar";
 import { TemplateEditor } from "./TemplateEditor";
 import { SignatureEditor } from "./SignatureEditor";
@@ -30,15 +22,12 @@ import { ShortcutEditor } from "./ShortcutEditor";
 import { getDb } from "../../services/db/connection";
 import { getVips, addVip, removeVip } from "../../services/notifications/notificationManager";
 import type { NotificationVip } from "../../types";
-
-type Theme = "system" | "light" | "dark";
-
-const SYNC_INTERVALS = [
-  { value: 30, label: "30 seconds" },
-  { value: 60, label: "1 minute" },
-  { value: 120, label: "2 minutes" },
-  { value: 300, label: "5 minutes" },
-];
+import { Section, ToggleRow } from "./sections/shared";
+import { AppearanceSection } from "./sections/AppearanceSection";
+import { SyncSection } from "./sections/SyncSection";
+import { UndoSendSection } from "./sections/UndoSendSection";
+import { EmailBehaviorSection } from "./sections/EmailBehaviorSection";
+import { AutostartSection } from "./sections/AutostartSection";
 
 async function loadSetting(key: string): Promise<string | null> {
   try {
@@ -68,7 +57,6 @@ async function saveSetting(key: string, value: string): Promise<void> {
 export function SettingsPage() {
   const navigate = useNavigate();
   const { accounts, removeAccount } = useAccountStore();
-  const { theme, setTheme, colorTheme, setColorTheme, emailDensity, setEmailDensity, fontScale, setFontScale, readingPanePosition, setReadingPanePosition } = useUIStore();
 
   const [syncInterval, setSyncInterval] = useState(60);
   const [undoSendDelay, setUndoSendDelay] = useState(0);
@@ -377,247 +365,29 @@ export function SettingsPage() {
           </Section>
 
           {/* Appearance */}
-          <Section title="Appearance">
-            <label className="mb-2 block text-sm text-text-secondary">
-              Theme
-            </label>
-            <div
-              className="inline-flex rounded-lg border border-border-primary bg-bg-secondary p-1"
-              data-testid="theme-selector"
-            >
-              {(
-                [
-                  { value: "system", icon: Monitor, label: "System" },
-                  { value: "light", icon: Sun, label: "Light" },
-                  { value: "dark", icon: Moon, label: "Dark" },
-                ] as const
-              ).map(({ value, icon: Icon, label }) => (
-                <button
-                  key={value}
-                  onClick={() => setTheme(value as Theme)}
-                  className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition-colors ${
-                    theme === value
-                      ? "bg-accent text-white"
-                      : "text-text-secondary hover:text-text-primary"
-                  }`}
-                  data-testid={`theme-${value}`}
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                  {label}
-                </button>
-              ))}
-            </div>
-
-            <label className="mt-4 mb-2 block text-sm text-text-secondary">
-              Accent color
-            </label>
-            <div className="flex gap-2" data-testid="color-theme-selector">
-              {COLOR_THEMES.map((ct) => (
-                <button
-                  key={ct.id}
-                  onClick={() => setColorTheme(ct.id)}
-                  title={ct.name}
-                  className={`h-7 w-7 rounded-full border-2 transition-transform hover:scale-110 ${
-                    colorTheme === ct.id
-                      ? "border-text-primary scale-110"
-                      : "border-transparent"
-                  }`}
-                  style={{ backgroundColor: ct.swatch }}
-                  data-testid={`color-theme-${ct.id}`}
-                />
-              ))}
-            </div>
-
-            <label className="mt-4 mb-2 block text-sm text-text-secondary">
-              Font size
-            </label>
-            <div
-              className="inline-flex rounded-lg border border-border-primary bg-bg-secondary p-1"
-              data-testid="font-scale-selector"
-            >
-              {(
-                [
-                  { value: "small", label: "Small" },
-                  { value: "default", label: "Default" },
-                  { value: "large", label: "Large" },
-                  { value: "xlarge", label: "X-Large" },
-                ] as const
-              ).map(({ value, label }) => (
-                <button
-                  key={value}
-                  onClick={() => setFontScale(value)}
-                  className={`rounded-md px-3 py-1.5 text-sm transition-colors ${
-                    fontScale === value
-                      ? "bg-accent text-white"
-                      : "text-text-secondary hover:text-text-primary"
-                  }`}
-                  data-testid={`font-scale-${value}`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-
-            <label className="mt-4 mb-2 block text-sm text-text-secondary">
-              Email list density
-            </label>
-            <div
-              className="inline-flex rounded-lg border border-border-primary bg-bg-secondary p-1"
-              data-testid="density-selector"
-            >
-              {(
-                [
-                  { value: "compact", label: "Compact" },
-                  { value: "default", label: "Default" },
-                  { value: "comfortable", label: "Comfortable" },
-                ] as const
-              ).map(({ value, label }) => (
-                <button
-                  key={value}
-                  onClick={() => setEmailDensity(value)}
-                  className={`rounded-md px-3 py-1.5 text-sm transition-colors ${
-                    emailDensity === value
-                      ? "bg-accent text-white"
-                      : "text-text-secondary hover:text-text-primary"
-                  }`}
-                  data-testid={`density-${value}`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-
-            <label className="mt-4 mb-2 block text-sm text-text-secondary">
-              Reading pane
-            </label>
-            <div
-              className="inline-flex rounded-lg border border-border-primary bg-bg-secondary p-1"
-              data-testid="reading-pane-selector"
-            >
-              {(
-                [
-                  { value: "right", icon: PanelRight, label: "Right" },
-                  { value: "bottom", icon: Rows2, label: "Bottom" },
-                  { value: "hidden", icon: EyeOff, label: "Hidden" },
-                ] as const
-              ).map(({ value, icon: Icon, label }) => (
-                <button
-                  key={value}
-                  onClick={() => setReadingPanePosition(value as ReadingPanePosition)}
-                  className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition-colors ${
-                    readingPanePosition === value
-                      ? "bg-accent text-white"
-                      : "text-text-secondary hover:text-text-primary"
-                  }`}
-                  data-testid={`reading-pane-${value}`}
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                  {label}
-                </button>
-              ))}
-            </div>
-            <p className="mt-1.5 text-xs text-text-tertiary">
-              Controls where the email preview appears. When hidden, double-click or press Enter to open a thread.
-            </p>
-          </Section>
+          <AppearanceSection />
 
           {/* Sync */}
-          <Section title="Sync">
-            <label className="mb-2 block text-sm text-text-secondary">
-              Sync interval
-            </label>
-            <select
-              value={syncInterval}
-              onChange={(e) =>
-                handleSyncIntervalChange(Number(e.target.value))
-              }
-              className="rounded-lg border border-border-primary bg-bg-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent"
-              data-testid="sync-interval-select"
-            >
-              {SYNC_INTERVALS.map(({ value, label }) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </Section>
+          <SyncSection
+            syncInterval={syncInterval}
+            onSyncIntervalChange={handleSyncIntervalChange}
+          />
 
           {/* Undo Send */}
-          <Section title="Undo Send">
-            <label className="mb-2 block text-sm text-text-secondary">
-              Undo send delay
-            </label>
-            <select
-              value={undoSendDelay}
-              onChange={(e) =>
-                handleUndoSendDelayChange(Number(e.target.value))
-              }
-              className="rounded-lg border border-border-primary bg-bg-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent"
-              data-testid="undo-send-delay-select"
-            >
-              <option value={0}>Off</option>
-              <option value={3}>3 seconds</option>
-              <option value={5}>5 seconds</option>
-              <option value={10}>10 seconds</option>
-            </select>
-            <p className="mt-1.5 text-xs text-text-tertiary">
-              Delay sending emails so you can undo within the chosen time window.
-            </p>
-          </Section>
+          <UndoSendSection
+            undoSendDelay={undoSendDelay}
+            onUndoSendDelayChange={handleUndoSendDelayChange}
+          />
 
           {/* Email Behavior */}
-          <Section title="Email Behavior">
-            <div className="space-y-4">
-              <div>
-                <label className="mb-2 block text-sm text-text-secondary">
-                  Mark as read
-                </label>
-                <select
-                  value={markAsReadBehavior}
-                  onChange={(e) =>
-                    void handleMarkAsReadChange(e.target.value)
-                  }
-                  className="rounded-lg border border-border-primary bg-bg-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent"
-                  data-testid="mark-as-read-select"
-                >
-                  <option value="immediately">Immediately</option>
-                  <option value="after_2s">After 2 seconds</option>
-                  <option value="manually">Manually</option>
-                </select>
-                <p className="mt-1.5 text-xs text-text-tertiary">
-                  When to mark emails as read after opening them.
-                </p>
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm text-text-secondary">
-                  Default reply
-                </label>
-                <select
-                  value={defaultReplyMode}
-                  onChange={(e) =>
-                    void handleDefaultReplyChange(e.target.value)
-                  }
-                  className="rounded-lg border border-border-primary bg-bg-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent"
-                  data-testid="default-reply-select"
-                >
-                  <option value="reply">Reply</option>
-                  <option value="reply_all">Reply All</option>
-                </select>
-                <p className="mt-1.5 text-xs text-text-tertiary">
-                  The default reply action when pressing the reply button or keyboard shortcut.
-                </p>
-              </div>
-
-              <ToggleRow
-                label="Send & Archive"
-                description="Automatically archive threads after sending a reply"
-                enabled={sendAndArchive}
-                onToggle={handleSendAndArchiveToggle}
-                testId="send-and-archive-toggle"
-              />
-            </div>
-          </Section>
+          <EmailBehaviorSection
+            markAsReadBehavior={markAsReadBehavior}
+            onMarkAsReadChange={handleMarkAsReadChange}
+            defaultReplyMode={defaultReplyMode}
+            onDefaultReplyChange={handleDefaultReplyChange}
+            sendAndArchive={sendAndArchive}
+            onSendAndArchiveToggle={handleSendAndArchiveToggle}
+          />
 
           {/* Keyboard Shortcuts */}
           <Section title="Keyboard Shortcuts">
@@ -734,15 +504,10 @@ export function SettingsPage() {
           </Section>
 
           {/* Autostart */}
-          <Section title="Autostart">
-            <ToggleRow
-              label="Launch on startup"
-              description="Start Fumi when you log in to your computer"
-              enabled={autostartEnabled}
-              onToggle={handleAutostartToggle}
-              testId="autostart-toggle"
-            />
-          </Section>
+          <AutostartSection
+            autostartEnabled={autostartEnabled}
+            onAutostartToggle={handleAutostartToggle}
+          />
 
           {/* Templates */}
           <Section title="Templates">
@@ -905,57 +670,3 @@ export function SettingsPage() {
   );
 }
 
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="mb-8">
-      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-text-tertiary">
-        {title}
-      </h2>
-      {children}
-    </section>
-  );
-}
-
-function ToggleRow({
-  label,
-  description,
-  enabled,
-  onToggle,
-  testId,
-}: {
-  label: string;
-  description: string;
-  enabled: boolean;
-  onToggle: (enabled: boolean) => void;
-  testId: string;
-}) {
-  return (
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="text-sm font-medium text-text-primary">{label}</p>
-        <p className="text-xs text-text-tertiary">{description}</p>
-      </div>
-      <button
-        onClick={() => onToggle(!enabled)}
-        className={`relative h-6 w-11 rounded-full transition-colors ${
-          enabled ? "bg-accent" : "bg-border-secondary"
-        }`}
-        role="switch"
-        aria-checked={enabled}
-        data-testid={testId}
-      >
-        <span
-          className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
-            enabled ? "translate-x-5" : "translate-x-0"
-          }`}
-        />
-      </button>
-    </div>
-  );
-}

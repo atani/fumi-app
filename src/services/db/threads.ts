@@ -49,7 +49,8 @@ export async function getUncategorizedInboxThreadIds(
      LEFT JOIN messages m ON m.thread_id = t.id AND m.account_id = t.account_id
      WHERE t.account_id = $1 AND tl.label_id = 'INBOX' AND tc.thread_id IS NULL
      GROUP BY t.id
-     ORDER BY t.last_message_at DESC`,
+     ORDER BY t.last_message_at DESC
+     LIMIT 500`,
     [accountId],
   );
 }
@@ -75,7 +76,8 @@ export async function getThreadsByLabel(
     `SELECT t.* FROM threads t
      JOIN thread_labels tl ON t.id = tl.thread_id AND t.account_id = tl.account_id
      WHERE t.account_id = $1 AND tl.label_id = $2
-     ORDER BY t.last_message_at DESC`,
+     ORDER BY t.last_message_at DESC
+     LIMIT 500`,
     [accountId, labelId],
   );
 }

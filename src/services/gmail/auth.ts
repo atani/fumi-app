@@ -16,6 +16,31 @@ const GMAIL_SCOPES = [
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo";
 
+/**
+ * Parse an OAuth error response body and return a sanitised message that
+ * only includes the `error` and `error_description` fields, never the full
+ * body (which may contain sensitive data such as tokens or internal URLs).
+ */
+function sanitizeOAuthError(body: string): string {
+  try {
+    const parsed = JSON.parse(body) as {
+      error?: unknown;
+      error_description?: unknown;
+    };
+    const code = typeof parsed.error === "string" ? parsed.error : null;
+    const description =
+      typeof parsed.error_description === "string"
+        ? parsed.error_description
+        : null;
+    if (code && description) return `${code}: ${description}`;
+    if (code) return code;
+    if (description) return description;
+  } catch {
+    // Not JSON — fall through to generic message.
+  }
+  return "unknown error";
+}
+
 export async function getClientId(): Promise<string | null> {
   const { getDb } = await import("../db/connection");
   const db = await getDb();
@@ -105,8 +130,8 @@ export async function exchangeCodeForTokens(
   });
 
   if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Token exchange failed: ${error}`);
+    const body = await response.text();
+    throw new Error(`Token exchange failed: ${sanitizeOAuthError(body)}`);
   }
 
   return response.json();

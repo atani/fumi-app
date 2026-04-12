@@ -6,6 +6,49 @@ interface AIResponse {
   text: string;
 }
 
+/**
+ * Parse an AI-provider error response body and return a sanitised message
+ * that only includes `error` / `error_description` (or equivalent) fields.
+ * Never return the raw body, which may contain prompts, API keys echoed
+ * back, or other sensitive data.
+ */
+function sanitizeProviderError(body: string): string {
+  try {
+    const parsed = JSON.parse(body) as {
+      error?: unknown;
+      error_description?: unknown;
+    };
+    // Some providers return `error` as an object ({ type, message, code, ... }).
+    // Keep only `type`/`code`/`status` to avoid leaking verbose message content.
+    let code: string | null = null;
+    let description: string | null = null;
+
+    if (typeof parsed.error === "string") {
+      code = parsed.error;
+    } else if (parsed.error && typeof parsed.error === "object") {
+      const errObj = parsed.error as {
+        type?: unknown;
+        code?: unknown;
+        status?: unknown;
+      };
+      if (typeof errObj.type === "string") code = errObj.type;
+      else if (typeof errObj.code === "string") code = errObj.code;
+      else if (typeof errObj.status === "string") code = errObj.status;
+    }
+
+    if (typeof parsed.error_description === "string") {
+      description = parsed.error_description;
+    }
+
+    if (code && description) return `${code}: ${description}`;
+    if (code) return code;
+    if (description) return description;
+  } catch {
+    // Not JSON — fall through to generic message.
+  }
+  return "unknown error";
+}
+
 async function loadAISetting(key: string): Promise<string | null> {
   const db = await getDb();
   const rows = await db.select<{ value: string }[]>(
@@ -72,8 +115,10 @@ async function callClaude(
   });
 
   if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Anthropic API error (${response.status}): ${error}`);
+    const body = await response.text();
+    throw new Error(
+      `Anthropic API error (${response.status}): ${sanitizeProviderError(body)}`,
+    );
   }
 
   const data = (await response.json()) as {
@@ -105,8 +150,10 @@ async function callOpenAI(
   });
 
   if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`OpenAI API error (${response.status}): ${error}`);
+    const body = await response.text();
+    throw new Error(
+      `OpenAI API error (${response.status}): ${sanitizeProviderError(body)}`,
+    );
   }
 
   const data = (await response.json()) as {
@@ -137,8 +184,10 @@ async function callGemini(
   });
 
   if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Gemini API error (${response.status}): ${error}`);
+    const body = await response.text();
+    throw new Error(
+      `Gemini API error (${response.status}): ${sanitizeProviderError(body)}`,
+    );
   }
 
   const data = (await response.json()) as {

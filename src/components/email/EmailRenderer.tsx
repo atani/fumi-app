@@ -2,6 +2,22 @@ import { useRef, useEffect, useCallback, useState } from "react";
 import DOMPurify from "dompurify";
 import { ShieldCheck } from "lucide-react";
 
+// Block CSS exfiltration via url() inside inline style attributes.
+// DOMPurify hooks are global singletons, so register once at module load.
+let stylePurifierRegistered = false;
+function ensureStylePurifier(): void {
+  if (stylePurifierRegistered) return;
+  stylePurifierRegistered = true;
+  DOMPurify.addHook("uponSanitizeAttribute", (_node, data) => {
+    if (data.attrName === "style" && typeof data.attrValue === "string") {
+      // Strip url(...) references (http, data, etc.) to prevent remote asset
+      // loads and CSS exfiltration from inline styles.
+      data.attrValue = data.attrValue.replace(/url\s*\([^)]*\)/gi, "");
+    }
+  });
+}
+ensureStylePurifier();
+
 interface EmailRendererProps {
   html: string | null;
   text: string | null;
@@ -29,7 +45,17 @@ export function EmailRenderer({
       // DOMPurify: strip scripts, on* handlers, and dangerous tags
       const clean = DOMPurify.sanitize(dirty, {
         WHOLE_DOCUMENT: false,
-        FORBID_TAGS: ["form", "input", "textarea", "select", "button", "script"],
+        FORBID_TAGS: [
+          "form",
+          "input",
+          "textarea",
+          "select",
+          "button",
+          "script",
+          "style",
+          "link",
+          "meta",
+        ],
         ALLOW_DATA_ATTR: false,
       });
 
@@ -62,9 +88,6 @@ export function EmailRenderer({
     (sanitizedHtml: string) => {
       const iframe = iframeRef.current;
       if (!iframe) return;
-
-      const doc = iframe.contentDocument;
-      if (!doc) return;
 
       const isDark = document.documentElement.classList.contains("dark");
 
@@ -108,9 +131,9 @@ export function EmailRenderer({
 <body>${sanitizedHtml}</body>
 </html>`;
 
-      doc.open();
-      doc.write(content);
-      doc.close();
+      // Use srcdoc for better isolation — the iframe content is parsed as a
+      // fresh document instead of being injected via document.write().
+      iframe.srcdoc = content;
     },
     [],
   );

@@ -31,7 +31,7 @@ function isTokenExpiringSoon(account: Account): boolean {
 
 async function doRefresh(account: Account): Promise<string> {
   if (!account.refresh_token) {
-    throw new Error(`No refresh token for account ${account.email}`);
+    throw new Error(`No refresh token for account ${account.id}`);
   }
 
   const clientId = await getClientId();

@@ -111,7 +111,7 @@ export function buildSqlQuery(
 
   // Free-text via FTS5
   if (parsed.freeText) {
-    const sanitized = parsed.freeText.replace(/"/g, '""');
+    const sanitized = escapeFts5(parsed.freeText);
     joins.push("JOIN messages_fts fts ON fts.rowid = m.rowid");
     conditions.push(`fts.messages_fts MATCH ${addParam(`"${sanitized}"`)}`);
   }
@@ -140,4 +140,26 @@ export function canBuildQuery(parsed: ParsedSearchQuery): boolean {
 
 function escapeLike(value: string): string {
   return value.replace(/%/g, "\\%").replace(/_/g, "\\_");
+}
+
+/**
+ * Escape a user-supplied string for safe use as an FTS5 MATCH phrase.
+ *
+ * The result is intended to be wrapped in double quotes by the caller,
+ * e.g. `"${escapeFts5(input)}"`. Wrapping in quotes neutralises boolean
+ * operators (AND, OR, NOT, NEAR) and column filters, but a few characters
+ * must still be stripped because they can break out of the quoted phrase
+ * or act as special tokens:
+ *
+ *   - `"` → `""` (FTS5 escape for a literal quote inside a phrase)
+ *   - `*`  wildcard / prefix marker → removed
+ *   - `:`  column-filter separator  → removed
+ *   - `^`  initial-token marker     → removed
+ */
+function escapeFts5(value: string): string {
+  return value
+    .replace(/"/g, '""')
+    .replace(/[*:^]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }

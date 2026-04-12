@@ -156,33 +156,62 @@ export async function toggleStar(
 
 /**
  * Archive a thread (remove from INBOX). Optimistic UI removes from list.
+ * Reverts the removal if the API/DB call fails.
  */
 export async function archiveThread(
   account: Account,
   threadId: string,
 ): Promise<void> {
+  const cachedThreads = useThreadStore.getState().threads;
   useThreadStore.getState().removeThread(threadId);
 
-  await Promise.all([
-    modifyThreadLabels(account, threadId, [], ["INBOX"]),
-    removeThreadLabelInDb(threadId, account.id, "INBOX"),
-  ]);
+  try {
+    await Promise.all([
+      modifyThreadLabels(account, threadId, [], ["INBOX"]),
+      removeThreadLabelInDb(threadId, account.id, "INBOX"),
+    ]);
+  } catch (err) {
+    console.error("archiveThread failed, reverting optimistic removal:", err);
+    useThreadStore.getState().setThreads(cachedThreads);
+    // Best-effort revert of the local DB label removal
+    await addThreadLabelInDb(threadId, account.id, "INBOX").catch((dbErr) => {
+      console.error("archiveThread revert: failed to restore INBOX label in DB:", dbErr);
+    });
+    throw err;
+  }
 }
 
 /**
  * Trash a thread. Optimistic UI removes from list.
+ * Reverts the removal if the API/DB call fails.
  */
 export async function trashThread(
   account: Account,
   threadId: string,
 ): Promise<void> {
+  const cachedThreads = useThreadStore.getState().threads;
   useThreadStore.getState().removeThread(threadId);
 
-  await Promise.all([
-    modifyThreadLabels(account, threadId, ["TRASH"], ["INBOX"]),
-    addThreadLabelInDb(threadId, account.id, "TRASH"),
-    removeThreadLabelInDb(threadId, account.id, "INBOX"),
-  ]);
+  try {
+    await Promise.all([
+      modifyThreadLabels(account, threadId, ["TRASH"], ["INBOX"]),
+      addThreadLabelInDb(threadId, account.id, "TRASH"),
+      removeThreadLabelInDb(threadId, account.id, "INBOX"),
+    ]);
+  } catch (err) {
+    console.error("trashThread failed, reverting optimistic removal:", err);
+    useThreadStore.getState().setThreads(cachedThreads);
+    // Best-effort revert of the local DB label changes
+    await Promise.all([
+      removeThreadLabelInDb(threadId, account.id, "TRASH").catch((dbErr) => {
+        console.error("trashThread revert: failed to remove TRASH label in DB:", dbErr);
+      }),
+      addThreadLabelInDb(threadId, account.id, "INBOX").catch((dbErr) => {
+        console.error("trashThread revert: failed to restore INBOX label in DB:", dbErr);
+      }),
+    ]);
+    throw err;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -190,38 +219,121 @@ export async function trashThread(
 // ---------------------------------------------------------------------------
 
 /**
+ * Run async tasks with a bounded concurrency limit. Prevents unbounded
+ * `Promise.all` fan-out from exhausting Gmail API quota or contending on
+ * the local SQLite writer when the user selects many threads at once.
+ */
+async function parallelLimit<T>(
+  tasks: Array<() => Promise<T>>,
+  limit = 5,
+): Promise<T[]> {
+  const results: T[] = new Array(tasks.length);
+  let cursor = 0;
+
+  async function worker(): Promise<void> {
+    while (true) {
+      const index = cursor++;
+      if (index >= tasks.length) return;
+      const task = tasks[index];
+      if (!task) return;
+      results[index] = await task();
+    }
+  }
+
+  const workerCount = Math.min(limit, tasks.length);
+  const workers: Promise<void>[] = [];
+  for (let i = 0; i < workerCount; i++) {
+    workers.push(worker());
+  }
+  await Promise.all(workers);
+  return results;
+}
+
+/**
  * Archive multiple threads. Optimistic UI removes all from list.
+ * Reverts the removal if the API/DB calls fail.
  */
 export async function archiveThreads(
   account: Account,
   threadIds: string[],
 ): Promise<void> {
+  const cachedThreads = useThreadStore.getState().threads;
   useThreadStore.getState().removeThreads(threadIds);
 
-  await Promise.all(
-    threadIds.flatMap((threadId) => [
-      modifyThreadLabels(account, threadId, [], ["INBOX"]),
-      removeThreadLabelInDb(threadId, account.id, "INBOX"),
-    ]),
-  );
+  try {
+    await parallelLimit(
+      threadIds.map((threadId) => async () => {
+        await Promise.all([
+          modifyThreadLabels(account, threadId, [], ["INBOX"]),
+          removeThreadLabelInDb(threadId, account.id, "INBOX"),
+        ]);
+      }),
+    );
+  } catch (err) {
+    console.error("archiveThreads failed, reverting optimistic removal:", err);
+    useThreadStore.getState().setThreads(cachedThreads);
+    await parallelLimit(
+      threadIds.map((threadId) => async () => {
+        try {
+          await addThreadLabelInDb(threadId, account.id, "INBOX");
+        } catch (dbErr) {
+          console.error(
+            `archiveThreads revert: failed to restore INBOX label for ${threadId}:`,
+            dbErr,
+          );
+        }
+      }),
+    );
+    throw err;
+  }
 }
 
 /**
  * Trash multiple threads. Optimistic UI removes all from list.
+ * Reverts the removal if the API/DB calls fail.
  */
 export async function trashThreads(
   account: Account,
   threadIds: string[],
 ): Promise<void> {
+  const cachedThreads = useThreadStore.getState().threads;
   useThreadStore.getState().removeThreads(threadIds);
 
-  await Promise.all(
-    threadIds.flatMap((threadId) => [
-      modifyThreadLabels(account, threadId, ["TRASH"], ["INBOX"]),
-      addThreadLabelInDb(threadId, account.id, "TRASH"),
-      removeThreadLabelInDb(threadId, account.id, "INBOX"),
-    ]),
-  );
+  try {
+    await parallelLimit(
+      threadIds.map((threadId) => async () => {
+        await Promise.all([
+          modifyThreadLabels(account, threadId, ["TRASH"], ["INBOX"]),
+          addThreadLabelInDb(threadId, account.id, "TRASH"),
+          removeThreadLabelInDb(threadId, account.id, "INBOX"),
+        ]);
+      }),
+    );
+  } catch (err) {
+    console.error("trashThreads failed, reverting optimistic removal:", err);
+    useThreadStore.getState().setThreads(cachedThreads);
+    await parallelLimit(
+      threadIds.map((threadId) => async () => {
+        await Promise.all([
+          removeThreadLabelInDb(threadId, account.id, "TRASH").catch(
+            (dbErr) => {
+              console.error(
+                `trashThreads revert: failed to remove TRASH label for ${threadId}:`,
+                dbErr,
+              );
+            },
+          ),
+          addThreadLabelInDb(threadId, account.id, "INBOX").catch((dbErr) => {
+            console.error(
+              `trashThreads revert: failed to restore INBOX label for ${threadId}:`,
+              dbErr,
+            );
+          }),
+        ]);
+      }),
+    );
+    throw err;
+  }
 }
 
 /**
@@ -233,11 +345,13 @@ export async function markThreadsAsRead(
 ): Promise<void> {
   useThreadStore.getState().updateThreads(threadIds, { is_read: true });
 
-  await Promise.all(
-    threadIds.flatMap((threadId) => [
-      modifyThreadLabels(account, threadId, [], ["UNREAD"]),
-      updateThreadInDb(threadId, account.id, { is_read: true }),
-    ]),
+  await parallelLimit(
+    threadIds.map((threadId) => async () => {
+      await Promise.all([
+        modifyThreadLabels(account, threadId, [], ["UNREAD"]),
+        updateThreadInDb(threadId, account.id, { is_read: true }),
+      ]);
+    }),
   );
 }
 
@@ -250,11 +364,13 @@ export async function markThreadsAsUnread(
 ): Promise<void> {
   useThreadStore.getState().updateThreads(threadIds, { is_read: false });
 
-  await Promise.all(
-    threadIds.flatMap((threadId) => [
-      modifyThreadLabels(account, threadId, ["UNREAD"], []),
-      updateThreadInDb(threadId, account.id, { is_read: false }),
-    ]),
+  await parallelLimit(
+    threadIds.map((threadId) => async () => {
+      await Promise.all([
+        modifyThreadLabels(account, threadId, ["UNREAD"], []),
+        updateThreadInDb(threadId, account.id, { is_read: false }),
+      ]);
+    }),
   );
 }
 
@@ -267,11 +383,13 @@ export async function starThreads(
 ): Promise<void> {
   useThreadStore.getState().updateThreads(threadIds, { is_starred: true });
 
-  await Promise.all(
-    threadIds.flatMap((threadId) => [
-      modifyThreadLabels(account, threadId, ["STARRED"], []),
-      updateThreadInDb(threadId, account.id, { is_starred: true }),
-    ]),
+  await parallelLimit(
+    threadIds.map((threadId) => async () => {
+      await Promise.all([
+        modifyThreadLabels(account, threadId, ["STARRED"], []),
+        updateThreadInDb(threadId, account.id, { is_starred: true }),
+      ]);
+    }),
   );
 }
 
@@ -284,11 +402,13 @@ export async function unstarThreads(
 ): Promise<void> {
   useThreadStore.getState().updateThreads(threadIds, { is_starred: false });
 
-  await Promise.all(
-    threadIds.flatMap((threadId) => [
-      modifyThreadLabels(account, threadId, [], ["STARRED"]),
-      updateThreadInDb(threadId, account.id, { is_starred: false }),
-    ]),
+  await parallelLimit(
+    threadIds.map((threadId) => async () => {
+      await Promise.all([
+        modifyThreadLabels(account, threadId, [], ["STARRED"]),
+        updateThreadInDb(threadId, account.id, { is_starred: false }),
+      ]);
+    }),
   );
 }
 
@@ -300,14 +420,29 @@ export async function muteThread(
   account: Account,
   threadId: string,
 ): Promise<void> {
+  const cachedThreads = useThreadStore.getState().threads;
   useThreadStore.getState().updateThread(threadId, { is_muted: true });
   useThreadStore.getState().removeThread(threadId);
 
-  await Promise.all([
-    modifyThreadLabels(account, threadId, [], ["INBOX"]),
-    updateThreadInDb(threadId, account.id, { is_muted: true }),
-    removeThreadLabelInDb(threadId, account.id, "INBOX"),
-  ]);
+  try {
+    await Promise.all([
+      modifyThreadLabels(account, threadId, [], ["INBOX"]),
+      updateThreadInDb(threadId, account.id, { is_muted: true }),
+      removeThreadLabelInDb(threadId, account.id, "INBOX"),
+    ]);
+  } catch (err) {
+    console.error("muteThread failed, reverting optimistic removal:", err);
+    useThreadStore.getState().setThreads(cachedThreads);
+    await Promise.all([
+      updateThreadInDb(threadId, account.id, { is_muted: false }).catch((dbErr) => {
+        console.error("muteThread revert: failed to reset is_muted in DB:", dbErr);
+      }),
+      addThreadLabelInDb(threadId, account.id, "INBOX").catch((dbErr) => {
+        console.error("muteThread revert: failed to restore INBOX label in DB:", dbErr);
+      }),
+    ]);
+    throw err;
+  }
 }
 
 /**
