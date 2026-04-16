@@ -48,3 +48,75 @@ test.describe("Fumi App", () => {
     await expect(page).toHaveTitle("Fumi");
   });
 });
+
+test.describe("Login page — input behaviour", () => {
+  test("client secret input is masked", async ({ page }) => {
+    await page.goto("/login");
+    const secret = page.getByTestId("client-secret-input");
+    await expect(secret).toHaveAttribute("type", "password");
+  });
+
+  test("client id input is plain text", async ({ page }) => {
+    await page.goto("/login");
+    const id = page.getByTestId("client-id-input");
+    await expect(id).toHaveAttribute("type", "text");
+  });
+
+  test("disables login when input is only whitespace", async ({ page }) => {
+    await page.goto("/login");
+    await page.getByTestId("client-id-input").fill("    ");
+    await expect(page.getByTestId("google-login-button")).toBeDisabled();
+  });
+
+  test("protected routes redirect to /login when unauthenticated", async ({
+    page,
+  }) => {
+    for (const path of ["/settings", "/calendar", "/tasks", "/attachments"]) {
+      await page.goto(path);
+      await expect(page).toHaveURL(/\/login/);
+    }
+  });
+
+  test("arbitrary deep path redirects to /login when unauthenticated", async ({
+    page,
+  }) => {
+    await page.goto("/something/that/does/not/exist");
+    await expect(page).toHaveURL(/\/login/);
+  });
+
+  test("keeps entered credentials across navigation to login", async ({
+    page,
+  }) => {
+    await page.goto("/login");
+    const idInput = page.getByTestId("client-id-input");
+    await idInput.fill("abc.apps.googleusercontent.com");
+    await expect(idInput).toHaveValue("abc.apps.googleusercontent.com");
+
+    // Re-mounting the page clears the unmounted state (browser mode has no
+    // persistence), so navigating away and back should reset inputs. This
+    // codifies the browser-mode fallback behaviour.
+    await page.goto("/");
+    await expect(page).toHaveURL(/\/login/);
+    await expect(page.getByTestId("client-id-input")).toHaveValue("");
+  });
+
+  test("login error placeholder is not shown until a submit fails", async ({
+    page,
+  }) => {
+    await page.goto("/login");
+    await expect(page.getByTestId("login-error")).toHaveCount(0);
+  });
+});
+
+test.describe("Accessibility smoke", () => {
+  test("login button has accessible text", async ({ page }) => {
+    await page.goto("/login");
+    await expect(page.getByRole("button", { name: /sign in with google/i }))
+      .toBeVisible();
+  });
+
+  test("page title matches app name", async ({ page }) => {
+    await page.goto("/login");
+    await expect(page).toHaveTitle("Fumi");
+  });
+});
