@@ -1,5 +1,28 @@
 import { getDb } from "../db/connection";
 
+/**
+ * Returns a map of `accountId -> inbox unread count` for every account that
+ * has at least one unread inbox thread. Accounts with zero unread are
+ * omitted; callers should treat missing keys as zero.
+ */
+export async function getUnreadCountsByAccount(): Promise<
+  Record<string, number>
+> {
+  const db = await getDb();
+  const rows = await db.select<{ account_id: string; count: number }[]>(
+    `SELECT t.account_id as account_id, COUNT(*) as count
+       FROM threads t
+       JOIN thread_labels tl ON t.id = tl.thread_id AND t.account_id = tl.account_id
+      WHERE tl.label_id = 'INBOX' AND t.is_read = 0
+      GROUP BY t.account_id`,
+  );
+  const result: Record<string, number> = {};
+  for (const row of rows) {
+    result[row.account_id] = row.count;
+  }
+  return result;
+}
+
 export async function updateBadgeCount(accountId: string): Promise<void> {
   const db = await getDb();
 

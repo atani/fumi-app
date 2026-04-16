@@ -1,9 +1,16 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { Search, Sparkles, X } from "lucide-react";
+import { Clock, Search, Sparkles, X } from "lucide-react";
 import { search } from "../../services/search/searchService";
+import { parseSearchQuery } from "../../services/search/searchParser";
 import { useAccountStore } from "../../stores/accountStore";
 import { useThreadStore } from "../../stores/threadStore";
 import { AskInbox } from "./AskInbox";
+import {
+  loadHistory,
+  saveHistory,
+  addToHistory,
+  removeFromHistory,
+} from "./searchHistory";
 import type { Thread } from "../../types";
 
 type PaletteMode = "search" | "ask";
@@ -21,6 +28,37 @@ const OPERATOR_HINTS: { operator: string; description: string }[] = [
   { operator: "label:", description: "label name" },
 ];
 
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * Split `text` on the highlightable tokens and return React nodes with
+ * matching segments wrapped in <mark>. Matching is case-insensitive and
+ * ignores overlapping/duplicate tokens.
+ */
+function highlightText(text: string, tokens: string[]): React.ReactNode {
+  if (!text || tokens.length === 0) return text;
+  const unique = [...new Set(tokens.map((t) => t.trim()).filter(Boolean))];
+  if (unique.length === 0) return text;
+  const pattern = new RegExp(`(${unique.map(escapeRegex).join("|")})`, "ig");
+  // With a capturing group, split produces ["before", "match", "between", ...]
+  // so odd indices are always match segments.
+  const parts = text.split(pattern);
+  return parts.map((part, i) =>
+    i % 2 === 1 ? (
+      <mark
+        key={i}
+        className="rounded bg-accent-light px-0.5 text-accent"
+      >
+        {part}
+      </mark>
+    ) : (
+      <span key={i}>{part}</span>
+    ),
+  );
+}
+
 interface CommandPaletteProps {
   isOpen: boolean;
   onClose: () => void;
@@ -29,9 +67,11 @@ interface CommandPaletteProps {
 export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Thread[]>([]);
+  const [lastSearchedQuery, setLastSearchedQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [mode, setMode] = useState<PaletteMode>("search");
+  const [history, setHistory] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
@@ -39,19 +79,37 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
   const { selectThread } = useThreadStore();
   const activeAccountId = useAccountStore((s) => s.activeAccountId);
 
-  // Focus input when opened
+  // Focus input and reload history when opened
   useEffect(() => {
     if (isOpen) {
       setQuery("");
       setResults([]);
       setSelectedIndex(0);
       setMode("search");
+      setHistory(loadHistory());
+      setLastSearchedQuery("");
       // Small delay to let the DOM render
       requestAnimationFrame(() => {
         inputRef.current?.focus();
       });
     }
   }, [isOpen]);
+
+  const recordHistory = useCallback((q: string) => {
+    setHistory((prev) => {
+      const next = addToHistory(prev, q);
+      saveHistory(next);
+      return next;
+    });
+  }, []);
+
+  const removeHistoryItem = useCallback((q: string) => {
+    setHistory((prev) => {
+      const next = removeFromHistory(prev, q);
+      saveHistory(next);
+      return next;
+    });
+  }, []);
 
   // Debounced search
   const doSearch = useCallback(
@@ -78,6 +136,8 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
           const found = await search(account, q);
           setResults(found);
           setSelectedIndex(0);
+          setLastSearchedQuery(q);
+          recordHistory(q);
         } catch {
           setResults([]);
         } finally {
@@ -85,7 +145,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
         }
       }, 300);
     },
-    [getActiveAccount],
+    [getActiveAccount, recordHistory],
   );
 
   // Cleanup debounce on unmount
@@ -132,6 +192,25 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
     selectThread(thread.id, activeAccountId ?? undefined);
     onClose();
   };
+
+  const handleSelectHistory = (q: string) => {
+    setQuery(q);
+    doSearch(q);
+    inputRef.current?.focus();
+  };
+
+  const highlightTokens = useMemo(() => {
+    if (!lastSearchedQuery) return [];
+    const parsed = parseSearchQuery(lastSearchedQuery);
+    const tokens: string[] = [];
+    if (parsed.freeText) {
+      tokens.push(...parsed.freeText.split(/\s+/).filter(Boolean));
+    }
+    if (parsed.operators.from) tokens.push(...parsed.operators.from);
+    if (parsed.operators.to) tokens.push(...parsed.operators.to);
+    if (parsed.operators.subject) tokens.push(...parsed.operators.subject);
+    return tokens;
+  }, [lastSearchedQuery]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     switch (e.key) {
@@ -305,19 +384,57 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                           : "text-text-primary"
                       }`}
                     >
-                      {thread.subject || "(No subject)"}
+                      {highlightText(
+                        thread.subject || "(No subject)",
+                        highlightTokens,
+                      )}
                     </span>
                     <span className="ml-2 shrink-0 text-xs text-text-tertiary">
                       {formatDate(thread.last_message_at)}
                     </span>
                   </div>
                   <p className="mt-1 truncate text-xs text-text-secondary">
-                    {thread.snippet}
+                    {highlightText(thread.snippet ?? "", highlightTokens)}
                   </p>
                 </button>
               ))}
 
-            {!query.trim() && !isSearching && (
+            {!query.trim() && !isSearching && history.length > 0 && (
+              <div data-testid="search-history">
+                <div className="px-4 pt-3 pb-1 text-xs font-medium uppercase tracking-wide text-text-tertiary">
+                  Recent searches
+                </div>
+                {history.map((item) => (
+                  <div
+                    key={item}
+                    className="group flex items-center gap-2 px-4 py-2 hover:bg-bg-hover"
+                  >
+                    <Clock className="h-3.5 w-3.5 shrink-0 text-text-tertiary" />
+                    <button
+                      type="button"
+                      onClick={() => handleSelectHistory(item)}
+                      className="flex-1 truncate text-left text-sm text-text-secondary hover:text-text-primary"
+                      data-testid="search-history-item"
+                    >
+                      {item}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeHistoryItem(item);
+                      }}
+                      className="shrink-0 rounded p-1 text-text-tertiary opacity-0 hover:bg-bg-primary hover:text-text-primary group-hover:opacity-100"
+                      aria-label={`Remove ${item} from history`}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {!query.trim() && !isSearching && history.length === 0 && (
               <div className="px-4 py-6 text-center text-sm text-text-tertiary">
                 Type to search your emails
               </div>
