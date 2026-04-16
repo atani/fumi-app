@@ -120,6 +120,16 @@ export function startAutoSave(
       const current = useComposerStore.getState();
       if (!current.isOpen || !current.draftId) return;
 
+      // Skip entirely empty drafts: avoids creating stub rows when the user
+      // opens and closes the composer without typing anything.
+      const isEmpty =
+        !current.to.trim() &&
+        !current.cc.trim() &&
+        !current.bcc.trim() &&
+        !current.subject.trim() &&
+        !current.body.trim();
+      if (isEmpty) return;
+
       saveDraft(current.draftId, getAccountId(), {
         mode: current.mode,
         to: current.to,
