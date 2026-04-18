@@ -218,6 +218,27 @@ describe("draftAutoSave", () => {
       expect(mockExecute).not.toHaveBeenCalled();
     });
 
+    it("should skip saving when all fields are empty", async () => {
+      useComposerStore.setState({
+        isOpen: true,
+        draftId: "draft-1",
+        mode: "compose",
+        to: "",
+        cc: "",
+        bcc: "",
+        subject: "",
+        body: "",
+      });
+
+      startAutoSave(() => "account-1");
+
+      // Whitespace-only inputs should also be treated as empty
+      useComposerStore.setState({ subject: "   ", body: "\n" });
+      await vi.advanceTimersByTimeAsync(3000);
+
+      expect(mockExecute).not.toHaveBeenCalled();
+    });
+
     it("should not save again when snapshot has not changed after initial save", async () => {
       useComposerStore.setState({
         isOpen: true,

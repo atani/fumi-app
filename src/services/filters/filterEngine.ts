@@ -17,32 +17,46 @@ import type {
 // DB helpers
 // ---------------------------------------------------------------------------
 
+interface FilterRuleRow {
+  id: string;
+  account_id: string;
+  criteria: string;
+  actions: string;
+  enabled: number;
+  created_at: string;
+}
+
+// Drop rows whose JSON can't be parsed — they're corrupt and cannot be applied
+// safely. Logging preserves visibility without breaking inbox sync.
+function rowToRule(r: FilterRuleRow): FilterRule | null {
+  try {
+    return {
+      id: r.id,
+      account_id: r.account_id,
+      criteria: JSON.parse(r.criteria) as FilterCriteria,
+      actions: JSON.parse(r.actions) as FilterActions,
+      enabled: r.enabled === 1,
+      created_at: r.created_at,
+    };
+  } catch (err) {
+    console.error(`Skipping filter rule ${r.id}: invalid JSON`, err);
+    return null;
+  }
+}
+
 /**
  * Fetch all enabled filter rules for a given account.
  */
 export async function getFilterRules(accountId: string): Promise<FilterRule[]> {
   const db = await getDb();
-  const rows = await db.select<
-    {
-      id: string;
-      account_id: string;
-      criteria: string;
-      actions: string;
-      enabled: number;
-      created_at: string;
-    }[]
-  >("SELECT * FROM filter_rules WHERE account_id = $1 AND enabled = 1", [
-    accountId,
-  ]);
+  const rows = await db.select<FilterRuleRow[]>(
+    "SELECT * FROM filter_rules WHERE account_id = $1 AND enabled = 1",
+    [accountId],
+  );
 
-  return rows.map((r) => ({
-    id: r.id,
-    account_id: r.account_id,
-    criteria: JSON.parse(r.criteria) as FilterCriteria,
-    actions: JSON.parse(r.actions) as FilterActions,
-    enabled: r.enabled === 1,
-    created_at: r.created_at,
-  }));
+  return rows
+    .map(rowToRule)
+    .filter((r): r is FilterRule => r !== null);
 }
 
 /**
@@ -52,27 +66,14 @@ export async function getAllFilterRules(
   accountId: string,
 ): Promise<FilterRule[]> {
   const db = await getDb();
-  const rows = await db.select<
-    {
-      id: string;
-      account_id: string;
-      criteria: string;
-      actions: string;
-      enabled: number;
-      created_at: string;
-    }[]
-  >("SELECT * FROM filter_rules WHERE account_id = $1 ORDER BY created_at", [
-    accountId,
-  ]);
+  const rows = await db.select<FilterRuleRow[]>(
+    "SELECT * FROM filter_rules WHERE account_id = $1 ORDER BY created_at",
+    [accountId],
+  );
 
-  return rows.map((r) => ({
-    id: r.id,
-    account_id: r.account_id,
-    criteria: JSON.parse(r.criteria) as FilterCriteria,
-    actions: JSON.parse(r.actions) as FilterActions,
-    enabled: r.enabled === 1,
-    created_at: r.created_at,
-  }));
+  return rows
+    .map(rowToRule)
+    .filter((r): r is FilterRule => r !== null);
 }
 
 export async function saveFilterRule(rule: FilterRule): Promise<void> {

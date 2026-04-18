@@ -11,8 +11,8 @@ import {
 import { mapAllFolders, type FolderMapping } from "./folderMapper";
 import { buildThreads, type ThreadGroup } from "../threading/threadBuilder";
 import { getDb } from "../db/connection";
-import { upsertMessage } from "../db/messages";
-import { upsertThread, setThreadLabelsBatch } from "../db/threads";
+import { upsertMessagesBatch } from "../db/messages";
+import { upsertThreadsBatch, setThreadLabelsBatch } from "../db/threads";
 import { recordContactsFromMessages } from "../contacts/contactService";
 
 const BATCH_SIZE = 50;
@@ -225,20 +225,19 @@ export async function initialSyncFolder(
   const syncedThreads: Thread[] = [];
   const newThreads: Thread[] = [];
   const allMessages: Message[] = [];
+  const pendingThreads: Thread[] = [];
   const pendingThreadLabels: { threadId: string; labelIds: string[] }[] = [];
 
   for (const group of threadGroups) {
     const thread = threadGroupToThread(group, account.id);
 
-    // Update message thread_ids to the real thread ID
+    // Re-point messages to the canonical thread ID
     for (const msg of group.messages) {
-      const updatedMsg: Message = { ...msg, thread_id: thread.id };
-      await upsertMessage(updatedMsg);
-      allMessages.push(updatedMsg);
+      allMessages.push({ ...msg, thread_id: thread.id });
     }
 
     const isNew = !existingIds.has(thread.id);
-    await upsertThread(thread);
+    pendingThreads.push(thread);
     pendingThreadLabels.push({ threadId: thread.id, labelIds: [labelId] });
 
     syncedThreads.push(thread);
@@ -247,7 +246,9 @@ export async function initialSyncFolder(
     }
   }
 
-  // Batch set all thread labels in a single transaction
+  // Batch-persist everything to avoid N+1 round-trips
+  await upsertMessagesBatch(allMessages);
+  await upsertThreadsBatch(pendingThreads);
   await setThreadLabelsBatch(account.id, pendingThreadLabels);
 
   // Record contacts
@@ -337,25 +338,24 @@ export async function deltaSyncFolder(
   const syncedThreads: Thread[] = [];
   const newThreads: Thread[] = [];
   const persistedMessages: Message[] = [];
+  const pendingThreads: Thread[] = [];
   const pendingThreadLabels: { threadId: string; labelIds: string[] }[] = [];
 
+  // O(1) lookup replaces the prior O(n²) double-loop
+  const newMsgIdSet = new Set(messages.map((m) => m.id));
+
   for (const group of threadGroups) {
-    // Only process groups that contain at least one new message
-    const hasNewMessage = group.messages.some((m) =>
-      messages.some((nm) => nm.id === m.id),
-    );
+    const hasNewMessage = group.messages.some((m) => newMsgIdSet.has(m.id));
     if (!hasNewMessage) continue;
 
     const thread = threadGroupToThread(group, account.id);
 
     for (const msg of group.messages) {
-      const updatedMsg: Message = { ...msg, thread_id: thread.id };
-      await upsertMessage(updatedMsg);
-      persistedMessages.push(updatedMsg);
+      persistedMessages.push({ ...msg, thread_id: thread.id });
     }
 
     const isNew = !existingThreadIds.has(thread.id);
-    await upsertThread(thread);
+    pendingThreads.push(thread);
     pendingThreadLabels.push({ threadId: thread.id, labelIds: [labelId] });
 
     syncedThreads.push(thread);
@@ -364,12 +364,13 @@ export async function deltaSyncFolder(
     }
   }
 
-  // Batch set all thread labels in a single transaction
+  // Batch-persist everything to avoid N+1 round-trips
+  await upsertMessagesBatch(persistedMessages);
+  await upsertThreadsBatch(pendingThreads);
   await setThreadLabelsBatch(account.id, pendingThreadLabels);
 
   // Record contacts from new messages only
-  const newMsgSet = new Set(messages.map((m) => m.id));
-  const contactMessages = persistedMessages.filter((m) => newMsgSet.has(m.id));
+  const contactMessages = persistedMessages.filter((m) => newMsgIdSet.has(m.id));
   await recordContactsFromMessages(account.id, contactMessages);
 
   // Update sync state

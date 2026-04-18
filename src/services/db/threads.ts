@@ -82,29 +82,75 @@ export async function getThreadsByLabel(
   );
 }
 
-export async function upsertThread(thread: Thread): Promise<void> {
-  const db = await getDb();
-  await db.execute(
-    `INSERT INTO threads (id, account_id, snippet, subject, last_message_at, message_count, is_read, is_starred)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-     ON CONFLICT(id, account_id) DO UPDATE SET
+const THREAD_COLUMNS = 8;
+const THREAD_BATCH_ROWS = 100; // 100*8 = 800 params
+
+function threadBindValues(thread: Thread): unknown[] {
+  return [
+    thread.id,
+    thread.account_id,
+    thread.snippet,
+    thread.subject,
+    thread.last_message_at,
+    thread.message_count,
+    thread.is_read ? 1 : 0,
+    thread.is_starred ? 1 : 0,
+  ];
+}
+
+const THREAD_UPSERT_ON_CONFLICT = `ON CONFLICT(id, account_id) DO UPDATE SET
        snippet = excluded.snippet,
        subject = excluded.subject,
        last_message_at = excluded.last_message_at,
        message_count = excluded.message_count,
        is_read = excluded.is_read,
-       is_starred = excluded.is_starred`,
-    [
-      thread.id,
-      thread.account_id,
-      thread.snippet,
-      thread.subject,
-      thread.last_message_at,
-      thread.message_count,
-      thread.is_read ? 1 : 0,
-      thread.is_starred ? 1 : 0,
-    ],
+       is_starred = excluded.is_starred`;
+
+export async function upsertThread(thread: Thread): Promise<void> {
+  const db = await getDb();
+  await db.execute(
+    `INSERT INTO threads (id, account_id, snippet, subject, last_message_at, message_count, is_read, is_starred)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+     ${THREAD_UPSERT_ON_CONFLICT}`,
+    threadBindValues(thread),
   );
+}
+
+/**
+ * Upsert many threads in a single transaction using multi-row INSERTs.
+ * Chunks into batches to stay below SQLite's bind-parameter limit.
+ */
+export async function upsertThreadsBatch(threads: Thread[]): Promise<void> {
+  if (threads.length === 0) return;
+  const db = await getDb();
+
+  await db.execute("BEGIN TRANSACTION", []);
+  try {
+    for (let i = 0; i < threads.length; i += THREAD_BATCH_ROWS) {
+      const chunk = threads.slice(i, i + THREAD_BATCH_ROWS);
+      const placeholders: string[] = [];
+      const params: unknown[] = [];
+      let idx = 1;
+      for (const thread of chunk) {
+        const rowParams: string[] = [];
+        for (let c = 0; c < THREAD_COLUMNS; c++) {
+          rowParams.push(`$${idx++}`);
+        }
+        placeholders.push(`(${rowParams.join(", ")})`);
+        params.push(...threadBindValues(thread));
+      }
+      await db.execute(
+        `INSERT INTO threads (id, account_id, snippet, subject, last_message_at, message_count, is_read, is_starred)
+         VALUES ${placeholders.join(", ")}
+         ${THREAD_UPSERT_ON_CONFLICT}`,
+        params,
+      );
+    }
+    await db.execute("COMMIT", []);
+  } catch (e) {
+    await db.execute("ROLLBACK", []);
+    throw e;
+  }
 }
 
 export async function setThreadLabels(
