@@ -24,6 +24,7 @@ import {
   Paperclip,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useThreadStore } from "../../stores/threadStore";
 import { useAccountStore } from "../../stores/accountStore";
 import { useUIStore } from "../../stores/uiStore";
@@ -74,15 +75,15 @@ function DroppableLabelButton({
   );
 }
 
-const LABELS: { id: string; name: string; icon: LucideIcon }[] = [
-  { id: "INBOX", name: "Inbox", icon: Inbox },
-  { id: "STARRED", name: "Starred", icon: Star },
-  { id: "SNOOZED", name: "Snoozed", icon: Clock },
-  { id: "SENT", name: "Sent", icon: Send },
-  { id: "DRAFT", name: "Drafts", icon: FileText },
-  { id: "TRASH", name: "Trash", icon: Trash2 },
-  { id: "SPAM", name: "Spam", icon: AlertOctagon },
-  { id: "ARCHIVE", name: "All Mail", icon: Archive },
+const LABELS: { id: string; nameKey: string; icon: LucideIcon }[] = [
+  { id: "INBOX", nameKey: "nav.inbox", icon: Inbox },
+  { id: "STARRED", nameKey: "nav.starred", icon: Star },
+  { id: "SNOOZED", nameKey: "nav.snoozed", icon: Clock },
+  { id: "SENT", nameKey: "nav.sent", icon: Send },
+  { id: "DRAFT", nameKey: "nav.drafts", icon: FileText },
+  { id: "TRASH", nameKey: "nav.trash", icon: Trash2 },
+  { id: "SPAM", nameKey: "nav.spam", icon: AlertOctagon },
+  { id: "ARCHIVE", nameKey: "nav.allMail", icon: Archive },
 ];
 
 const THEME_CYCLE: Record<string, "light" | "dark" | "system"> = {
@@ -97,10 +98,10 @@ const THEME_ICON = {
   dark: Moon,
 } as const;
 
-const THEME_LABEL = {
-  system: "System",
-  light: "Light",
-  dark: "Dark",
+const THEME_LABEL_KEY = {
+  system: "settings.themeSystem",
+  light: "settings.themeLight",
+  dark: "settings.themeDark",
 } as const;
 
 export function Sidebar() {
@@ -112,6 +113,7 @@ export function Sidebar() {
   const { folders: smartFolders, loadFolders: loadSmartFolders, activeSmartFolderId, setActiveSmartFolderId } =
     useSmartFolderStore();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // Bundles state
   const [bundles, setBundles] = useState<
@@ -258,12 +260,12 @@ export function Sidebar() {
           data-testid="compose-button"
         >
           <PenSquare className="h-4 w-4" />
-          Compose
+          {t("nav.compose")}
         </button>
       </div>
 
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 py-2">
-        {LABELS.map(({ id, name, icon: Icon }) => (
+        {LABELS.map(({ id, nameKey, icon: Icon }) => (
           <DroppableLabelButton
             key={id}
             labelId={id}
@@ -272,7 +274,7 @@ export function Sidebar() {
             testId={`sidebar-label-${id}`}
           >
             <Icon className="h-4 w-4" />
-            {name}
+            {t(nameKey)}
           </DroppableLabelButton>
         ))}
 
@@ -281,12 +283,12 @@ export function Sidebar() {
           <>
             <div className="mt-3 mb-1 flex items-center justify-between px-3">
               <span className="text-xs font-medium uppercase tracking-wider text-text-tertiary">
-                Labels
+                {t("nav.labels")}
               </span>
               <button
                 onClick={() => setIsLabelFormOpen(true)}
                 className="rounded p-0.5 text-text-tertiary hover:bg-bg-hover hover:text-text-primary"
-                title="Create label"
+                title={t("nav.createLabel")}
                 data-testid="create-label-btn"
               >
                 <Plus className="h-3.5 w-3.5" />
@@ -325,7 +327,7 @@ export function Sidebar() {
               data-testid="create-label-btn"
             >
               <Plus className="h-4 w-4" />
-              Create label
+              {t("nav.createLabel")}
             </button>
           </div>
         )}
@@ -335,7 +337,7 @@ export function Sidebar() {
           <>
             <div className="mt-3 mb-1 px-3">
               <span className="text-xs font-medium uppercase tracking-wider text-text-tertiary">
-                Bundles
+                {t("nav.bundles")}
               </span>
             </div>
             {bundles.map((bundle) => (
@@ -364,7 +366,7 @@ export function Sidebar() {
           <>
             <div className="mt-3 mb-1 px-3">
               <span className="text-xs font-medium uppercase tracking-wider text-text-tertiary">
-                Smart Folders
+                {t("nav.smartFolders")}
               </span>
             </div>
             {smartFolders.map((folder) => (
@@ -393,7 +395,7 @@ export function Sidebar() {
           data-testid="sidebar-tasks"
         >
           <CheckSquare className="h-4 w-4" />
-          Tasks
+          {t("nav.tasks")}
         </button>
         <button
           onClick={() => navigate("/attachments")}
@@ -401,7 +403,7 @@ export function Sidebar() {
           data-testid="sidebar-attachments"
         >
           <Paperclip className="h-4 w-4" />
-          Attachments
+          {t("nav.attachments")}
         </button>
         <button
           onClick={() => navigate("/calendar")}
@@ -409,7 +411,7 @@ export function Sidebar() {
           data-testid="sidebar-calendar"
         >
           <Calendar className="h-4 w-4" />
-          Calendar
+          {t("nav.calendar")}
         </button>
         <button
           onClick={() => navigate("/help")}
@@ -417,7 +419,7 @@ export function Sidebar() {
           data-testid="sidebar-help"
         >
           <HelpCircle className="h-4 w-4" />
-          Help
+          {t("nav.help")}
         </button>
         <button
           onClick={() => navigate("/settings")}
@@ -425,19 +427,19 @@ export function Sidebar() {
           data-testid="sidebar-settings"
         >
           <Settings className="h-4 w-4" />
-          Settings
+          {t("nav.settings")}
         </button>
         <button
           onClick={() => setTheme(THEME_CYCLE[theme] ?? "system")}
           className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-text transition-colors hover:bg-bg-hover"
           data-testid="theme-toggle"
-          title={`Theme: ${THEME_LABEL[theme]}`}
+          title={t("nav.themeTitle", { theme: t(THEME_LABEL_KEY[theme]) })}
         >
           {(() => {
             const ThemeIcon = THEME_ICON[theme];
             return <ThemeIcon className="h-4 w-4" />;
           })()}
-          {THEME_LABEL[theme]}
+          {t(THEME_LABEL_KEY[theme])}
         </button>
       </div>
 
@@ -460,13 +462,13 @@ export function Sidebar() {
             }}
             className="flex w-full items-center px-3 py-1.5 text-sm text-text-primary hover:bg-bg-hover"
           >
-            Edit
+            {t("nav.edit")}
           </button>
           <button
             onClick={() => void handleDeleteLabel(contextMenu.labelId)}
             className="flex w-full items-center px-3 py-1.5 text-sm text-danger hover:bg-bg-hover"
           >
-            Delete
+            {t("nav.delete")}
           </button>
         </div>
       )}
@@ -476,7 +478,7 @@ export function Sidebar() {
         isOpen={isLabelFormOpen}
         onClose={() => setIsLabelFormOpen(false)}
         onSave={(name, color) => void handleCreateLabel(name, color)}
-        title="Create label"
+        title={t("nav.createLabel")}
       />
 
       {/* Edit label form */}
@@ -486,7 +488,7 @@ export function Sidebar() {
         onSave={(name, color) => void handleUpdateLabel(name, color)}
         initialName={editingLabel?.name}
         initialColor={editingLabel?.color}
-        title="Edit label"
+        title={t("nav.editLabel")}
       />
     </aside>
   );
