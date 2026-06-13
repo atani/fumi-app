@@ -1,4 +1,5 @@
 import type { GmailTokenResponse, GmailUserInfo } from "../../types";
+import { EMBEDDED_CLIENT_ID } from "../../config/oauth";
 
 function isTauri(): boolean {
   return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
@@ -42,6 +43,10 @@ function sanitizeOAuthError(body: string): string {
 }
 
 export async function getClientId(): Promise<string | null> {
+  // Builds with an embedded OAuth client always use it; manual entry is only a
+  // fallback for from-source builds that ship no credentials.
+  if (EMBEDDED_CLIENT_ID) return EMBEDDED_CLIENT_ID;
+
   const { getDb } = await import("../db/connection");
   const db = await getDb();
   const rows = await db.select<{ value: string }[]>(
@@ -158,7 +163,8 @@ export async function refreshAccessToken(
   });
 
   if (!response.ok) {
-    throw new Error("Token refresh failed");
+    const body = await response.text();
+    throw new Error(`Token refresh failed: ${sanitizeOAuthError(body)}`);
   }
 
   return response.json();
