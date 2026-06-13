@@ -61,5 +61,11 @@
     "readingPaneHint": "Controls where the email preview appears. When hidden, double-click or press Enter to open a thread.",
     "language": "Language",
     "languageHint": "Choose the display language for the app."
+  },
+  "notifications": {
+    "followUpTitle": "Follow-up reminder",
+    "followUpBody": "No reply yet: {{subject}}",
+    "noSubject": "(No subject)",
+    "newMessages": "{{count}} new messages"
   }
 }

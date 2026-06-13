@@ -61,5 +61,11 @@
     "readingPaneHint": "メールのプレビューを表示する位置を選びます。非表示の場合はダブルクリックまたは Enter キーでスレッドを開きます。",
     "language": "言語",
     "languageHint": "アプリの表示言語を選択します。"
+  },
+  "notifications": {
+    "followUpTitle": "フォローアップのリマインダー",
+    "followUpBody": "まだ返信がありません: {{subject}}",
+    "noSubject": "(件名なし)",
+    "newMessages": "新着メッセージ {{count}} 件"
   }
 }
