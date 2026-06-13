@@ -12,7 +12,8 @@
     "connecting": "接続中…",
     "clientIdPlaceholder": "Google OAuth クライアント ID",
     "clientSecretPlaceholder": "クライアントシークレット",
-    "errorGeneric": "認証に失敗しました"
+    "errorGeneric": "認証に失敗しました",
+    "unverifiedHint": "「確認されていないアプリ」の画面が表示された場合は、「詳細」→「続行」を選んでください。"
   },
   "nav": {
     "compose": "作成",

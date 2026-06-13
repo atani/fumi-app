@@ -12,7 +12,8 @@
     "connecting": "Connecting…",
     "clientIdPlaceholder": "Google OAuth Client ID",
     "clientSecretPlaceholder": "Client Secret",
-    "errorGeneric": "Authentication failed"
+    "errorGeneric": "Authentication failed",
+    "unverifiedHint": "If Google shows an \"unverified app\" screen, choose Advanced → Continue to proceed."
   },
   "nav": {
     "compose": "Compose",

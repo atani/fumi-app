@@ -182,6 +182,12 @@ export function LoginPage() {
             {isLoading ? t("login.connecting") : t("login.signIn")}
           </button>
 
+          {embedded && (
+            <p className="text-center text-xs text-text-tertiary">
+              {t("login.unverifiedHint")}
+            </p>
+          )}
+
           {error && (
             <p
               className="text-center text-sm text-danger"
