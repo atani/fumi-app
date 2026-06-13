@@ -67,5 +67,12 @@
     "followUpBody": "No reply yet: {{subject}}",
     "noSubject": "(No subject)",
     "newMessages": "{{count}} new messages"
+  },
+  "app": {
+    "loading": "Loading…",
+    "unsentDraft": "You have an unsent draft",
+    "unsentDraftNamed": "You have an unsent draft: \"{{subject}}\"",
+    "restore": "Restore",
+    "discard": "Discard"
   }
 }

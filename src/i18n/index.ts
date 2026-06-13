@@ -34,6 +34,8 @@ import enLayout from "./locales/en/layout.json";
 import jaLayout from "./locales/ja/layout.json";
 import enDnd from "./locales/en/dnd.json";
 import jaDnd from "./locales/ja/dnd.json";
+import enLicense from "./locales/en/license.json";
+import jaLicense from "./locales/ja/license.json";
 
 export const SUPPORTED_LANGUAGES = [
   { code: "en", label: "English" },
@@ -57,6 +59,7 @@ export const enResources = {
   attachments: enAttachments,
   layout: enLayout,
   dnd: enDnd,
+  license: enLicense,
 };
 
 export const jaResources = {
@@ -74,6 +77,7 @@ export const jaResources = {
   attachments: jaAttachments,
   layout: jaLayout,
   dnd: jaDnd,
+  license: jaLicense,
 };
 
 // Resources are bundled inline so init is synchronous — no Suspense needed.

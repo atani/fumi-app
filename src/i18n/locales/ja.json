@@ -67,5 +67,12 @@
     "followUpBody": "まだ返信がありません: {{subject}}",
     "noSubject": "(件名なし)",
     "newMessages": "新着メッセージ {{count}} 件"
+  },
+  "app": {
+    "loading": "読み込み中…",
+    "unsentDraft": "未送信の下書きがあります",
+    "unsentDraftNamed": "未送信の下書きがあります: 「{{subject}}」",
+    "restore": "復元",
+    "discard": "破棄"
   }
 }

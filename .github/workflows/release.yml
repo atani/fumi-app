@@ -63,6 +63,10 @@ jobs:
           # Embedded OAuth client for one-click sign-in (see docs/GO-TO-MARKET.md)
           VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
           VITE_GOOGLE_CLIENT_SECRET: ${{ secrets.VITE_GOOGLE_CLIENT_SECRET }}
+          # Lemon Squeezy licensing config (optional; embedded at build time)
+          VITE_LEMONSQUEEZY_STORE_ID: ${{ secrets.VITE_LEMONSQUEEZY_STORE_ID }}
+          VITE_LEMONSQUEEZY_PRODUCT_ID: ${{ secrets.VITE_LEMONSQUEEZY_PRODUCT_ID }}
+          VITE_BUY_URL: ${{ secrets.VITE_BUY_URL }}
           # macOS code signing + notarization (applied only if secrets are set)
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}

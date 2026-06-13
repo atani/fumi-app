@@ -44,16 +44,25 @@
 - [x] i18n 基盤（英語デフォルト＋日本語、自動検出、言語切替）
 - [x] **UI 全面ローカライズ（英語＋日本語）** — 全機能コンポーネント（メール/設定/作成/タスク/カレンダー/検索/添付/ヘルプ/アカウント/レイアウト等）＋ OS 通知を `t()` 化。残りは純 SVG・プロップ駆動のみ。ロケール parity テストで鍵対称性を保証
 
-### Phase 1: 売れる最低条件（必須）
-- [ ] **Google OAuth 検証 + CASA 監査の開始**（最長納期。今すぐ着手）
-  - [ ] OAuth 同意画面の本番公開設定、スコープ正当化文書
-  - [x] プライバシーポリシー / 利用規約の**英日ドラフト作成**（`docs/legal/`。Google Limited Use 準拠文・ローカルファースト/テレメトリ無しを明記）→ 事業者名・連絡先を埋めて公開 URL にホストするのみ
-  - [x] ランディングページ**ドラフト作成**（`landing/index.html`。機能/プライバシー/価格 $39/購入 CTA）→ Buy/Download リンク・スクショ・連絡先を埋めてドメインで公開・所有確認するのみ
-  - [ ] デモ動画の作成
-- [ ] **コード署名 + notarization**（macOS: Apple Developer ID、Windows: コード署名証明書）
-  - 未署名だと macOS は Gatekeeper でブロック、Windows は SmartScreen 警告 ＝ 配布不能
-- [ ] **ライセンス（買い切りキー）のアプリ内検証** — 購入確認・トライアル・機能ロック
-- [ ] **決済セットアップ**（Lemon Squeezy / Paddle の商品・ライセンスキー発行設定）
+### ⭐ ローンチ方針（2026-06 決定）: まず100ユーザー限定で出す
+
+**Google CASA 審査は当面スキップ**し、未確認アプリのまま少人数で先行ローンチする。
+
+- OAuth 同意画面は **「本番（In production）」** に公開する。**「テスト（Testing）」のままにしない** — テスト状態は refresh token が7日で失効し再ログインを強いる。本番・未確認なら token は安定し、restricted scope は審査通過まで新規付与が100ユーザー上限。
+- ユーザーには初回サインイン時に **「このアプリは Google で確認されていません」警告**が出る（「詳細」→ 続行 で通過可能）。これを許容する前提。LoginPage にこの旨の補足を出すと親切。
+- 100ユーザーを超えそうになったら、その時点で CASA 審査（`docs/legal/` のポリシーは作成済み・流用可）に着手して上限解除する。
+
+### Phase 1: 100ユーザー限定ローンチに必要なこと
+- [x] プライバシーポリシー / 利用規約の英日ドラフト（`docs/legal/`。Google Limited Use 準拠文・ローカルファースト/テレメトリ無しを明記）→ 事業者名・連絡先を埋めて公開 URL にホスト
+- [x] ランディングページドラフト（`landing/index.html`）→ Buy/Download リンク・スクショ・連絡先を埋めて公開
+- [ ] Google Cloud で OAuth クライアント（Desktop app 種別）作成 → `VITE_GOOGLE_CLIENT_ID` に設定し、同意画面を「本番」公開
+- [~] **コード署名 + notarization**（Apple Developer **契約手続き中**）。受け皿は実装済み: `tauri.conf.json` の `macOS` 設定＋`entitlements.plist`、`release.yml` が `APPLE_*` Secrets で署名・notarize。証明書が届いたら Secrets を入れるだけ。Windows 署名証明書は別途。
+- [x] **ライセンス（買い切りキー）のアプリ内検証** — Lemon Squeezy License API で activate/validate/deactivate、14日間トライアル、トライアル終了で全画面ペイウォール、設定にライセンス管理＋トライアルバナー。オフライン時は認証済みライセンスを維持（課金ユーザーを締め出さない）。`VITE_LEMONSQUEEZY_STORE_ID/PRODUCT_ID` 設定時はキーの製品一致を検証
+- [ ] **決済セットアップ**（Lemon Squeezy で商品＋ライセンスキー発行を有効化し、Store/Product ID と Buy URL を Secrets に設定）← 要アカウント開設
+
+### Phase 1.5: CASA 審査（100ユーザー超え時）
+- [ ] OAuth 同意画面のスコープ正当化文書、デモ動画
+- [ ] CASA Tier 2 監査契約 → 上限解除
 
 ### Phase 2: 運用品質
 - [ ] **自動アップデート**（Tauri updater プラグイン＋署名済みリリース）

@@ -29,6 +29,7 @@ import { SyncSection } from "./sections/SyncSection";
 import { UndoSendSection } from "./sections/UndoSendSection";
 import { EmailBehaviorSection } from "./sections/EmailBehaviorSection";
 import { AutostartSection } from "./sections/AutostartSection";
+import { LicenseSection } from "./sections/LicenseSection";
 
 async function loadSetting(key: string): Promise<string | null> {
   try {
@@ -650,6 +651,9 @@ export function SettingsPage() {
               </div>
             </div>
           </Section>
+
+          {/* License */}
+          <LicenseSection />
 
           {/* About */}
           <Section title={t("settingsUi.about.title")}>
