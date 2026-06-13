@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Fumi — a fast, private desktop email client</title>
+    <meta
+      name="description"
+      content="Fumi is a fast, local-first desktop email client for Gmail and IMAP. Your mail stays on your device. One-time purchase."
+    />
+    <!--
+      Draft landing page. Replace [BUY_URL], [DOWNLOAD_URL], screenshot paths,
+      and contact details before publishing. Serves as the product homepage
+      (also required for Google OAuth verification). Tailwind via CDN keeps this
+      self-contained; swap for a build step when the site grows.
+    -->
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-white text-slate-800 antialiased">
+    <!-- Header -->
+    <header class="mx-auto flex max-w-5xl items-center justify-between px-6 py-5">
+      <div class="flex items-center gap-2">
+        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-white font-bold">F</div>
+        <span class="text-lg font-semibold">Fumi</span>
+      </div>
+      <nav class="flex items-center gap-6 text-sm">
+        <a href="#features" class="hover:text-indigo-600">Features</a>
+        <a href="#privacy" class="hover:text-indigo-600">Privacy</a>
+        <a href="#pricing" class="hover:text-indigo-600">Pricing</a>
+        <a href="[BUY_URL]" class="rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-indigo-700">Buy</a>
+      </nav>
+    </header>
+
+    <!-- Hero -->
+    <section class="mx-auto max-w-5xl px-6 pt-16 pb-12 text-center">
+      <h1 class="text-4xl font-bold tracking-tight sm:text-5xl">
+        A fast, private email client for your desktop
+      </h1>
+      <p class="mx-auto mt-5 max-w-2xl text-lg text-slate-600">
+        Fumi connects to Gmail and IMAP and keeps your mail on your own device.
+        Keyboard-driven, with optional AI you control. Available for macOS,
+        Windows, and Linux.
+      </p>
+      <div class="mt-8 flex items-center justify-center gap-4">
+        <a href="[BUY_URL]" class="rounded-lg bg-indigo-600 px-6 py-3 font-medium text-white hover:bg-indigo-700">Buy — one-time $39</a>
+        <a href="[DOWNLOAD_URL]" class="rounded-lg border border-slate-300 px-6 py-3 font-medium hover:border-slate-400">Download free trial</a>
+      </div>
+      <p class="mt-3 text-sm text-slate-500">One-time purchase. No subscription.</p>
+      <div class="mx-auto mt-12 max-w-4xl">
+        <img src="screenshot.png" alt="Fumi screenshot" class="rounded-xl border border-slate-200 shadow-lg" />
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="bg-slate-50 py-16">
+      <div class="mx-auto max-w-5xl px-6">
+        <h2 class="text-center text-3xl font-bold">Everything you need to move through email</h2>
+        <div class="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          <div>
+            <h3 class="font-semibold">Gmail &amp; IMAP</h3>
+            <p class="mt-1 text-sm text-slate-600">Connect multiple Gmail and IMAP accounts with one-click sign-in.</p>
+          </div>
+          <div>
+            <h3 class="font-semibold">Keyboard-first</h3>
+            <p class="mt-1 text-sm text-slate-600">A command palette and customizable shortcuts for the whole workflow.</p>
+          </div>
+          <div>
+            <h3 class="font-semibold">Optional AI, your key</h3>
+            <p class="mt-1 text-sm text-slate-600">Summaries, smart replies, and "Ask Inbox" using your own Anthropic, OpenAI, or Google API key.</p>
+          </div>
+          <div>
+            <h3 class="font-semibold">Organize fast</h3>
+            <p class="mt-1 text-sm text-slate-600">Labels, smart folders, bundles, filters, snooze, and follow-up reminders.</p>
+          </div>
+          <div>
+            <h3 class="font-semibold">Compose with care</h3>
+            <p class="mt-1 text-sm text-slate-600">Templates, signatures, scheduled send, and undo send.</p>
+          </div>
+          <div>
+            <h3 class="font-semibold">Tasks &amp; calendar</h3>
+            <p class="mt-1 text-sm text-slate-600">Turn mail into tasks and see your Google Calendar without leaving the app.</p>
+          </div>
+        </div>
+        <p class="mt-10 text-center text-sm text-slate-500">English and 日本語 included. More languages over time.</p>
+      </div>
+    </section>
+
+    <!-- Privacy -->
+    <section id="privacy" class="py-16">
+      <div class="mx-auto max-w-3xl px-6 text-center">
+        <h2 class="text-3xl font-bold">Your mail stays yours</h2>
+        <p class="mt-5 text-slate-600">
+          Fumi is local-first: your email, contacts, and tokens are stored only
+          on your device. We run no servers that receive your data, and there is
+          no analytics or telemetry. AI features are opt-in and send content
+          directly to the provider you choose, with your own key.
+        </p>
+        <p class="mt-4 text-sm">
+          <a href="privacy-policy.html" class="text-indigo-600 hover:underline">Privacy Policy</a>
+          &nbsp;·&nbsp;
+          <a href="terms-of-service.html" class="text-indigo-600 hover:underline">Terms of Service</a>
+        </p>
+      </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="pricing" class="bg-slate-50 py-16">
+      <div class="mx-auto max-w-md px-6 text-center">
+        <h2 class="text-3xl font-bold">Simple pricing</h2>
+        <div class="mt-8 rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+          <div class="text-4xl font-bold">$39</div>
+          <div class="mt-1 text-sm text-slate-500">one-time purchase</div>
+          <ul class="mt-6 space-y-2 text-left text-sm text-slate-600">
+            <li>✓ macOS, Windows &amp; Linux</li>
+            <li>✓ Unlimited Gmail &amp; IMAP accounts</li>
+            <li>✓ All features, including AI (bring your own key)</li>
+            <li>✓ Free updates within your version</li>
+          </ul>
+          <a href="[BUY_URL]" class="mt-8 block rounded-lg bg-indigo-600 px-6 py-3 font-medium text-white hover:bg-indigo-700">Buy Fumi</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="mx-auto max-w-5xl px-6 py-10 text-center text-sm text-slate-500">
+      <p>© 2026 Fumi · <a href="mailto:[your-contact-email]" class="hover:underline">[your-contact-email]</a></p>
+    </footer>
+  </body>
+</html>
