@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { AlertTriangle, ShieldAlert, ShieldCheck, X } from "lucide-react";
 import type { LinkAnalysis, PhishingRiskLevel } from "../../types";
 
@@ -15,6 +16,7 @@ export function PhishingBanner({
   onTrustSender,
   onReport,
 }: PhishingBannerProps) {
+  const { t } = useTranslation();
   const [dismissed, setDismissed] = useState(false);
 
   if (dismissed || overallRisk === "safe") return null;
@@ -50,8 +52,8 @@ export function PhishingBanner({
               }`}
             >
               {isDanger
-                ? "This message contains suspicious links"
-                : "Some links in this message need attention"}
+                ? t("email.phishing.danger")
+                : t("email.phishing.warning")}
             </p>
             <ul className="mt-1.5 space-y-0.5">
               {uniqueReasons.map((reason, i) => (
@@ -77,7 +79,7 @@ export function PhishingBanner({
                 }`}
                 data-testid="phishing-report-btn"
               >
-                Report
+                {t("email.phishing.report")}
               </button>
               <button
                 onClick={onTrustSender}
@@ -85,7 +87,7 @@ export function PhishingBanner({
                 data-testid="phishing-trust-btn"
               >
                 <ShieldCheck className="mr-1 inline-block h-3 w-3" />
-                I trust this sender
+                {t("email.phishing.trustSender")}
               </button>
             </div>
           </div>

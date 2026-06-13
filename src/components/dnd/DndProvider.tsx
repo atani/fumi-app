@@ -1,4 +1,5 @@
 import { type ReactNode, useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   DndContext,
   DragOverlay,
@@ -17,6 +18,7 @@ interface DndProviderProps {
 }
 
 export function DndProvider({ children }: DndProviderProps) {
+  const { t } = useTranslation();
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
 
   const pointerSensor = useSensor(PointerSensor, {
@@ -71,7 +73,7 @@ export function DndProvider({ children }: DndProviderProps) {
         {activeThread ? (
           <div className="w-72 rounded-lg border border-border-primary bg-bg-primary px-4 py-3 shadow-lg">
             <p className="truncate text-sm font-medium text-text-primary">
-              {activeThread.subject || "(No subject)"}
+              {activeThread.subject || t("dnd.noSubject")}
             </p>
             <p className="mt-1 truncate text-xs text-text-secondary">
               {activeThread.snippet}

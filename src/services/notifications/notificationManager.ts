@@ -1,5 +1,6 @@
 import type { Thread, NotificationVip } from "../../types";
 import { getDb } from "../db/connection";
+import i18n from "../../i18n";
 
 function isTauri(): boolean {
   return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
@@ -90,8 +91,8 @@ export async function notifyFollowUp(subject: string): Promise<void> {
   const { sendNotification } = await import("@tauri-apps/plugin-notification");
 
   sendNotification({
-    title: "Follow-up reminder",
-    body: `No reply yet: ${subject}`,
+    title: i18n.t("notifications.followUpTitle"),
+    body: i18n.t("notifications.followUpBody", { subject }),
   });
 }
 
@@ -136,15 +137,15 @@ export async function notifyNewMessages(
   if (eligible.length === 1) {
     const thread = eligible[0]!;
     sendNotification({
-      title: thread.subject || "(No subject)",
+      title: thread.subject || i18n.t("notifications.noSubject"),
       body: thread.snippet || "",
     });
   } else {
     sendNotification({
-      title: `${eligible.length} new messages`,
+      title: i18n.t("notifications.newMessages", { count: eligible.length }),
       body: eligible
         .slice(0, 3)
-        .map((t) => t.subject || "(No subject)")
+        .map((t) => t.subject || i18n.t("notifications.noSubject"))
         .join(", "),
     });
   }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   CheckSquare,
   Square,
@@ -24,6 +25,7 @@ interface TaskItemProps {
 }
 
 export function TaskItem({ task, accountId, subtaskCount }: TaskItemProps) {
+  const { t } = useTranslation();
   const { toggleComplete, deleteTask, updateTask } = useTaskStore();
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(task.title);
@@ -71,7 +73,11 @@ export function TaskItem({ task, accountId, subtaskCount }: TaskItemProps) {
       <button
         onClick={handleToggle}
         className="shrink-0 text-text-secondary hover:text-accent"
-        aria-label={task.completed ? "Mark incomplete" : "Mark complete"}
+        aria-label={
+          task.completed
+            ? t("tasks.markIncomplete")
+            : t("tasks.markComplete")
+        }
       >
         {task.completed ? (
           <CheckSquare className="h-5 w-5 text-accent" />
@@ -107,7 +113,7 @@ export function TaskItem({ task, accountId, subtaskCount }: TaskItemProps) {
           <span
             className={`inline-flex rounded-full px-1.5 py-0.5 text-xs font-medium ${PRIORITY_STYLES[task.priority]}`}
           >
-            {task.priority}
+            {t(`tasks.priority.${task.priority}`)}
           </span>
 
           {formattedDue && (
@@ -127,7 +133,7 @@ export function TaskItem({ task, accountId, subtaskCount }: TaskItemProps) {
           {subtaskCount != null && subtaskCount > 0 && (
             <span className="flex items-center gap-0.5 text-xs text-text-tertiary">
               <ChevronRight className="h-3 w-3" />
-              {subtaskCount} subtask{subtaskCount === 1 ? "" : "s"}
+              {t("tasks.subtaskCount", { count: subtaskCount })}
             </span>
           )}
         </div>
@@ -140,14 +146,14 @@ export function TaskItem({ task, accountId, subtaskCount }: TaskItemProps) {
             setIsEditing(true);
           }}
           className="rounded p-1 text-text-tertiary hover:bg-bg-secondary hover:text-text-primary"
-          aria-label="Edit task"
+          aria-label={t("tasks.editTask")}
         >
           <Pencil className="h-3.5 w-3.5" />
         </button>
         <button
           onClick={handleDelete}
           className="rounded p-1 text-text-tertiary hover:bg-bg-secondary hover:text-danger"
-          aria-label="Delete task"
+          aria-label={t("tasks.deleteTask")}
         >
           <Trash2 className="h-3.5 w-3.5" />
         </button>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Entitlements for Developer ID (direct) distribution with the hardened runtime
+  (required for notarization). Not sandboxed — direct distribution does not
+  require App Sandbox. The OAuth flow runs a localhost callback server, so both
+  network client and server access are declared.
+-->
+<plist version="1.0">
+<dict>
+    <key>com.apple.security.network.client</key>
+    <true/>
+    <key>com.apple.security.network.server</key>
+    <true/>
+</dict>
+</plist>

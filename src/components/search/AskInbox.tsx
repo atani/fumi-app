@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { Loader2, Sparkles } from "lucide-react";
 import { askInbox } from "../../services/ai/askInbox";
 import { useAccountStore } from "../../stores/accountStore";
@@ -8,6 +9,7 @@ interface AskInboxProps {
 }
 
 export function AskInbox({ query }: AskInboxProps) {
+  const { t } = useTranslation();
   const [answer, setAnswer] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -21,7 +23,7 @@ export function AskInbox({ query }: AskInboxProps) {
 
     const account = getActiveAccount();
     if (!account) {
-      setError("No active account");
+      setError(t("search.askNoAccount"));
       return;
     }
 
@@ -35,12 +37,12 @@ export function AskInbox({ query }: AskInboxProps) {
       setAnswer(result);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Failed to get AI response",
+        err instanceof Error ? err.message : t("search.askError"),
       );
     } finally {
       setIsLoading(false);
     }
-  }, [query, answer, getActiveAccount]);
+  }, [query, answer, getActiveAccount, t]);
 
   return (
     <div className="max-h-80 overflow-y-auto" data-testid="ask-inbox-panel">
@@ -53,10 +55,10 @@ export function AskInbox({ query }: AskInboxProps) {
             data-testid="ask-inbox-submit"
           >
             <Sparkles className="h-4 w-4" />
-            Ask AI
+            {t("search.askButton")}
           </button>
           <p className="mt-2 text-xs text-text-tertiary">
-            Press Enter or click to ask about your inbox
+            {t("search.askHint")}
           </p>
         </div>
       )}
@@ -64,7 +66,7 @@ export function AskInbox({ query }: AskInboxProps) {
       {isLoading && (
         <div className="flex items-center justify-center gap-2 px-4 py-6 text-sm text-text-tertiary">
           <Loader2 className="h-4 w-4 animate-spin" />
-          Thinking...
+          {t("search.askThinking")}
         </div>
       )}
 
@@ -81,7 +83,7 @@ export function AskInbox({ query }: AskInboxProps) {
           <div className="rounded-lg border border-border-secondary bg-bg-secondary px-4 py-3 text-sm leading-relaxed text-text-secondary">
             <div className="mb-2 flex items-center gap-1.5 text-xs font-medium text-accent">
               <Sparkles className="h-3.5 w-3.5" />
-              AI Answer
+              {t("search.askAnswerLabel")}
             </div>
             {answer}
           </div>

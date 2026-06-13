@@ -1,0 +1,79 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "delete": "Delete",
+    "loading": "Loading…"
+  },
+  "login": {
+    "tagline": "Fast, lightweight email client",
+    "signIn": "Sign in with Google",
+    "connecting": "Connecting…",
+    "clientIdPlaceholder": "Google OAuth Client ID",
+    "clientSecretPlaceholder": "Client Secret",
+    "errorGeneric": "Authentication failed",
+    "unverifiedHint": "If Google shows an \"unverified app\" screen, choose Advanced → Continue to proceed."
+  },
+  "nav": {
+    "compose": "Compose",
+    "inbox": "Inbox",
+    "starred": "Starred",
+    "snoozed": "Snoozed",
+    "sent": "Sent",
+    "drafts": "Drafts",
+    "trash": "Trash",
+    "spam": "Spam",
+    "allMail": "All Mail",
+    "labels": "Labels",
+    "createLabel": "Create label",
+    "editLabel": "Edit label",
+    "bundles": "Bundles",
+    "smartFolders": "Smart Folders",
+    "tasks": "Tasks",
+    "attachments": "Attachments",
+    "calendar": "Calendar",
+    "help": "Help",
+    "settings": "Settings",
+    "edit": "Edit",
+    "delete": "Delete",
+    "themeTitle": "Theme: {{theme}}"
+  },
+  "settings": {
+    "appearance": "Appearance",
+    "theme": "Theme",
+    "themeSystem": "System",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "accentColor": "Accent color",
+    "fontSize": "Font size",
+    "fontSmall": "Small",
+    "fontDefault": "Default",
+    "fontLarge": "Large",
+    "fontXLarge": "X-Large",
+    "density": "Email list density",
+    "densityCompact": "Compact",
+    "densityDefault": "Default",
+    "densityComfortable": "Comfortable",
+    "readingPane": "Reading pane",
+    "readingPaneRight": "Right",
+    "readingPaneBottom": "Bottom",
+    "readingPaneHidden": "Hidden",
+    "readingPaneHint": "Controls where the email preview appears. When hidden, double-click or press Enter to open a thread.",
+    "language": "Language",
+    "languageHint": "Choose the display language for the app."
+  },
+  "notifications": {
+    "followUpTitle": "Follow-up reminder",
+    "followUpBody": "No reply yet: {{subject}}",
+    "noSubject": "(No subject)",
+    "newMessages": "{{count}} new messages"
+  },
+  "app": {
+    "loading": "Loading…",
+    "unsentDraft": "You have an unsent draft",
+    "unsentDraftNamed": "You have an unsent draft: \"{{subject}}\"",
+    "restore": "Restore",
+    "discard": "Discard"
+  }
+}

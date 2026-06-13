@@ -1,0 +1,17 @@
+{
+  "title": "Calendar",
+  "backToMail": "Back to mail",
+  "today": "Today",
+  "gmailOnly": "Calendar is only available for Gmail accounts.",
+  "loadError": "Failed to load events",
+  "retry": "Retry",
+  "newEvent": "New Event",
+  "eventTitle": "Title",
+  "eventTitlePlaceholder": "Event title",
+  "start": "Start",
+  "end": "End",
+  "description": "Description",
+  "descriptionPlaceholder": "Optional description",
+  "cancel": "Cancel",
+  "create": "Create"
+}

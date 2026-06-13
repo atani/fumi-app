@@ -1,4 +1,5 @@
 import { File, Image, FileText, FileSpreadsheet, Film, Music, Download } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface AttachmentGridItemProps {
   filename: string;
@@ -33,6 +34,7 @@ function getFileColor(mimeType: string): string {
 }
 
 export function AttachmentGridItem({ filename, mimeType, size, date }: AttachmentGridItemProps) {
+  const { t } = useTranslation();
   const Icon = getFileIcon(mimeType);
   const iconColor = getFileColor(mimeType);
 
@@ -57,10 +59,10 @@ export function AttachmentGridItem({ filename, mimeType, size, date }: Attachmen
       </div>
       <button
         className="mt-2 flex items-center justify-center gap-1 rounded-md bg-bg-primary px-2 py-1.5 text-xs text-text-secondary opacity-0 transition-opacity group-hover:opacity-100 hover:text-text-primary"
-        title="Download"
+        title={t("attachments.download")}
       >
         <Download className="h-3.5 w-3.5" />
-        Download
+        {t("attachments.download")}
       </button>
     </div>
   );

@@ -38,7 +38,7 @@
       "iconAsTemplate": true
     },
     "security": {
-      "csp": "default-src 'self'; connect-src 'self' https://accounts.google.com https://oauth2.googleapis.com https://www.googleapis.com https://gmail.googleapis.com https://api.anthropic.com https://api.openai.com https://generativelanguage.googleapis.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://lh3.googleusercontent.com https://www.gravatar.com"
+      "csp": "default-src 'self'; connect-src 'self' https://accounts.google.com https://oauth2.googleapis.com https://www.googleapis.com https://gmail.googleapis.com https://api.anthropic.com https://api.openai.com https://generativelanguage.googleapis.com https://api.lemonsqueezy.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://lh3.googleusercontent.com https://www.gravatar.com"
     }
   },
   "bundle": {
@@ -50,7 +50,11 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "macOS": {
+      "minimumSystemVersion": "10.15",
+      "entitlements": "entitlements.plist"
+    }
   },
   "plugins": {
     "deep-link": {

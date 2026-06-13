@@ -1,4 +1,5 @@
 import { File, Image, FileText, FileSpreadsheet, Film, Music, Download } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface AttachmentListItemProps {
   filename: string;
@@ -33,6 +34,7 @@ function getFileColor(mimeType: string): string {
 }
 
 export function AttachmentListItem({ filename, mimeType, size, date }: AttachmentListItemProps) {
+  const { t } = useTranslation();
   const Icon = getFileIcon(mimeType);
   const iconColor = getFileColor(mimeType);
 
@@ -59,7 +61,7 @@ export function AttachmentListItem({ filename, mimeType, size, date }: Attachmen
       )}
       <button
         className="shrink-0 rounded-md p-2 text-text-tertiary opacity-0 transition-opacity group-hover:opacity-100 hover:text-text-primary"
-        title="Download"
+        title={t("attachments.download")}
       >
         <Download className="h-4 w-4" />
       </button>

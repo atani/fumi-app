@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { ArrowLeft, HelpCircle, BookOpen } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { helpCategories } from "../../constants/helpContent";
@@ -6,6 +7,7 @@ import { HelpCard } from "./HelpCard";
 import { HelpSearchBar } from "./HelpSearchBar";
 
 export function HelpPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { topic } = useParams<{ topic: string }>();
   const [search, setSearch] = useState("");
@@ -18,19 +20,28 @@ export function HelpPage() {
     [activeCategoryId],
   );
 
-  // Filter cards across all categories when searching
+  // Filter cards across all categories when searching, matching against the
+  // localized text so results reflect the active language.
   const searchResults = useMemo(() => {
     if (!search.trim()) return null;
     const q = search.toLowerCase();
     return helpCategories.flatMap((cat) =>
-      cat.cards.filter(
-        (card) =>
-          card.title.toLowerCase().includes(q) ||
-          card.description.toLowerCase().includes(q) ||
-          card.steps?.some((s) => s.toLowerCase().includes(q)),
-      ),
+      cat.cards.filter((card) => {
+        const cardTitle = t(`help.cards.${card.id}.title`).toLowerCase();
+        const cardDesc = t(`help.cards.${card.id}.description`).toLowerCase();
+        const steps = card.hasSteps
+          ? (t(`help.cards.${card.id}.steps`, {
+              returnObjects: true,
+            }) as string[])
+          : [];
+        return (
+          cardTitle.includes(q) ||
+          cardDesc.includes(q) ||
+          steps.some((s) => s.toLowerCase().includes(q))
+        );
+      }),
     );
-  }, [search]);
+  }, [search, t]);
 
   return (
     <div className="flex h-screen flex-col bg-bg-primary" data-testid="help-page">
@@ -46,13 +57,15 @@ export function HelpPage() {
         <button
           onClick={() => navigate("/")}
           className="rounded p-1 text-text-secondary hover:bg-bg-hover hover:text-text-primary"
-          aria-label="Back to mail"
+          aria-label={t("help.backToMail")}
           data-testid="help-back"
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
         <BookOpen className="h-5 w-5 text-accent" />
-        <h1 className="text-xl font-bold text-text-primary">Help</h1>
+        <h1 className="text-xl font-bold text-text-primary">
+          {t("help.title")}
+        </h1>
       </div>
 
       <div className="flex min-h-0 flex-1">
@@ -76,7 +89,7 @@ export function HelpPage() {
                 }`}
                 data-testid={`help-category-${cat.id}`}
               >
-                {cat.title}
+                {t(`help.categories.${cat.id}.title`)}
               </button>
             ))}
           </nav>
@@ -87,16 +100,16 @@ export function HelpPage() {
           {searchResults ? (
             <>
               <h2 className="mb-4 text-lg font-semibold text-text-primary">
-                Search results
+                {t("help.searchResults")}
                 <span className="ml-2 text-sm font-normal text-text-tertiary">
-                  ({searchResults.length} {searchResults.length === 1 ? "result" : "results"})
+                  ({t("help.resultCount", { count: searchResults.length })})
                 </span>
               </h2>
               {searchResults.length === 0 ? (
                 <div className="flex flex-col items-center py-16">
                   <HelpCircle className="mb-3 h-12 w-12 text-text-tertiary" />
                   <p className="text-sm text-text-secondary">
-                    No results found for &ldquo;{search}&rdquo;
+                    {t("help.noResults", { query: search })}
                   </p>
                 </div>
               ) : (
@@ -111,10 +124,10 @@ export function HelpPage() {
             <>
               <div className="mb-6">
                 <h2 className="text-lg font-semibold text-text-primary">
-                  {activeCategory.title}
+                  {t(`help.categories.${activeCategory.id}.title`)}
                 </h2>
                 <p className="mt-1 text-sm text-text-secondary">
-                  {activeCategory.description}
+                  {t(`help.categories.${activeCategory.id}.description`)}
                 </p>
               </div>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -127,7 +140,7 @@ export function HelpPage() {
             <div className="flex flex-col items-center py-16">
               <HelpCircle className="mb-3 h-12 w-12 text-text-tertiary" />
               <p className="text-sm text-text-secondary">
-                Select a category from the sidebar.
+                {t("help.selectCategory")}
               </p>
             </div>
           )}

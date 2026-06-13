@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { useDraggable } from "@dnd-kit/core";
 import { useThreadStore } from "../../stores/threadStore";
 import { useAccountStore } from "../../stores/accountStore";
@@ -73,6 +74,7 @@ function DraggableThreadItem({
   onCheckboxClick,
   onContextMenu,
 }: DraggableThreadItemProps) {
+  const { t } = useTranslation();
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: thread.id,
   });
@@ -123,7 +125,7 @@ function DraggableThreadItem({
                 : "text-text-primary"
             }`}
           >
-            {thread.subject || "(No subject)"}
+            {thread.subject || t("layout.noSubject")}
           </span>
         </div>
         <div className="ml-2 flex shrink-0 items-center gap-1">
@@ -173,6 +175,7 @@ export function ThreadList({ onOpenSearch }: ThreadListProps) {
   } = useThreadStore();
   const { activeAccountId } = useAccountStore();
   const { emailDensity, readingPanePosition, setReadingPanePosition, emailListWidth } = useUIStore();
+  const { t } = useTranslation();
 
   const isInbox = activeLabel === "INBOX";
   const isMultiSelect = selectedThreadIds.size > 0;
@@ -237,7 +240,7 @@ export function ThreadList({ onOpenSearch }: ThreadListProps) {
 
       showContextMenu(e.clientX, e.clientY, [
         {
-          label: "Reply",
+          label: t("layout.reply"),
           icon: Reply,
           onClick: () => {
             void selectThread(threadId, account.id);
@@ -245,7 +248,7 @@ export function ThreadList({ onOpenSearch }: ThreadListProps) {
           },
         },
         {
-          label: "Forward",
+          label: t("layout.forward"),
           icon: Forward,
           onClick: () => {
             void selectThread(threadId, account.id);
@@ -253,24 +256,24 @@ export function ThreadList({ onOpenSearch }: ThreadListProps) {
           },
         },
         {
-          label: "Archive",
+          label: t("layout.archive"),
           icon: Archive,
           separator: true,
           onClick: () => void archiveThread(account, threadId),
         },
         {
-          label: "Trash",
+          label: t("layout.trash"),
           icon: Trash2,
           onClick: () => void trashThread(account, threadId),
         },
         {
-          label: thread?.is_starred ? "Unstar" : "Star",
+          label: thread?.is_starred ? t("layout.unstar") : t("layout.star"),
           icon: Star,
           separator: true,
           onClick: () => void toggleStar(account, threadId, !thread?.is_starred),
         },
         {
-          label: "Label",
+          label: t("layout.label"),
           icon: Tag,
           onClick: () => {
             void selectThread(threadId, account.id);
@@ -278,7 +281,7 @@ export function ThreadList({ onOpenSearch }: ThreadListProps) {
           },
         },
         {
-          label: "Snooze",
+          label: t("layout.snooze"),
           icon: Clock,
           onClick: () => {
             void selectThread(threadId, account.id);
@@ -286,13 +289,13 @@ export function ThreadList({ onOpenSearch }: ThreadListProps) {
           },
         },
         {
-          label: thread?.is_muted ? "Unmute" : "Mute",
+          label: thread?.is_muted ? t("layout.unmute") : t("layout.mute"),
           icon: VolumeX,
           onClick: () => void muteThread(account, threadId),
         },
       ]);
     },
-    [threads, showContextMenu, selectThread],
+    [threads, showContextMenu, selectThread, t],
   );
 
   const handleThreadDoubleClick = useCallback(
@@ -321,10 +324,10 @@ export function ThreadList({ onOpenSearch }: ThreadListProps) {
       : EyeOff;
 
   const readingPaneLabel = readingPanePosition === "right"
-    ? "Reading pane: right"
+    ? t("layout.readingPaneRight")
     : readingPanePosition === "bottom"
-      ? "Reading pane: bottom"
-      : "Reading pane: hidden";
+      ? t("layout.readingPaneBottom")
+      : t("layout.readingPaneHidden");
 
   const handleBulkArchive = useCallback(async () => {
     const account = useAccountStore.getState().getActiveAccount();
@@ -374,7 +377,7 @@ export function ThreadList({ onOpenSearch }: ThreadListProps) {
           <button
             onClick={onOpenSearch}
             className="rounded p-1 text-text-tertiary hover:bg-bg-hover hover:text-text-primary"
-            aria-label="Search emails"
+            aria-label={t("layout.searchEmails")}
             data-testid="search-button"
           >
             <Search className="h-4 w-4" />
@@ -405,45 +408,45 @@ export function ThreadList({ onOpenSearch }: ThreadListProps) {
           data-testid="bulk-action-bar"
         >
           <span className="mr-2 text-xs font-medium text-text-secondary">
-            {selectedThreadIds.size} selected
+            {t("layout.selectedCount", { count: selectedThreadIds.size })}
           </span>
           <button
             onClick={() => void handleBulkArchive()}
             className="rounded p-1.5 text-text-secondary hover:bg-bg-hover hover:text-text-primary"
-            aria-label="Archive selected"
-            title="Archive selected"
+            aria-label={t("layout.archiveSelected")}
+            title={t("layout.archiveSelected")}
           >
             <Archive className="h-4 w-4" />
           </button>
           <button
             onClick={() => void handleBulkTrash()}
             className="rounded p-1.5 text-text-secondary hover:bg-bg-hover hover:text-text-primary"
-            aria-label="Trash selected"
-            title="Trash selected"
+            aria-label={t("layout.trashSelected")}
+            title={t("layout.trashSelected")}
           >
             <Trash2 className="h-4 w-4" />
           </button>
           <button
             onClick={() => void handleBulkMarkRead()}
             className="rounded p-1.5 text-text-secondary hover:bg-bg-hover hover:text-text-primary"
-            aria-label="Mark selected as read"
-            title="Mark as read"
+            aria-label={t("layout.markSelectedRead")}
+            title={t("layout.markRead")}
           >
             <MailOpen className="h-4 w-4" />
           </button>
           <button
             onClick={() => void handleBulkMarkUnread()}
             className="rounded p-1.5 text-text-secondary hover:bg-bg-hover hover:text-text-primary"
-            aria-label="Mark selected as unread"
-            title="Mark as unread"
+            aria-label={t("layout.markSelectedUnread")}
+            title={t("layout.markUnread")}
           >
             <Mail className="h-4 w-4" />
           </button>
           <button
             onClick={() => window.dispatchEvent(new CustomEvent("velo-move-to-folder"))}
             className="rounded p-1.5 text-text-secondary hover:bg-bg-hover hover:text-text-primary"
-            aria-label="Label selected"
-            title="Move to label"
+            aria-label={t("layout.labelSelected")}
+            title={t("layout.moveToLabel")}
           >
             <Tag className="h-4 w-4" />
           </button>
@@ -451,8 +454,8 @@ export function ThreadList({ onOpenSearch }: ThreadListProps) {
           <button
             onClick={clearSelection}
             className="rounded p-1.5 text-text-secondary hover:bg-bg-hover hover:text-text-primary"
-            aria-label="Clear selection"
-            title="Clear selection"
+            aria-label={t("layout.clearSelection")}
+            title={t("layout.clearSelection")}
           >
             <X className="h-4 w-4" />
           </button>
@@ -464,13 +467,13 @@ export function ThreadList({ onOpenSearch }: ThreadListProps) {
       <div className="flex-1 overflow-y-auto">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
-            <p className="text-sm text-text-tertiary">Loading...</p>
+            <p className="text-sm text-text-tertiary">{t("layout.loading")}</p>
           </div>
         ) : filteredThreads.length === 0 ? (
           <EmptyState
             illustration={<InboxClearIllustration />}
-            title="All clear!"
-            description="No messages to show"
+            title={t("layout.allClear")}
+            description={t("layout.noMessages")}
           />
         ) : (
           filteredThreads.map((thread) => (

@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { X, Clock, Sun, Calendar } from "lucide-react";
 
 interface ScheduleSendDialogProps {
@@ -42,6 +43,7 @@ export function ScheduleSendDialog({
   onClose,
   onSchedule,
 }: ScheduleSendDialogProps) {
+  const { t } = useTranslation();
   const [showCustom, setShowCustom] = useState(false);
   const [customDate, setCustomDate] = useState("");
   const [customTime, setCustomTime] = useState("08:00");
@@ -52,19 +54,21 @@ export function ScheduleSendDialog({
 
     return [
       {
-        label: "Tomorrow morning",
+        id: "tomorrow",
+        label: t("composer.tomorrowMorning"),
         sublabel: formatPresetDate(tomorrow),
         icon: Sun,
         date: tomorrow,
       },
       {
-        label: "Monday morning",
+        id: "monday",
+        label: t("composer.mondayMorning"),
         sublabel: formatPresetDate(monday),
         icon: Calendar,
         date: monday,
       },
     ];
-  }, []);
+  }, [t]);
 
   if (!isOpen) return null;
 
@@ -97,13 +101,13 @@ export function ScheduleSendDialog({
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-accent" />
             <span className="text-sm font-medium text-text-primary">
-              Schedule send
+              {t("composer.scheduleSend")}
             </span>
           </div>
           <button
             className="rounded p-1 text-text-secondary hover:bg-bg-hover hover:text-text-primary"
             onClick={onClose}
-            aria-label="Close"
+            aria-label={t("composer.close")}
           >
             <X className="h-4 w-4" />
           </button>
@@ -113,7 +117,7 @@ export function ScheduleSendDialog({
         <div className="p-2">
           {presets.map((preset) => (
             <button
-              key={preset.label}
+              key={preset.id}
               className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left hover:bg-bg-hover"
               onClick={() => onSchedule(preset.date)}
             >
@@ -136,7 +140,7 @@ export function ScheduleSendDialog({
           >
             <Clock className="h-4 w-4 text-text-secondary" />
             <span className="text-sm text-text-primary">
-              Pick date & time
+              {t("composer.pickDateAndTime")}
             </span>
           </button>
         </div>
@@ -164,7 +168,7 @@ export function ScheduleSendDialog({
               onClick={handleCustomSchedule}
               disabled={!customDate || !customTime}
             >
-              Schedule
+              {t("composer.schedule")}
             </button>
           </div>
         )}

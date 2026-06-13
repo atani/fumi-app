@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Mail } from "lucide-react";
 import { useAccountStore } from "../../stores/accountStore";
 import {
@@ -8,6 +9,11 @@ import {
   fetchUserInfo,
 } from "../../services/gmail/auth";
 import { getDb } from "../../services/db/connection";
+import { getClientId } from "../../services/gmail/auth";
+import {
+  EMBEDDED_CLIENT_SECRET,
+  hasEmbeddedCredentials,
+} from "../../config/oauth";
 import type { Account } from "../../types";
 
 export function LoginPage() {
@@ -17,8 +23,14 @@ export function LoginPage() {
   const [clientSecret, setClientSecret] = useState("");
   const { addAccount } = useAccountStore();
   const navigate = useNavigate();
+  const { t } = useTranslation();
+
+  // When the build ships its own verified OAuth client, end users sign in with
+  // one click and never touch Google Cloud credentials.
+  const embedded = hasEmbeddedCredentials();
 
   useEffect(() => {
+    if (embedded) return;
     const loadStored = async () => {
       const db = await getDb();
       const rows = await db.select<{ key: string; value: string }[]>(
@@ -30,36 +42,52 @@ export function LoginPage() {
       }
     };
     loadStored();
-  }, []);
+  }, [embedded]);
 
   const handleSubmit = async () => {
-    if (!clientId.trim()) return;
     setIsLoading(true);
     setError(null);
 
     try {
-      const db = await getDb();
-      await db.execute(
-        "INSERT OR REPLACE INTO settings (key, value) VALUES ('google_client_id', $1)",
-        [clientId.trim()],
-      );
-      if (clientSecret.trim()) {
+      let effectiveClientId: string | null;
+      let effectiveClientSecret: string | undefined;
+
+      if (embedded) {
+        effectiveClientId = await getClientId();
+        effectiveClientSecret = EMBEDDED_CLIENT_SECRET ?? undefined;
+      } else {
+        if (!clientId.trim()) {
+          setIsLoading(false);
+          return;
+        }
+        const db = await getDb();
         await db.execute(
-          "INSERT OR REPLACE INTO settings (key, value) VALUES ('google_client_secret', $1)",
-          [clientSecret.trim()],
+          "INSERT OR REPLACE INTO settings (key, value) VALUES ('google_client_id', $1)",
+          [clientId.trim()],
         );
+        if (clientSecret.trim()) {
+          await db.execute(
+            "INSERT OR REPLACE INTO settings (key, value) VALUES ('google_client_secret', $1)",
+            [clientSecret.trim()],
+          );
+        }
+        effectiveClientId = clientId.trim();
+        effectiveClientSecret = clientSecret.trim() || undefined;
       }
 
-      const { code, codeVerifier, redirectUri } = await startOAuthFlow(
-        clientId.trim(),
-      );
+      if (!effectiveClientId) {
+        throw new Error("Google client ID is not configured");
+      }
+
+      const { code, codeVerifier, redirectUri } =
+        await startOAuthFlow(effectiveClientId);
 
       const tokens = await exchangeCodeForTokens(
-        clientId.trim(),
+        effectiveClientId,
         code,
         codeVerifier,
         redirectUri,
-        clientSecret.trim() || undefined,
+        effectiveClientSecret,
       );
 
       const userInfo = await fetchUserInfo(tokens.access_token);
@@ -78,7 +106,7 @@ export function LoginPage() {
       await addAccount(account);
       navigate("/");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Authentication failed");
+      setError(err instanceof Error ? err.message : t("login.errorGeneric"));
     } finally {
       setIsLoading(false);
     }
@@ -99,31 +127,33 @@ export function LoginPage() {
             <Mail className="h-8 w-8 text-accent" />
           </div>
           <h1 className="mt-6 text-3xl font-bold text-text-primary">Fumi</h1>
-          <p className="mt-2 text-text-secondary">
-            Fast, lightweight email client
-          </p>
+          <p className="mt-2 text-text-secondary">{t("login.tagline")}</p>
         </div>
 
         <div className="mt-10 space-y-4">
-          <input
-            type="text"
-            value={clientId}
-            onChange={(e) => setClientId(e.target.value)}
-            placeholder="Google OAuth Client ID"
-            className="w-full rounded-lg border border-border-primary bg-bg-secondary px-4 py-3 text-sm text-text-primary outline-none focus:border-accent"
-            data-testid="client-id-input"
-          />
-          <input
-            type="password"
-            value={clientSecret}
-            onChange={(e) => setClientSecret(e.target.value)}
-            placeholder="Client Secret"
-            className="w-full rounded-lg border border-border-primary bg-bg-secondary px-4 py-3 text-sm text-text-primary outline-none focus:border-accent"
-            data-testid="client-secret-input"
-          />
+          {!embedded && (
+            <>
+              <input
+                type="text"
+                value={clientId}
+                onChange={(e) => setClientId(e.target.value)}
+                placeholder={t("login.clientIdPlaceholder")}
+                className="w-full rounded-lg border border-border-primary bg-bg-secondary px-4 py-3 text-sm text-text-primary outline-none focus:border-accent"
+                data-testid="client-id-input"
+              />
+              <input
+                type="password"
+                value={clientSecret}
+                onChange={(e) => setClientSecret(e.target.value)}
+                placeholder={t("login.clientSecretPlaceholder")}
+                className="w-full rounded-lg border border-border-primary bg-bg-secondary px-4 py-3 text-sm text-text-primary outline-none focus:border-accent"
+                data-testid="client-secret-input"
+              />
+            </>
+          )}
           <button
             onClick={handleSubmit}
-            disabled={isLoading || !clientId.trim()}
+            disabled={isLoading || (!embedded && !clientId.trim())}
             className="flex w-full items-center justify-center gap-3 rounded-lg bg-accent px-4 py-3 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
             data-testid="google-login-button"
           >
@@ -149,8 +179,14 @@ export function LoginPage() {
                 fillOpacity={0.8}
               />
             </svg>
-            {isLoading ? "Connecting..." : "Sign in with Google"}
+            {isLoading ? t("login.connecting") : t("login.signIn")}
           </button>
+
+          {embedded && (
+            <p className="text-center text-xs text-text-tertiary">
+              {t("login.unverifiedHint")}
+            </p>
+          )}
 
           {error && (
             <p

@@ -1,0 +1,16 @@
+{
+  "title": "添付ファイル",
+  "filterAll": "すべて",
+  "filterImages": "画像",
+  "filterDocuments": "ドキュメント",
+  "gridView": "グリッド表示",
+  "listView": "リスト表示",
+  "loading": "添付ファイルを読み込み中...",
+  "empty": "添付ファイルがありません",
+  "download": "ダウンロード",
+  "groupUnknownDate": "日付不明",
+  "groupToday": "今日",
+  "groupYesterday": "昨日",
+  "groupThisWeek": "今週",
+  "groupThisMonth": "今月"
+}

@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import {
   useShortcutStore,
   SHORTCUT_SECTIONS,
@@ -11,6 +12,7 @@ interface ShortcutsHelpProps {
 }
 
 export function ShortcutsHelp({ isOpen, onClose }: ShortcutsHelpProps) {
+  const { t } = useTranslation();
   const keyMap = useShortcutStore((s) => s.keyMap);
 
   useEffect(() => {
@@ -46,13 +48,13 @@ export function ShortcutsHelp({ isOpen, onClose }: ShortcutsHelpProps) {
       >
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-text-primary">
-            Keyboard Shortcuts
+            {t("search.shortcutsTitle")}
           </h2>
           <button
             onClick={onClose}
             className="text-text-secondary hover:text-text-primary"
           >
-            Esc
+            {t("search.shortcutsClose")}
           </button>
         </div>
 

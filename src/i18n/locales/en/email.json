@@ -1,0 +1,128 @@
+{
+  "allFiles": "All Files",
+  "downloadAttachment": "Download {{filename}}",
+  "auth": {
+    "pass": "Pass",
+    "fail": "Fail",
+    "none": "None",
+    "unknown": "Unknown",
+    "heading": "Email Authentication"
+  },
+  "categories": {
+    "ariaLabel": "Inbox categories",
+    "Primary": "Primary",
+    "Updates": "Updates",
+    "Promotions": "Promotions",
+    "Social": "Social",
+    "Newsletters": "Newsletters"
+  },
+  "contact": {
+    "unknownDate": "Unknown",
+    "title": "Contact",
+    "close": "Close contact sidebar",
+    "interactions_one": "{{count}} interaction",
+    "interactions_other": "{{count}} interactions",
+    "first": "First: {{date}}",
+    "last": "Last: {{date}}",
+    "recentThreads": "Recent threads",
+    "noRecentThreads": "No recent threads found.",
+    "noSubject": "(No subject)"
+  },
+  "renderer": {
+    "imageBlocked": "[Image blocked]",
+    "imagesBlocked": "Images from this sender are blocked.",
+    "loadImages": "Load images from this sender",
+    "iframeTitle": "Email content"
+  },
+  "followUp": {
+    "title": "Follow up if no reply in...",
+    "preset1Day": "1 day",
+    "preset2Days": "2 days",
+    "preset3Days": "3 days",
+    "preset1Week": "1 week",
+    "hours": "{{count}}h",
+    "custom": "Custom duration",
+    "hoursLabel": "Hours until reminder",
+    "back": "Back",
+    "setReminder": "Set reminder"
+  },
+  "preview": {
+    "failed": "Failed"
+  },
+  "link": {
+    "title": "Open external link?",
+    "mismatchPrefix": "The link text shows ",
+    "mismatchMiddle": " but the actual destination is ",
+    "displayText": "Display text: ",
+    "destination": "Destination: ",
+    "cancel": "Cancel",
+    "open": "Open link"
+  },
+  "message": {
+    "unknownSender": "Unknown",
+    "justNow": "just now",
+    "minutesAgo": "{{count}}m ago",
+    "hoursAgo": "{{count}}h ago",
+    "daysAgo": "{{count}}d ago",
+    "to": "To: {{addresses}}",
+    "cc": "Cc: {{addresses}}",
+    "unsubscribe": "Unsubscribe",
+    "unsubscribing": "Unsubscribing...",
+    "unsubscribed": "Unsubscribed",
+    "unsubscribeFailed": "Unsubscribe failed — retry",
+    "hideQuotedText": "Hide quoted text",
+    "showQuotedText": "Show quoted text",
+    "reply": "Reply",
+    "replyAll": "Reply All",
+    "forward": "Forward"
+  },
+  "labels": {
+    "title": "Apply labels",
+    "noUserLabels": "No user labels found",
+    "cancel": "Cancel",
+    "saving": "Saving...",
+    "apply": "Apply"
+  },
+  "phishing": {
+    "danger": "This message contains suspicious links",
+    "warning": "Some links in this message need attention",
+    "report": "Report",
+    "trustSender": "I trust this sender"
+  },
+  "smartReply": {
+    "generateFailed": "Failed to generate suggestions",
+    "generating": "Generating replies...",
+    "suggest": "Suggest replies"
+  },
+  "snooze": {
+    "laterToday": "Later today",
+    "tomorrowMorning": "Tomorrow morning",
+    "tomorrowAfternoon": "Tomorrow afternoon",
+    "thisWeekend": "This weekend",
+    "nextWeek": "Next week",
+    "title": "Snooze until...",
+    "pickDateTime": "Pick date & time",
+    "date": "Date",
+    "time": "Time",
+    "back": "Back",
+    "snooze": "Snooze"
+  },
+  "summary": {
+    "generateFailed": "Failed to generate summary",
+    "summary": "Summary",
+    "summarize": "Summarize"
+  },
+  "thread": {
+    "noSubject": "(No subject)",
+    "loading": "Loading thread...",
+    "notFound": "Thread not found",
+    "archive": "Archive",
+    "star": "Star",
+    "unstar": "Unstar",
+    "trash": "Trash",
+    "to": "To: {{addresses}}",
+    "reply": "Reply",
+    "replyAll": "Reply All",
+    "forward": "Forward"
+  }
+}

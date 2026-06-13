@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Search, X } from "lucide-react";
 
 interface HelpSearchBarProps {
@@ -7,6 +8,7 @@ interface HelpSearchBarProps {
 }
 
 export function HelpSearchBar({ value, onChange }: HelpSearchBarProps) {
+  const { t } = useTranslation();
   const [localValue, setLocalValue] = useState(value);
   const timerRef = useRef<ReturnType<typeof setTimeout>>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -37,7 +39,7 @@ export function HelpSearchBar({ value, onChange }: HelpSearchBarProps) {
         type="text"
         value={localValue}
         onChange={(e) => handleChange(e.target.value)}
-        placeholder="Search help..."
+        placeholder={t("help.searchPlaceholder")}
         className="w-full rounded-lg border border-border-primary bg-bg-secondary py-2 pl-9 pr-8 text-sm text-text-primary placeholder:text-text-tertiary focus:border-accent focus:outline-none"
         data-testid="help-search-input"
       />
@@ -48,7 +50,7 @@ export function HelpSearchBar({ value, onChange }: HelpSearchBarProps) {
             inputRef.current?.focus();
           }}
           className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-text-tertiary hover:text-text-primary"
-          aria-label="Clear search"
+          aria-label={t("help.clearSearch")}
         >
           <X className="h-4 w-4" />
         </button>

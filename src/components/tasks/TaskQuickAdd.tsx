@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Plus } from "lucide-react";
 import type { TaskPriority } from "../../types";
 import { useTaskStore } from "../../stores/taskStore";
@@ -8,6 +9,7 @@ interface TaskQuickAddProps {
 }
 
 export function TaskQuickAdd({ accountId }: TaskQuickAddProps) {
+  const { t } = useTranslation();
   const { createTask } = useTaskStore();
   const [title, setTitle] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
@@ -49,7 +51,7 @@ export function TaskQuickAdd({ accountId }: TaskQuickAddProps) {
             if (!isExpanded && e.target.value) setIsExpanded(true);
           }}
           onKeyDown={handleKeyDown}
-          placeholder="Add a task..."
+          placeholder={t("tasks.quickAddPlaceholder")}
           className="flex-1 bg-transparent text-sm text-text-primary placeholder-text-tertiary outline-none"
           data-testid="task-quick-add-input"
         />
@@ -63,9 +65,9 @@ export function TaskQuickAdd({ accountId }: TaskQuickAddProps) {
             className="rounded border border-border-primary bg-bg-primary px-2 py-1 text-xs text-text-primary"
             data-testid="task-quick-add-priority"
           >
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
+            <option value="high">{t("tasks.priority.high")}</option>
+            <option value="medium">{t("tasks.priority.medium")}</option>
+            <option value="low">{t("tasks.priority.low")}</option>
           </select>
 
           <input
@@ -82,7 +84,7 @@ export function TaskQuickAdd({ accountId }: TaskQuickAddProps) {
             className="ml-auto rounded bg-accent px-3 py-1 text-xs font-medium text-white hover:bg-accent-hover disabled:opacity-50"
             data-testid="task-quick-add-submit"
           >
-            Add
+            {t("tasks.add")}
           </button>
         </div>
       )}

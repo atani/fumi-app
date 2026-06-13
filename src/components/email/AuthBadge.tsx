@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ShieldCheck, ShieldAlert, ShieldQuestion, Shield } from "lucide-react";
 import type { AuthResult } from "../../types";
 
@@ -13,11 +14,11 @@ function statusIcon(status: string) {
   return "unknown";
 }
 
-function statusLabel(status: string): string {
-  if (status === "pass") return "Pass";
-  if (status === "fail") return "Fail";
-  if (status === "none") return "None";
-  return "Unknown";
+function statusLabelKey(status: string): string {
+  if (status === "pass") return "email.auth.pass";
+  if (status === "fail") return "email.auth.fail";
+  if (status === "none") return "email.auth.none";
+  return "email.auth.unknown";
 }
 
 function statusColor(status: string): string {
@@ -28,6 +29,7 @@ function statusColor(status: string): string {
 }
 
 export function AuthBadge({ authResult }: AuthBadgeProps) {
+  const { t } = useTranslation();
   const [showTooltip, setShowTooltip] = useState(false);
 
   const { verdict } = authResult;
@@ -68,7 +70,7 @@ export function AuthBadge({ authResult }: AuthBadgeProps) {
           data-testid="auth-badge-tooltip"
         >
           <p className="mb-1.5 whitespace-nowrap text-xs font-medium text-text-primary">
-            Email Authentication
+            {t("email.auth.heading")}
           </p>
           <div className="space-y-1">
             {(["spf", "dkim", "dmarc"] as const).map((key) => {
@@ -82,7 +84,7 @@ export function AuthBadge({ authResult }: AuthBadgeProps) {
                     {key}
                   </span>
                   <span className={`font-medium ${statusColor(statusIcon(status))}`}>
-                    {statusLabel(status)}
+                    {t(statusLabelKey(status))}
                   </span>
                 </div>
               );

@@ -1,4 +1,5 @@
 import { useRef, useEffect, useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import DOMPurify from "dompurify";
 import { ShieldCheck } from "lucide-react";
 
@@ -37,6 +38,7 @@ export function EmailRenderer({
   allowRemoteImages = false,
   onAllowSender,
 }: EmailRendererProps) {
+  const { t } = useTranslation();
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [hasBlockedImages, setHasBlockedImages] = useState(false);
 
@@ -74,14 +76,14 @@ export function EmailRenderer({
           img.removeAttribute("src");
           img.setAttribute(
             "alt",
-            img.getAttribute("alt") ?? "[Image blocked]",
+            img.getAttribute("alt") ?? t("email.renderer.imageBlocked"),
           );
         }
       });
 
       return doc.body.innerHTML;
     },
-    [allowRemoteImages],
+    [allowRemoteImages, t],
   );
 
   const writeToIframe = useCallback(
@@ -201,20 +203,20 @@ export function EmailRenderer({
           data-testid="blocked-images-banner"
         >
           <ShieldCheck className="h-4 w-4 flex-shrink-0 text-text-tertiary" />
-          <span>Images from this sender are blocked.</span>
+          <span>{t("email.renderer.imagesBlocked")}</span>
           <button
             onClick={onAllowSender}
             className="ml-auto whitespace-nowrap rounded px-2 py-1 text-xs font-medium text-accent hover:bg-bg-hover"
             data-testid="allow-sender-images-btn"
           >
-            Load images from this sender
+            {t("email.renderer.loadImages")}
           </button>
         </div>
       )}
       <iframe
         ref={iframeRef}
         sandbox="allow-same-origin"
-        title="Email content"
+        title={t("email.renderer.iframeTitle")}
         data-testid="email-renderer-iframe"
         className="block w-full border-none"
         style={{ minHeight: "50px" }}

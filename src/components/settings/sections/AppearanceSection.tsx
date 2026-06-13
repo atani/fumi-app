@@ -1,7 +1,9 @@
 import { Sun, Moon, Monitor, PanelRight, Rows2, EyeOff } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { ReadingPanePosition } from "../../../stores/uiStore";
 import { useUIStore } from "../../../stores/uiStore";
 import { COLOR_THEMES } from "../../../constants/themes";
+import { SUPPORTED_LANGUAGES } from "../../../i18n";
 import { Section } from "./shared";
 
 type Theme = "system" | "light" | "dark";
@@ -9,6 +11,7 @@ type EmailDensity = "compact" | "default" | "comfortable";
 type FontScale = "small" | "default" | "large" | "xlarge";
 
 export function AppearanceSection() {
+  const { t, i18n } = useTranslation();
   const {
     theme,
     setTheme,
@@ -23,17 +26,45 @@ export function AppearanceSection() {
   } = useUIStore();
 
   return (
-    <Section title="Appearance">
-      <label className="mb-2 block text-sm text-text-secondary">Theme</label>
+    <Section title={t("settings.appearance")}>
+      <label className="mb-2 block text-sm text-text-secondary">
+        {t("settings.language")}
+      </label>
+      <div
+        className="inline-flex rounded-lg border border-border-primary bg-bg-secondary p-1"
+        data-testid="language-selector"
+      >
+        {SUPPORTED_LANGUAGES.map(({ code, label }) => (
+          <button
+            key={code}
+            onClick={() => void i18n.changeLanguage(code)}
+            className={`rounded-md px-3 py-1.5 text-sm transition-colors ${
+              i18n.resolvedLanguage === code
+                ? "bg-accent text-white"
+                : "text-text-secondary hover:text-text-primary"
+            }`}
+            data-testid={`language-${code}`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      <p className="mt-1.5 text-xs text-text-tertiary">
+        {t("settings.languageHint")}
+      </p>
+
+      <label className="mt-4 mb-2 block text-sm text-text-secondary">
+        {t("settings.theme")}
+      </label>
       <div
         className="inline-flex rounded-lg border border-border-primary bg-bg-secondary p-1"
         data-testid="theme-selector"
       >
         {(
           [
-            { value: "system", icon: Monitor, label: "System" },
-            { value: "light", icon: Sun, label: "Light" },
-            { value: "dark", icon: Moon, label: "Dark" },
+            { value: "system", icon: Monitor, label: t("settings.themeSystem") },
+            { value: "light", icon: Sun, label: t("settings.themeLight") },
+            { value: "dark", icon: Moon, label: t("settings.themeDark") },
           ] as const
         ).map(({ value, icon: Icon, label }) => (
           <button
@@ -53,7 +84,7 @@ export function AppearanceSection() {
       </div>
 
       <label className="mt-4 mb-2 block text-sm text-text-secondary">
-        Accent color
+        {t("settings.accentColor")}
       </label>
       <div className="flex gap-2" data-testid="color-theme-selector">
         {COLOR_THEMES.map((ct) => (
@@ -73,7 +104,7 @@ export function AppearanceSection() {
       </div>
 
       <label className="mt-4 mb-2 block text-sm text-text-secondary">
-        Font size
+        {t("settings.fontSize")}
       </label>
       <div
         className="inline-flex rounded-lg border border-border-primary bg-bg-secondary p-1"
@@ -81,10 +112,10 @@ export function AppearanceSection() {
       >
         {(
           [
-            { value: "small", label: "Small" },
-            { value: "default", label: "Default" },
-            { value: "large", label: "Large" },
-            { value: "xlarge", label: "X-Large" },
+            { value: "small", label: t("settings.fontSmall") },
+            { value: "default", label: t("settings.fontDefault") },
+            { value: "large", label: t("settings.fontLarge") },
+            { value: "xlarge", label: t("settings.fontXLarge") },
           ] as const
         ).map(({ value, label }) => (
           <button
@@ -103,7 +134,7 @@ export function AppearanceSection() {
       </div>
 
       <label className="mt-4 mb-2 block text-sm text-text-secondary">
-        Email list density
+        {t("settings.density")}
       </label>
       <div
         className="inline-flex rounded-lg border border-border-primary bg-bg-secondary p-1"
@@ -111,9 +142,9 @@ export function AppearanceSection() {
       >
         {(
           [
-            { value: "compact", label: "Compact" },
-            { value: "default", label: "Default" },
-            { value: "comfortable", label: "Comfortable" },
+            { value: "compact", label: t("settings.densityCompact") },
+            { value: "default", label: t("settings.densityDefault") },
+            { value: "comfortable", label: t("settings.densityComfortable") },
           ] as const
         ).map(({ value, label }) => (
           <button
@@ -132,7 +163,7 @@ export function AppearanceSection() {
       </div>
 
       <label className="mt-4 mb-2 block text-sm text-text-secondary">
-        Reading pane
+        {t("settings.readingPane")}
       </label>
       <div
         className="inline-flex rounded-lg border border-border-primary bg-bg-secondary p-1"
@@ -140,9 +171,9 @@ export function AppearanceSection() {
       >
         {(
           [
-            { value: "right", icon: PanelRight, label: "Right" },
-            { value: "bottom", icon: Rows2, label: "Bottom" },
-            { value: "hidden", icon: EyeOff, label: "Hidden" },
+            { value: "right", icon: PanelRight, label: t("settings.readingPaneRight") },
+            { value: "bottom", icon: Rows2, label: t("settings.readingPaneBottom") },
+            { value: "hidden", icon: EyeOff, label: t("settings.readingPaneHidden") },
           ] as const
         ).map(({ value, icon: Icon, label }) => (
           <button
@@ -161,8 +192,7 @@ export function AppearanceSection() {
         ))}
       </div>
       <p className="mt-1.5 text-xs text-text-tertiary">
-        Controls where the email preview appears. When hidden, double-click or
-        press Enter to open a thread.
+        {t("settings.readingPaneHint")}
       </p>
     </Section>
   );

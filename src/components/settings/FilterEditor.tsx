@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { Plus, Trash2, Pencil, X } from "lucide-react";
 import { useAccountStore } from "../../stores/accountStore";
 import {
@@ -28,6 +29,7 @@ const EMPTY_ACTIONS: FilterActions = {
 };
 
 export function FilterEditor() {
+  const { t } = useTranslation();
   const { accounts } = useAccountStore();
   const [rules, setRules] = useState<FilterRule[]>([]);
   const [editing, setEditing] = useState<FilterRule | null>(null);
@@ -92,7 +94,7 @@ export function FilterEditor() {
   if (!activeAccount) {
     return (
       <p className="text-sm text-text-tertiary">
-        Add an account to manage filter rules.
+        {t("settingsUi.filters.noAccount")}
       </p>
     );
   }
@@ -146,8 +148,8 @@ export function FilterEditor() {
           <div className="mb-4 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-text-primary">
               {rules.some((r) => r.id === editing.id)
-                ? "Edit filter"
-                : "New filter"}
+                ? t("settingsUi.filters.editFilter")
+                : t("settingsUi.filters.newFilter")}
             </h3>
             <button
               onClick={handleCancel}
@@ -161,11 +163,11 @@ export function FilterEditor() {
           {/* Criteria */}
           <fieldset className="mb-4 space-y-2">
             <legend className="mb-1 text-xs font-semibold uppercase tracking-wider text-text-tertiary">
-              Criteria
+              {t("settingsUi.filters.criteria")}
             </legend>
             <label className="block">
               <span className="mb-0.5 block text-xs text-text-secondary">
-                From (address or name)
+                {t("settingsUi.filters.from")}
               </span>
               <input
                 type="text"
@@ -174,13 +176,13 @@ export function FilterEditor() {
                   setCriteria((c) => ({ ...c, from: e.target.value }))
                 }
                 className="w-full rounded-md border border-border-primary bg-bg-primary px-2.5 py-1.5 text-sm text-text-primary outline-none focus:border-accent"
-                placeholder="e.g. newsletter@example.com"
+                placeholder={t("settingsUi.filters.fromPlaceholder")}
                 data-testid="filter-criteria-from"
               />
             </label>
             <label className="block">
               <span className="mb-0.5 block text-xs text-text-secondary">
-                To
+                {t("settingsUi.filters.to")}
               </span>
               <input
                 type="text"
@@ -189,13 +191,13 @@ export function FilterEditor() {
                   setCriteria((c) => ({ ...c, to: e.target.value }))
                 }
                 className="w-full rounded-md border border-border-primary bg-bg-primary px-2.5 py-1.5 text-sm text-text-primary outline-none focus:border-accent"
-                placeholder="e.g. team@example.com"
+                placeholder={t("settingsUi.filters.toPlaceholder")}
                 data-testid="filter-criteria-to"
               />
             </label>
             <label className="block">
               <span className="mb-0.5 block text-xs text-text-secondary">
-                Subject contains
+                {t("settingsUi.filters.subjectContains")}
               </span>
               <input
                 type="text"
@@ -204,7 +206,7 @@ export function FilterEditor() {
                   setCriteria((c) => ({ ...c, subject: e.target.value }))
                 }
                 className="w-full rounded-md border border-border-primary bg-bg-primary px-2.5 py-1.5 text-sm text-text-primary outline-none focus:border-accent"
-                placeholder="e.g. invoice"
+                placeholder={t("settingsUi.filters.subjectPlaceholder")}
                 data-testid="filter-criteria-subject"
               />
             </label>
@@ -222,7 +224,7 @@ export function FilterEditor() {
                 data-testid="filter-criteria-attachment"
               />
               <span className="text-xs text-text-secondary">
-                Has attachment
+                {t("settingsUi.filters.hasAttachment")}
               </span>
             </label>
           </fieldset>
@@ -230,11 +232,11 @@ export function FilterEditor() {
           {/* Actions */}
           <fieldset className="mb-4 space-y-2">
             <legend className="mb-1 text-xs font-semibold uppercase tracking-wider text-text-tertiary">
-              Actions
+              {t("settingsUi.filters.actions")}
             </legend>
             <label className="block">
               <span className="mb-0.5 block text-xs text-text-secondary">
-                Apply label
+                {t("settingsUi.filters.applyLabel")}
               </span>
               <input
                 type="text"
@@ -243,7 +245,7 @@ export function FilterEditor() {
                   setActions((a) => ({ ...a, applyLabel: e.target.value }))
                 }
                 className="w-full rounded-md border border-border-primary bg-bg-primary px-2.5 py-1.5 text-sm text-text-primary outline-none focus:border-accent"
-                placeholder="Label ID"
+                placeholder={t("settingsUi.filters.applyLabelPlaceholder")}
                 data-testid="filter-action-label"
               />
             </label>
@@ -258,7 +260,9 @@ export function FilterEditor() {
                   className="rounded border-border-primary accent-accent"
                   data-testid="filter-action-archive"
                 />
-                <span className="text-xs text-text-secondary">Archive</span>
+                <span className="text-xs text-text-secondary">
+                  {t("settingsUi.filters.archive")}
+                </span>
               </label>
               <label className="flex items-center gap-2">
                 <input
@@ -270,7 +274,9 @@ export function FilterEditor() {
                   className="rounded border-border-primary accent-accent"
                   data-testid="filter-action-trash"
                 />
-                <span className="text-xs text-text-secondary">Trash</span>
+                <span className="text-xs text-text-secondary">
+                  {t("settingsUi.filters.trash")}
+                </span>
               </label>
               <label className="flex items-center gap-2">
                 <input
@@ -282,7 +288,9 @@ export function FilterEditor() {
                   className="rounded border-border-primary accent-accent"
                   data-testid="filter-action-star"
                 />
-                <span className="text-xs text-text-secondary">Star</span>
+                <span className="text-xs text-text-secondary">
+                  {t("settingsUi.filters.star")}
+                </span>
               </label>
               <label className="flex items-center gap-2">
                 <input
@@ -295,7 +303,7 @@ export function FilterEditor() {
                   data-testid="filter-action-markread"
                 />
                 <span className="text-xs text-text-secondary">
-                  Mark as read
+                  {t("settingsUi.filters.markAsRead")}
                 </span>
               </label>
             </div>
@@ -307,14 +315,14 @@ export function FilterEditor() {
               className="rounded-lg border border-border-primary px-3 py-1.5 text-sm text-text-secondary transition-colors hover:bg-bg-hover"
               data-testid="filter-cancel-btn"
             >
-              Cancel
+              {t("settingsUi.common.cancel")}
             </button>
             <button
               onClick={handleSave}
               className="rounded-lg bg-accent px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
               data-testid="filter-save-btn"
             >
-              Save
+              {t("settingsUi.common.save")}
             </button>
           </div>
         </div>
@@ -325,7 +333,7 @@ export function FilterEditor() {
           data-testid="filter-add-btn"
         >
           <Plus className="h-3.5 w-3.5" />
-          Add filter rule
+          {t("settingsUi.filters.addRule")}
         </button>
       )}
     </div>

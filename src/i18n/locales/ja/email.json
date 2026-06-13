@@ -1,0 +1,128 @@
+{
+  "allFiles": "すべてのファイル",
+  "downloadAttachment": "{{filename}} をダウンロード",
+  "auth": {
+    "pass": "成功",
+    "fail": "失敗",
+    "none": "なし",
+    "unknown": "不明",
+    "heading": "メール認証"
+  },
+  "categories": {
+    "ariaLabel": "受信トレイのカテゴリ",
+    "Primary": "メイン",
+    "Updates": "新着",
+    "Promotions": "プロモーション",
+    "Social": "ソーシャル",
+    "Newsletters": "ニュースレター"
+  },
+  "contact": {
+    "unknownDate": "不明",
+    "title": "連絡先",
+    "close": "連絡先サイドバーを閉じる",
+    "interactions_one": "{{count}} 件のやり取り",
+    "interactions_other": "{{count}} 件のやり取り",
+    "first": "最初: {{date}}",
+    "last": "最終: {{date}}",
+    "recentThreads": "最近のスレッド",
+    "noRecentThreads": "最近のスレッドはありません。",
+    "noSubject": "(件名なし)"
+  },
+  "renderer": {
+    "imageBlocked": "[画像をブロックしました]",
+    "imagesBlocked": "この送信者の画像はブロックされています。",
+    "loadImages": "この送信者の画像を表示",
+    "iframeTitle": "メール本文"
+  },
+  "followUp": {
+    "title": "返信がない場合にフォローアップ...",
+    "preset1Day": "1日後",
+    "preset2Days": "2日後",
+    "preset3Days": "3日後",
+    "preset1Week": "1週間後",
+    "hours": "{{count}}時間",
+    "custom": "期間を指定",
+    "hoursLabel": "リマインダーまでの時間",
+    "back": "戻る",
+    "setReminder": "リマインダーを設定"
+  },
+  "preview": {
+    "failed": "読み込み失敗"
+  },
+  "link": {
+    "title": "外部リンクを開きますか?",
+    "mismatchPrefix": "リンクの表示は ",
+    "mismatchMiddle": " ですが、実際のリンク先は ",
+    "displayText": "表示テキスト: ",
+    "destination": "リンク先: ",
+    "cancel": "キャンセル",
+    "open": "リンクを開く"
+  },
+  "message": {
+    "unknownSender": "不明",
+    "justNow": "たった今",
+    "minutesAgo": "{{count}}分前",
+    "hoursAgo": "{{count}}時間前",
+    "daysAgo": "{{count}}日前",
+    "to": "宛先: {{addresses}}",
+    "cc": "Cc: {{addresses}}",
+    "unsubscribe": "配信停止",
+    "unsubscribing": "配信停止中...",
+    "unsubscribed": "配信停止しました",
+    "unsubscribeFailed": "配信停止に失敗しました — 再試行",
+    "hideQuotedText": "引用を非表示",
+    "showQuotedText": "引用を表示",
+    "reply": "返信",
+    "replyAll": "全員に返信",
+    "forward": "転送"
+  },
+  "labels": {
+    "title": "ラベルを適用",
+    "noUserLabels": "ユーザーラベルがありません",
+    "cancel": "キャンセル",
+    "saving": "保存中...",
+    "apply": "適用"
+  },
+  "phishing": {
+    "danger": "このメールには不審なリンクが含まれています",
+    "warning": "このメールには確認が必要なリンクがあります",
+    "report": "報告",
+    "trustSender": "この送信者を信頼する"
+  },
+  "smartReply": {
+    "generateFailed": "候補の生成に失敗しました",
+    "generating": "返信を生成中...",
+    "suggest": "返信候補"
+  },
+  "snooze": {
+    "laterToday": "今日のあとで",
+    "tomorrowMorning": "明日の朝",
+    "tomorrowAfternoon": "明日の午後",
+    "thisWeekend": "今週末",
+    "nextWeek": "来週",
+    "title": "スヌーズする日時...",
+    "pickDateTime": "日時を指定",
+    "date": "日付",
+    "time": "時刻",
+    "back": "戻る",
+    "snooze": "スヌーズ"
+  },
+  "summary": {
+    "generateFailed": "要約の生成に失敗しました",
+    "summary": "要約",
+    "summarize": "要約する"
+  },
+  "thread": {
+    "noSubject": "(件名なし)",
+    "loading": "スレッドを読み込み中...",
+    "notFound": "スレッドが見つかりません",
+    "archive": "アーカイブ",
+    "star": "スターを付ける",
+    "unstar": "スターを外す",
+    "trash": "削除",
+    "to": "宛先: {{addresses}}",
+    "reply": "返信",
+    "replyAll": "全員に返信",
+    "forward": "転送"
+  }
+}

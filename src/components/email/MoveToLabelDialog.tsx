@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { X, Check } from "lucide-react";
 import { useLabelStore } from "../../stores/labelStore";
 import { useAccountStore } from "../../stores/accountStore";
@@ -22,6 +23,7 @@ export function MoveToLabelDialog({
   threadId,
   accountId,
 }: MoveToLabelDialogProps) {
+  const { t } = useTranslation();
   const { userLabels } = useLabelStore();
   const getActiveAccount = useAccountStore((s) => s.getActiveAccount);
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
@@ -122,7 +124,7 @@ export function MoveToLabelDialog({
       >
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-semibold text-text-primary">
-            Apply labels
+            {t("email.labels.title")}
           </h3>
           <button
             onClick={onClose}
@@ -134,7 +136,7 @@ export function MoveToLabelDialog({
 
         {userLabels.length === 0 ? (
           <p className="py-4 text-center text-sm text-text-tertiary">
-            No user labels found
+            {t("email.labels.noUserLabels")}
           </p>
         ) : (
           <div className="max-h-60 overflow-y-auto">
@@ -174,7 +176,7 @@ export function MoveToLabelDialog({
             onClick={onClose}
             className="rounded-lg px-3 py-1.5 text-sm text-text-secondary hover:bg-bg-hover"
           >
-            Cancel
+            {t("email.labels.cancel")}
           </button>
           <button
             onClick={() => void handleApply()}
@@ -182,7 +184,7 @@ export function MoveToLabelDialog({
             className="rounded-lg bg-accent px-3 py-1.5 text-sm text-white hover:bg-accent-hover disabled:opacity-50"
             data-testid="move-to-label-apply"
           >
-            {isSaving ? "Saving..." : "Apply"}
+            {isSaving ? t("email.labels.saving") : t("email.labels.apply")}
           </button>
         </div>
       </div>

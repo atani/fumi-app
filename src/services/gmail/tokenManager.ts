@@ -3,6 +3,7 @@ import { refreshAccessToken, getClientId } from "./auth";
 import { updateTokens } from "../db/accounts";
 import { useAccountStore } from "../../stores/accountStore";
 import { getDb } from "../db/connection";
+import { EMBEDDED_CLIENT_SECRET } from "../../config/oauth";
 
 /** Buffer in milliseconds before actual expiry to trigger a refresh (5 minutes). */
 const REFRESH_BUFFER_MS = 5 * 60 * 1000;
@@ -11,6 +12,8 @@ const REFRESH_BUFFER_MS = 5 * 60 * 1000;
 const pendingRefreshes = new Map<string, Promise<string>>();
 
 async function getClientSecret(): Promise<string | null> {
+  if (EMBEDDED_CLIENT_SECRET) return EMBEDDED_CLIENT_SECRET;
+
   const db = await getDb();
   const rows = await db.select<{ value: string }[]>(
     "SELECT value FROM settings WHERE key = 'google_client_secret'",

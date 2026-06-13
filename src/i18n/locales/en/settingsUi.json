@@ -1,0 +1,253 @@
+{
+  "common": {
+    "save": "Save",
+    "update": "Update",
+    "cancel": "Cancel",
+    "add": "Add",
+    "remove": "Remove",
+    "back": "Back",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "page": {
+    "title": "Settings"
+  },
+  "accounts": {
+    "title": "Accounts",
+    "remove": "Remove",
+    "addGmail": "Add Gmail account",
+    "addImap": "Add IMAP account"
+  },
+  "sync": {
+    "title": "Sync",
+    "interval": "Sync interval",
+    "interval30s": "30 seconds",
+    "interval1m": "1 minute",
+    "interval2m": "2 minutes",
+    "interval5m": "5 minutes"
+  },
+  "undoSend": {
+    "title": "Undo Send",
+    "delay": "Undo send delay",
+    "off": "Off",
+    "delay3s": "3 seconds",
+    "delay5s": "5 seconds",
+    "delay10s": "10 seconds",
+    "hint": "Delay sending emails so you can undo within the chosen time window."
+  },
+  "emailBehavior": {
+    "title": "Email Behavior",
+    "markAsRead": "Mark as read",
+    "markImmediately": "Immediately",
+    "markAfter2s": "After 2 seconds",
+    "markManually": "Manually",
+    "markHint": "When to mark emails as read after opening them.",
+    "defaultReply": "Default reply",
+    "reply": "Reply",
+    "replyAll": "Reply All",
+    "defaultReplyHint": "The default reply action when pressing the reply button or keyboard shortcut.",
+    "sendAndArchive": "Send & Archive",
+    "sendAndArchiveDesc": "Automatically archive threads after sending a reply"
+  },
+  "autostart": {
+    "title": "Autostart",
+    "launchOnStartup": "Launch on startup",
+    "launchOnStartupDesc": "Start Fumi when you log in to your computer"
+  },
+  "shortcuts": {
+    "title": "Keyboard Shortcuts",
+    "pressKey": "Press a key...",
+    "clickToRebind": "Click to rebind",
+    "resetToDefault": "Reset to default",
+    "cancel": "Cancel",
+    "conflictBoundTo": " is already bound to ",
+    "swapBindings": "Swap bindings",
+    "resetAll": "Reset all to defaults"
+  },
+  "filters": {
+    "title": "Filter Rules",
+    "noAccount": "Add an account to manage filter rules.",
+    "editFilter": "Edit filter",
+    "newFilter": "New filter",
+    "criteria": "Criteria",
+    "from": "From (address or name)",
+    "fromPlaceholder": "e.g. newsletter@example.com",
+    "to": "To",
+    "toPlaceholder": "e.g. team@example.com",
+    "subjectContains": "Subject contains",
+    "subjectPlaceholder": "e.g. invoice",
+    "hasAttachment": "Has attachment",
+    "actions": "Actions",
+    "applyLabel": "Apply label",
+    "applyLabelPlaceholder": "Label ID",
+    "archive": "Archive",
+    "trash": "Trash",
+    "star": "Star",
+    "markAsRead": "Mark as read",
+    "addRule": "Add filter rule"
+  },
+  "bundles": {
+    "title": "Bundle Rules",
+    "empty": "No bundle rules configured. Bundle newsletters and bulk senders to receive them on a schedule.",
+    "disabledSuffix": " (disabled)",
+    "editRule": "Edit rule",
+    "deleteRule": "Delete rule",
+    "bundleName": "Bundle name",
+    "bundleNamePlaceholder": "e.g. Newsletters",
+    "senderPattern": "Sender pattern",
+    "senderPatternPlaceholder": "e.g. *@newsletter.example.com",
+    "senderPatternHint": "Use * as a wildcard. Example: *@example.com matches all senders from that domain.",
+    "deliverySchedule": "Delivery schedule",
+    "instant": "Instant (no bundling)",
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "enabled": "Enabled",
+    "addRule": "Add bundle rule"
+  },
+  "smartFolders": {
+    "title": "Smart Folders",
+    "addFolder": "Add smart folder",
+    "tokensHintPrefix": "Use dynamic tokens in queries: ",
+    "tokensHintSuffix": " — these are replaced with actual dates when the folder is opened.",
+    "namePlaceholder": "Folder name",
+    "queryPlaceholder": "Search query (e.g. from:boss@company.com)",
+    "iconPlaceholder": "Icon name (optional, e.g. star, inbox)",
+    "cancel": "Cancel",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "smartLabels": {
+    "title": "Smart Labels",
+    "noAccount": "Add an account to configure smart labels.",
+    "intro": "Smart labels automatically classify incoming emails. Define criteria for fast matching, or let AI classify messages that do not match any pattern.",
+    "enabled": "Enabled",
+    "saveRule": "Save rule",
+    "deleteRule": "Delete rule",
+    "label": "Label",
+    "description": "Description (used for AI classification)",
+    "descriptionPlaceholder": "e.g. Emails about project updates from the team",
+    "senderPattern": "Sender pattern (fast path)",
+    "senderPatternPlaceholder": "e.g. @company.com",
+    "subjectPattern": "Subject pattern (fast path)",
+    "subjectPatternPlaceholder": "e.g. [weekly-report]",
+    "addRule": "Add Rule",
+    "processing": "Processing...",
+    "applyToExisting": "Apply to existing emails",
+    "appliedToThreads_one": "Applied labels to {{count}} thread.",
+    "appliedToThreads_other": "Applied labels to {{count}} threads.",
+    "noThreadsNeeded": "No threads needed labeling.",
+    "backfillFailed": "Backfill failed"
+  },
+  "quickSteps": {
+    "title": "Quick Steps",
+    "noAccount": "Add an account to manage quick steps.",
+    "editStep": "Edit quick step",
+    "newStep": "New quick step",
+    "name": "Name",
+    "namePlaceholder": "e.g. Archive & Mark Read",
+    "shortcut": "Keyboard shortcut (optional)",
+    "shortcutPlaceholder": "e.g. Ctrl+Shift+1",
+    "actions": "Actions",
+    "addAction": "Add action",
+    "cancel": "Cancel",
+    "save": "Save",
+    "newStepButton": "New quick step",
+    "addFromPresets": "Add from presets",
+    "presets": "Presets",
+    "action": {
+      "applyLabel": "Apply label",
+      "removeLabel": "Remove label",
+      "archive": "Archive",
+      "trash": "Trash",
+      "star": "Star",
+      "unstar": "Unstar",
+      "markRead": "Mark read",
+      "markUnread": "Mark unread",
+      "forward": "Forward",
+      "reply": "Reply",
+      "move": "Move",
+      "snooze": "Snooze",
+      "mute": "Mute",
+      "followUp": "Follow up",
+      "categorize": "Categorize",
+      "addTask": "Add task",
+      "unsubscribe": "Unsubscribe",
+      "openUrl": "Open URL"
+    },
+    "param": {
+      "applyLabelPlaceholder": "e.g. IMPORTANT",
+      "removeLabelPlaceholder": "e.g. INBOX",
+      "movePlaceholder": "e.g. ARCHIVE",
+      "forwardPlaceholder": "e.g. user@example.com",
+      "categorizePlaceholder": "e.g. Updates",
+      "openUrlPlaceholder": "https://...",
+      "snoozePlaceholder": "e.g. 1h, 1d"
+    }
+  },
+  "phishing": {
+    "title": "Phishing Detection",
+    "sensitivity": "Detection sensitivity",
+    "low": "Low",
+    "default": "Default",
+    "high": "High",
+    "hint": "Controls how aggressively links in emails are flagged as suspicious. Higher sensitivity catches more threats but may produce more false positives."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "desktop": "Desktop notifications",
+    "desktopDesc": "Show notifications for new emails"
+  },
+  "vip": {
+    "title": "VIP Notifications",
+    "hint": "When VIP senders are configured, only emails from these addresses trigger desktop notifications. If the list is empty, all non-muted emails produce notifications.",
+    "remove": "Remove {{email}}",
+    "inputPlaceholder": "Add VIP email address",
+    "add": "Add"
+  },
+  "templates": {
+    "title": "Templates",
+    "namePlaceholder": "Template name",
+    "subjectPlaceholder": "Subject (optional)",
+    "bodyPlaceholder": "Body (optional)",
+    "update": "Update",
+    "save": "Save",
+    "cancel": "Cancel",
+    "addTemplate": "Add template"
+  },
+  "signatures": {
+    "title": "Signatures",
+    "default": "default",
+    "setAsDefault": "Set as default",
+    "namePlaceholder": "Signature name",
+    "bodyPlaceholder": "Signature body",
+    "setAsDefaultLabel": "Set as default signature",
+    "update": "Update",
+    "save": "Save",
+    "cancel": "Cancel",
+    "addSignature": "Add signature"
+  },
+  "ai": {
+    "title": "AI Features",
+    "provider": "AI Provider",
+    "apiKey": "API Key",
+    "apiKeyPlaceholder": "Enter API key",
+    "threadSummaries": "Thread summaries",
+    "threadSummariesDesc": "AI-generated summaries for email threads",
+    "smartReplies": "Smart reply suggestions",
+    "smartRepliesDesc": "AI-suggested reply options for emails",
+    "autoCategorization": "Auto-categorization",
+    "autoCategorizationDesc": "Automatically categorize emails using AI"
+  },
+  "oauth": {
+    "title": "OAuth Credentials",
+    "clientId": "Google Client ID",
+    "clientIdPlaceholder": "Enter Client ID",
+    "clientSecret": "Client Secret",
+    "clientSecretPlaceholder": "Enter Client Secret"
+  },
+  "about": {
+    "title": "About",
+    "version": "Version {{version}}"
+  }
+}

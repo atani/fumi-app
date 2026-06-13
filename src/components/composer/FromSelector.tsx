@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { ChevronDown } from "lucide-react";
 import { getSendAsAliases } from "../../services/gmail/sendAs";
 import type { SendAsAlias } from "../../types";
@@ -11,6 +12,7 @@ interface FromSelectorProps {
 }
 
 export function FromSelector({ accountId, accountEmail, value, onChange }: FromSelectorProps) {
+  const { t } = useTranslation();
   const [aliases, setAliases] = useState<SendAsAlias[]>([]);
 
   useEffect(() => {
@@ -29,7 +31,7 @@ export function FromSelector({ accountId, accountEmail, value, onChange }: FromS
   return (
     <div className="flex items-center border-b border-border-secondary px-4 py-1.5">
       <label className="w-12 shrink-0 text-xs text-text-tertiary">
-        From
+        {t("composer.from")}
       </label>
       <div className="relative flex-1">
         <select

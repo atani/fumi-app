@@ -1,10 +1,11 @@
+import { useTranslation } from "react-i18next";
 import { Section } from "./shared";
 
 const SYNC_INTERVALS = [
-  { value: 30, label: "30 seconds" },
-  { value: 60, label: "1 minute" },
-  { value: 120, label: "2 minutes" },
-  { value: 300, label: "5 minutes" },
+  { value: 30, labelKey: "settingsUi.sync.interval30s" },
+  { value: 60, labelKey: "settingsUi.sync.interval1m" },
+  { value: 120, labelKey: "settingsUi.sync.interval2m" },
+  { value: 300, labelKey: "settingsUi.sync.interval5m" },
 ];
 
 interface SyncSectionProps {
@@ -16,10 +17,11 @@ export function SyncSection({
   syncInterval,
   onSyncIntervalChange,
 }: SyncSectionProps) {
+  const { t } = useTranslation();
   return (
-    <Section title="Sync">
+    <Section title={t("settingsUi.sync.title")}>
       <label className="mb-2 block text-sm text-text-secondary">
-        Sync interval
+        {t("settingsUi.sync.interval")}
       </label>
       <select
         value={syncInterval}
@@ -27,9 +29,9 @@ export function SyncSection({
         className="rounded-lg border border-border-primary bg-bg-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent"
         data-testid="sync-interval-select"
       >
-        {SYNC_INTERVALS.map(({ value, label }) => (
+        {SYNC_INTERVALS.map(({ value, labelKey }) => (
           <option key={value} value={value}>
-            {label}
+            {t(labelKey)}
           </option>
         ))}
       </select>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { Plus, Trash2, Pencil, X, ChevronDown, ChevronUp, Zap } from "lucide-react";
 import { useAccountStore } from "../../stores/accountStore";
 import {
@@ -60,6 +61,7 @@ function makeEmptyQuickStep(accountId: string): QuickStep {
 }
 
 export function QuickStepEditor() {
+  const { t } = useTranslation();
   const { accounts } = useAccountStore();
   const [steps, setSteps] = useState<QuickStep[]>([]);
   const [editing, setEditing] = useState<QuickStep | null>(null);
@@ -167,7 +169,7 @@ export function QuickStepEditor() {
   if (!activeAccount) {
     return (
       <p className="text-sm text-text-tertiary">
-        Add an account to manage quick steps.
+        {t("settingsUi.quickSteps.noAccount")}
       </p>
     );
   }
@@ -224,8 +226,8 @@ export function QuickStepEditor() {
           <div className="mb-4 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-text-primary">
               {steps.some((s) => s.id === editing.id)
-                ? "Edit quick step"
-                : "New quick step"}
+                ? t("settingsUi.quickSteps.editStep")
+                : t("settingsUi.quickSteps.newStep")}
             </h3>
             <button
               onClick={handleCancel}
@@ -238,7 +240,9 @@ export function QuickStepEditor() {
 
           {/* Name */}
           <label className="mb-3 block">
-            <span className="mb-0.5 block text-xs text-text-secondary">Name</span>
+            <span className="mb-0.5 block text-xs text-text-secondary">
+              {t("settingsUi.quickSteps.name")}
+            </span>
             <input
               type="text"
               value={editing.name}
@@ -246,7 +250,7 @@ export function QuickStepEditor() {
                 setEditing({ ...editing, name: e.target.value })
               }
               className="w-full rounded-md border border-border-primary bg-bg-primary px-2.5 py-1.5 text-sm text-text-primary outline-none focus:border-accent"
-              placeholder="e.g. Archive & Mark Read"
+              placeholder={t("settingsUi.quickSteps.namePlaceholder")}
               data-testid="quick-step-name"
             />
           </label>
@@ -254,7 +258,7 @@ export function QuickStepEditor() {
           {/* Shortcut */}
           <label className="mb-4 block">
             <span className="mb-0.5 block text-xs text-text-secondary">
-              Keyboard shortcut (optional)
+              {t("settingsUi.quickSteps.shortcut")}
             </span>
             <input
               type="text"
@@ -266,7 +270,7 @@ export function QuickStepEditor() {
                 })
               }
               className="w-full rounded-md border border-border-primary bg-bg-primary px-2.5 py-1.5 text-sm text-text-primary outline-none focus:border-accent"
-              placeholder="e.g. Ctrl+Shift+1"
+              placeholder={t("settingsUi.quickSteps.shortcutPlaceholder")}
               data-testid="quick-step-shortcut"
             />
           </label>
@@ -274,7 +278,7 @@ export function QuickStepEditor() {
           {/* Actions */}
           <fieldset className="mb-4">
             <legend className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-tertiary">
-              Actions
+              {t("settingsUi.quickSteps.actions")}
             </legend>
             <div className="space-y-2">
               {editing.actions.map((action, index) => {
@@ -314,7 +318,7 @@ export function QuickStepEditor() {
                       >
                         {ACTION_TYPES.map((at) => (
                           <option key={at.value} value={at.value}>
-                            {at.label}
+                            {t(`settingsUi.quickSteps.action.${at.value}`)}
                           </option>
                         ))}
                       </select>
@@ -326,7 +330,9 @@ export function QuickStepEditor() {
                             updateActionParam(index, paramDef.key, e.target.value)
                           }
                           className="w-full rounded-md border border-border-primary bg-bg-secondary px-2 py-1 text-sm text-text-primary outline-none focus:border-accent"
-                          placeholder={paramDef.placeholder}
+                          placeholder={t(
+                            `settingsUi.quickSteps.param.${action.type}Placeholder`,
+                          )}
                           data-testid={`quick-step-action-param-${index}`}
                         />
                       )}
@@ -348,7 +354,7 @@ export function QuickStepEditor() {
               data-testid="quick-step-add-action"
             >
               <Plus className="h-3 w-3" />
-              Add action
+              {t("settingsUi.quickSteps.addAction")}
             </button>
           </fieldset>
 
@@ -358,7 +364,7 @@ export function QuickStepEditor() {
               className="rounded-lg border border-border-primary px-3 py-1.5 text-sm text-text-secondary transition-colors hover:bg-bg-hover"
               data-testid="quick-step-cancel-btn"
             >
-              Cancel
+              {t("settingsUi.common.cancel")}
             </button>
             <button
               onClick={() => void handleSave()}
@@ -366,7 +372,7 @@ export function QuickStepEditor() {
               className="rounded-lg bg-accent px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
               data-testid="quick-step-save-btn"
             >
-              Save
+              {t("settingsUi.common.save")}
             </button>
           </div>
         </div>
@@ -378,7 +384,7 @@ export function QuickStepEditor() {
             data-testid="quick-step-add-btn"
           >
             <Plus className="h-3.5 w-3.5" />
-            New quick step
+            {t("settingsUi.quickSteps.newStepButton")}
           </button>
           <button
             onClick={() => setShowPresets(!showPresets)}
@@ -386,7 +392,7 @@ export function QuickStepEditor() {
             data-testid="quick-step-presets-btn"
           >
             <Zap className="h-3.5 w-3.5" />
-            Add from presets
+            {t("settingsUi.quickSteps.addFromPresets")}
           </button>
         </div>
       )}
@@ -395,7 +401,7 @@ export function QuickStepEditor() {
       {showPresets && !editing && (
         <div className="rounded-lg border border-border-primary bg-bg-secondary p-3">
           <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-tertiary">
-            Presets
+            {t("settingsUi.quickSteps.presets")}
           </h4>
           <div className="space-y-1">
             {QUICK_STEP_PRESETS.map((preset) => (
