@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { ArrowLeft, CheckSquare, ListFilter } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAccountStore } from "../../stores/accountStore";
@@ -7,12 +8,7 @@ import { TaskItem } from "./TaskItem";
 import { TaskQuickAdd } from "./TaskQuickAdd";
 import type { Task } from "../../types";
 
-const FILTERS = [
-  { id: "all", label: "All" },
-  { id: "today", label: "Today" },
-  { id: "upcoming", label: "Upcoming" },
-  { id: "completed", label: "Completed" },
-] as const;
+const FILTER_IDS = ["all", "today", "upcoming", "completed"] as const;
 
 function isToday(dateStr: string): boolean {
   const d = new Date(dateStr);
@@ -52,6 +48,7 @@ function filterTasks(
 }
 
 export function TasksPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { getActiveAccount } = useAccountStore();
   const { tasks, isLoading, filter, subtaskCounts, setFilter, loadTasks } =
@@ -91,15 +88,20 @@ export function TasksPage() {
         <button
           onClick={() => navigate("/")}
           className="rounded p-1 text-text-secondary hover:bg-bg-hover hover:text-text-primary"
-          aria-label="Back to mail"
+          aria-label={t("tasks.backToMail")}
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
         <CheckSquare className="h-5 w-5 text-accent" />
-        <h1 className="text-xl font-bold text-text-primary">Tasks</h1>
+        <h1 className="text-xl font-bold text-text-primary">
+          {t("tasks.title")}
+        </h1>
         {totalCount > 0 && (
           <span className="text-sm text-text-tertiary">
-            {completedCount}/{totalCount} completed
+            {t("tasks.completedCount", {
+              completed: completedCount,
+              total: totalCount,
+            })}
           </span>
         )}
       </div>
@@ -107,7 +109,7 @@ export function TasksPage() {
       {/* Filter tabs */}
       <div className="flex items-center gap-1 border-b border-border-primary px-6 py-2">
         <ListFilter className="mr-1 h-4 w-4 text-text-tertiary" />
-        {FILTERS.map(({ id, label }) => (
+        {FILTER_IDS.map((id) => (
           <button
             key={id}
             onClick={() => setFilter(id)}
@@ -118,7 +120,7 @@ export function TasksPage() {
             }`}
             data-testid={`task-filter-${id}`}
           >
-            {label}
+            {t(`tasks.filters.${id}`)}
           </button>
         ))}
       </div>
@@ -130,7 +132,7 @@ export function TasksPage() {
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <span className="text-sm text-text-secondary">
-              Loading tasks...
+              {t("tasks.loading")}
             </span>
           </div>
         ) : filteredTasks.length === 0 ? (
@@ -138,8 +140,8 @@ export function TasksPage() {
             <CheckSquare className="mb-3 h-12 w-12 text-text-tertiary" />
             <p className="text-sm text-text-secondary">
               {filter === "all"
-                ? "No tasks yet. Add one above."
-                : `No ${filter} tasks.`}
+                ? t("tasks.empty.all")
+                : t(`tasks.empty.${filter}`)}
             </p>
           </div>
         ) : (

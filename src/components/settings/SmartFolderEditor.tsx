@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { Plus, Pencil, Trash2, X, Check } from "lucide-react";
 import { useAccountStore } from "../../stores/accountStore";
 import { useSmartFolderStore } from "../../stores/smartFolderStore";
 import type { SmartFolder } from "../../types";
 
 export function SmartFolderEditor() {
+  const { t } = useTranslation();
   const { activeAccountId } = useAccountStore();
   const { folders, loadFolders, createFolder, updateFolder, deleteFolder } =
     useSmartFolderStore();
@@ -111,7 +113,7 @@ export function SmartFolderEditor() {
               <button
                 onClick={() => handleEdit(folder)}
                 className="rounded-md p-1.5 text-text-tertiary transition-colors hover:bg-bg-hover hover:text-text-primary"
-                title="Edit"
+                title={t("settingsUi.smartFolders.edit")}
                 data-testid={`edit-smart-folder-${folder.id}`}
               >
                 <Pencil className="h-3.5 w-3.5" />
@@ -119,7 +121,7 @@ export function SmartFolderEditor() {
               <button
                 onClick={() => void handleDelete(folder.id)}
                 className="rounded-md p-1.5 text-text-tertiary transition-colors hover:bg-bg-hover hover:text-danger"
-                title="Delete"
+                title={t("settingsUi.smartFolders.delete")}
                 data-testid={`delete-smart-folder-${folder.id}`}
               >
                 <Trash2 className="h-3.5 w-3.5" />
@@ -152,14 +154,15 @@ export function SmartFolderEditor() {
           data-testid="add-smart-folder-btn"
         >
           <Plus className="h-3.5 w-3.5" />
-          Add smart folder
+          {t("settingsUi.smartFolders.addFolder")}
         </button>
       )}
 
       <p className="text-xs text-text-tertiary">
-        Use dynamic tokens in queries: <code>__TODAY__</code>,{" "}
-        <code>__LAST_7_DAYS__</code>, <code>__LAST_30_DAYS__</code> — these are
-        replaced with actual dates when the folder is opened.
+        {t("settingsUi.smartFolders.tokensHintPrefix")}
+        <code>__TODAY__</code>, <code>__LAST_7_DAYS__</code>,{" "}
+        <code>__LAST_30_DAYS__</code>
+        {t("settingsUi.smartFolders.tokensHintSuffix")}
       </p>
     </div>
   );
@@ -184,13 +187,14 @@ function FolderForm({
   onSave: () => void;
   onCancel: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-2 rounded-lg border border-border-primary bg-bg-secondary p-3">
       <input
         type="text"
         value={name}
         onChange={(e) => onNameChange(e.target.value)}
-        placeholder="Folder name"
+        placeholder={t("settingsUi.smartFolders.namePlaceholder")}
         className="w-full rounded-md border border-border-primary bg-bg-primary px-3 py-1.5 text-sm text-text-primary outline-none focus:border-accent"
         data-testid="smart-folder-name-input"
         autoFocus
@@ -199,7 +203,7 @@ function FolderForm({
         type="text"
         value={query}
         onChange={(e) => onQueryChange(e.target.value)}
-        placeholder="Search query (e.g. from:boss@company.com)"
+        placeholder={t("settingsUi.smartFolders.queryPlaceholder")}
         className="w-full rounded-md border border-border-primary bg-bg-primary px-3 py-1.5 text-sm text-text-primary outline-none focus:border-accent"
         data-testid="smart-folder-query-input"
       />
@@ -207,7 +211,7 @@ function FolderForm({
         type="text"
         value={icon}
         onChange={(e) => onIconChange(e.target.value)}
-        placeholder="Icon name (optional, e.g. star, inbox)"
+        placeholder={t("settingsUi.smartFolders.iconPlaceholder")}
         className="w-full rounded-md border border-border-primary bg-bg-primary px-3 py-1.5 text-sm text-text-primary outline-none focus:border-accent"
         data-testid="smart-folder-icon-input"
       />
@@ -215,7 +219,7 @@ function FolderForm({
         <button
           onClick={onCancel}
           className="rounded-md p-1.5 text-text-tertiary transition-colors hover:bg-bg-hover hover:text-text-primary"
-          title="Cancel"
+          title={t("settingsUi.smartFolders.cancel")}
           data-testid="smart-folder-cancel-btn"
         >
           <X className="h-4 w-4" />
@@ -224,7 +228,7 @@ function FolderForm({
           onClick={onSave}
           disabled={!name.trim() || !query.trim()}
           className="rounded-md p-1.5 text-accent transition-colors hover:bg-accent/10 disabled:opacity-50"
-          title="Save"
+          title={t("settingsUi.smartFolders.save")}
           data-testid="smart-folder-save-btn"
         >
           <Check className="h-4 w-4" />

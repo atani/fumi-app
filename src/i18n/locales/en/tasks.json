@@ -1,0 +1,44 @@
+{
+  "title": "Tasks",
+  "backToMail": "Back to mail",
+  "completedCount": "{{completed}}/{{total}} completed",
+  "loading": "Loading tasks…",
+  "add": "Add",
+  "cancel": "Cancel",
+  "quickAddPlaceholder": "Add a task…",
+  "markComplete": "Mark complete",
+  "markIncomplete": "Mark incomplete",
+  "editTask": "Edit task",
+  "deleteTask": "Delete task",
+  "subtaskCount_one": "{{count}} subtask",
+  "subtaskCount_other": "{{count}} subtasks",
+  "filters": {
+    "all": "All",
+    "today": "Today",
+    "upcoming": "Upcoming",
+    "completed": "Completed"
+  },
+  "empty": {
+    "all": "No tasks yet. Add one above.",
+    "today": "No tasks for today.",
+    "upcoming": "No upcoming tasks.",
+    "completed": "No completed tasks."
+  },
+  "priority": {
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low"
+  },
+  "extract": {
+    "title": "Extract Tasks from Thread",
+    "intro": "Use AI to find actionable tasks in this email thread.",
+    "action": "Extract Tasks",
+    "analyzing": "Analyzing thread…",
+    "empty": "No actionable tasks found in this thread.",
+    "due": "Due: {{date}}",
+    "addCount_one": "Add {{count}} task",
+    "addCount_other": "Add {{count}} tasks",
+    "errorExtract": "Failed to extract tasks",
+    "errorSave": "Failed to save tasks"
+  }
+}

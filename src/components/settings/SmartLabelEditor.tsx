@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { Plus, Trash2, Save } from "lucide-react";
 import { useAccountStore } from "../../stores/accountStore";
 import { useLabelStore } from "../../stores/labelStore";
@@ -65,6 +66,7 @@ function formToRule(form: RuleForm, accountId: string): SmartLabelRule {
 }
 
 export function SmartLabelEditor() {
+  const { t } = useTranslation();
   const [rules, setRules] = useState<RuleForm[]>([]);
   const [isBackfilling, setIsBackfilling] = useState(false);
   const [backfillResult, setBackfillResult] = useState<string | null>(null);
@@ -130,22 +132,24 @@ export function SmartLabelEditor() {
       const count = await backfillSmartLabels(accountId);
       setBackfillResult(
         count > 0
-          ? `Applied labels to ${count} thread${count === 1 ? "" : "s"}.`
-          : "No threads needed labeling.",
+          ? t("settingsUi.smartLabels.appliedToThreads", { count })
+          : t("settingsUi.smartLabels.noThreadsNeeded"),
       );
     } catch (err) {
       setBackfillResult(
-        err instanceof Error ? err.message : "Backfill failed",
+        err instanceof Error
+          ? err.message
+          : t("settingsUi.smartLabels.backfillFailed"),
       );
     } finally {
       setIsBackfilling(false);
     }
-  }, [accountId]);
+  }, [accountId, t]);
 
   if (!accountId) {
     return (
       <p className="text-sm text-text-tertiary">
-        Add an account to configure smart labels.
+        {t("settingsUi.smartLabels.noAccount")}
       </p>
     );
   }
@@ -153,9 +157,7 @@ export function SmartLabelEditor() {
   return (
     <div className="space-y-4" data-testid="smart-label-editor">
       <p className="text-xs text-text-tertiary">
-        Smart labels automatically classify incoming emails. Define criteria for
-        fast matching, or let AI classify messages that do not match any
-        pattern.
+        {t("settingsUi.smartLabels.intro")}
       </p>
 
       {rules.map((rule) => (
@@ -174,12 +176,14 @@ export function SmartLabelEditor() {
                 }
                 className="rounded"
               />
-              <span className="text-text-secondary">Enabled</span>
+              <span className="text-text-secondary">
+                {t("settingsUi.smartLabels.enabled")}
+              </span>
             </label>
             <div className="flex gap-1">
               <button
                 onClick={() => void handleSave(rule)}
-                title="Save rule"
+                title={t("settingsUi.smartLabels.saveRule")}
                 className="rounded-md p-1.5 text-text-tertiary transition-colors hover:bg-bg-hover hover:text-accent"
                 data-testid={`save-rule-${rule.id}`}
               >
@@ -187,7 +191,7 @@ export function SmartLabelEditor() {
               </button>
               <button
                 onClick={() => void handleDelete(rule.id)}
-                title="Delete rule"
+                title={t("settingsUi.smartLabels.deleteRule")}
                 className="rounded-md p-1.5 text-text-tertiary transition-colors hover:bg-bg-hover hover:text-danger"
                 data-testid={`delete-rule-${rule.id}`}
               >
@@ -198,7 +202,7 @@ export function SmartLabelEditor() {
 
           <div>
             <label className="mb-1 block text-xs text-text-tertiary">
-              Label
+              {t("settingsUi.smartLabels.label")}
             </label>
             <select
               value={rule.label_id}
@@ -217,7 +221,7 @@ export function SmartLabelEditor() {
 
           <div>
             <label className="mb-1 block text-xs text-text-tertiary">
-              Description (used for AI classification)
+              {t("settingsUi.smartLabels.description")}
             </label>
             <input
               type="text"
@@ -225,7 +229,7 @@ export function SmartLabelEditor() {
               onChange={(e) =>
                 handleFieldChange(rule.id, "description", e.target.value)
               }
-              placeholder="e.g. Emails about project updates from the team"
+              placeholder={t("settingsUi.smartLabels.descriptionPlaceholder")}
               className="w-full rounded-lg border border-border-primary bg-bg-primary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent"
             />
           </div>
@@ -233,7 +237,7 @@ export function SmartLabelEditor() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="mb-1 block text-xs text-text-tertiary">
-                Sender pattern (fast path)
+                {t("settingsUi.smartLabels.senderPattern")}
               </label>
               <input
                 type="text"
@@ -241,13 +245,13 @@ export function SmartLabelEditor() {
                 onChange={(e) =>
                   handleFieldChange(rule.id, "senderPattern", e.target.value)
                 }
-                placeholder="e.g. @company.com"
+                placeholder={t("settingsUi.smartLabels.senderPatternPlaceholder")}
                 className="w-full rounded-lg border border-border-primary bg-bg-primary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent"
               />
             </div>
             <div>
               <label className="mb-1 block text-xs text-text-tertiary">
-                Subject pattern (fast path)
+                {t("settingsUi.smartLabels.subjectPattern")}
               </label>
               <input
                 type="text"
@@ -255,7 +259,7 @@ export function SmartLabelEditor() {
                 onChange={(e) =>
                   handleFieldChange(rule.id, "subjectPattern", e.target.value)
                 }
-                placeholder="e.g. [weekly-report]"
+                placeholder={t("settingsUi.smartLabels.subjectPatternPlaceholder")}
                 className="w-full rounded-lg border border-border-primary bg-bg-primary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent"
               />
             </div>
@@ -270,7 +274,7 @@ export function SmartLabelEditor() {
           data-testid="add-smart-label-rule"
         >
           <Plus className="h-3.5 w-3.5" />
-          Add Rule
+          {t("settingsUi.smartLabels.addRule")}
         </button>
         <button
           onClick={() => void handleBackfill()}
@@ -278,7 +282,9 @@ export function SmartLabelEditor() {
           className="rounded-lg border border-border-primary bg-bg-secondary px-3 py-2 text-sm font-medium text-text-primary transition-colors hover:bg-bg-hover disabled:opacity-50"
           data-testid="backfill-smart-labels"
         >
-          {isBackfilling ? "Processing..." : "Apply to existing emails"}
+          {isBackfilling
+            ? t("settingsUi.smartLabels.processing")
+            : t("settingsUi.smartLabels.applyToExisting")}
         </button>
       </div>
 

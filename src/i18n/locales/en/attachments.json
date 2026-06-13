@@ -1,0 +1,16 @@
+{
+  "title": "Attachments",
+  "filterAll": "All",
+  "filterImages": "Images",
+  "filterDocuments": "Documents",
+  "gridView": "Grid view",
+  "listView": "List view",
+  "loading": "Loading attachments...",
+  "empty": "No attachments found",
+  "download": "Download",
+  "groupUnknownDate": "Unknown date",
+  "groupToday": "Today",
+  "groupYesterday": "Yesterday",
+  "groupThisWeek": "This week",
+  "groupThisMonth": "This month"
+}

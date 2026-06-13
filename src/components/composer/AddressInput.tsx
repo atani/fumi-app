@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { X } from "lucide-react";
 import { searchContacts } from "../../services/contacts/contactService";
 import { useAccountStore } from "../../stores/accountStore";
@@ -31,6 +32,7 @@ export function AddressInput({
   placeholder,
   autoFocus,
 }: AddressInputProps) {
+  const { t } = useTranslation();
   const { chips, input: currentInput } = parseChips(value);
 
   const [suggestions, setSuggestions] = useState<Contact[]>([]);
@@ -226,7 +228,7 @@ export function AddressInput({
             type="button"
             className="ml-0.5 rounded-full p-0.5 hover:bg-bg-hover"
             onClick={() => removeChip(index)}
-            aria-label={`Remove ${chip}`}
+            aria-label={t("composer.removeAddress", { address: chip })}
           >
             <X className="h-3 w-3" />
           </button>

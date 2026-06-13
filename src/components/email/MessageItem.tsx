@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Reply, ReplyAll, Forward, ChevronDown, ChevronRight, MailMinus } from "lucide-react";
 import { EmailRenderer } from "./EmailRenderer";
 import { AttachmentList } from "./AttachmentList";
@@ -91,8 +92,12 @@ function splitQuotedText(text: string): { main: string; quoted: string | null } 
   };
 }
 
-function formatRelativeDate(dateStr: string | null): string {
-  if (!dateStr) return "";
+type RelativeDate =
+  | { kind: "absolute"; value: string }
+  | { kind: "key"; key: string; count?: number };
+
+function formatRelativeDate(dateStr: string | null): RelativeDate {
+  if (!dateStr) return { kind: "absolute", value: "" };
   const date = new Date(dateStr);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -100,11 +105,11 @@ function formatRelativeDate(dateStr: string | null): string {
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMins < 1) return "just now";
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
-  return date.toLocaleDateString();
+  if (diffMins < 1) return { kind: "key", key: "email.message.justNow" };
+  if (diffMins < 60) return { kind: "key", key: "email.message.minutesAgo", count: diffMins };
+  if (diffHours < 24) return { kind: "key", key: "email.message.hoursAgo", count: diffHours };
+  if (diffDays < 7) return { kind: "key", key: "email.message.daysAgo", count: diffDays };
+  return { kind: "absolute", value: date.toLocaleDateString() };
 }
 
 export function MessageItem({
@@ -115,6 +120,7 @@ export function MessageItem({
   attachments,
   phishingSensitivity = "default",
 }: MessageItemProps) {
+  const { t } = useTranslation();
   const [showQuoted, setShowQuoted] = useState(false);
   const [trustedSender, setTrustedSender] = useState(false);
 
@@ -205,8 +211,16 @@ export function MessageItem({
     [phishingAnalyses],
   );
 
-  const senderDisplay = message.from_name || message.from_address || "Unknown";
+  const senderDisplay =
+    message.from_name || message.from_address || t("email.message.unknownSender");
   const snippet = message.snippet ?? "";
+
+  const renderRelativeDate = (dateStr: string | null): string => {
+    const rel = formatRelativeDate(dateStr);
+    return rel.kind === "absolute"
+      ? rel.value
+      : t(rel.key, rel.count != null ? { count: rel.count } : undefined);
+  };
 
   if (!isExpanded) {
     // Collapsed view: single line with sender, snippet, and date
@@ -232,7 +246,7 @@ export function MessageItem({
           {snippet}
         </span>
         <span className="flex-shrink-0 text-xs text-text-tertiary">
-          {formatRelativeDate(message.date)}
+          {renderRelativeDate(message.date)}
         </span>
       </div>
     );
@@ -274,11 +288,11 @@ export function MessageItem({
 
       {/* Recipients */}
       <div className="mt-1 pl-6 text-xs text-text-secondary">
-        To: {message.to_addresses}
+        {t("email.message.to", { addresses: message.to_addresses })}
       </div>
       {message.cc_addresses && (
         <div className="pl-6 text-xs text-text-secondary">
-          Cc: {message.cc_addresses}
+          {t("email.message.cc", { addresses: message.cc_addresses })}
         </div>
       )}
 
@@ -295,10 +309,10 @@ export function MessageItem({
             data-testid="unsubscribe-btn"
           >
             <MailMinus className="h-3 w-3" />
-            {unsubscribeStatus === "idle" && "Unsubscribe"}
-            {unsubscribeStatus === "loading" && "Unsubscribing..."}
-            {unsubscribeStatus === "done" && "Unsubscribed"}
-            {unsubscribeStatus === "error" && "Unsubscribe failed — retry"}
+            {unsubscribeStatus === "idle" && t("email.message.unsubscribe")}
+            {unsubscribeStatus === "loading" && t("email.message.unsubscribing")}
+            {unsubscribeStatus === "done" && t("email.message.unsubscribed")}
+            {unsubscribeStatus === "error" && t("email.message.unsubscribeFailed")}
           </button>
         </div>
       )}
@@ -340,7 +354,7 @@ export function MessageItem({
                 className="mt-2 rounded px-2 py-1 text-xs text-text-tertiary hover:bg-bg-hover hover:text-text-secondary"
                 data-testid="toggle-quoted-text"
               >
-                {showQuoted ? "Hide quoted text" : "Show quoted text"}
+                {showQuoted ? t("email.message.hideQuotedText") : t("email.message.showQuotedText")}
               </button>
             )}
           </>
@@ -359,7 +373,7 @@ export function MessageItem({
                 className="mt-2 rounded px-2 py-1 text-xs text-text-tertiary hover:bg-bg-hover hover:text-text-secondary"
                 data-testid="toggle-quoted-text"
               >
-                {showQuoted ? "Hide quoted text" : "Show quoted text"}
+                {showQuoted ? t("email.message.hideQuotedText") : t("email.message.showQuotedText")}
               </button>
             )}
           </>
@@ -387,11 +401,11 @@ export function MessageItem({
             e.stopPropagation();
             useComposerStore.getState().openReply(message);
           }}
-          title="Reply"
+          title={t("email.message.reply")}
           className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs text-text-secondary hover:bg-bg-hover hover:text-text-primary"
           data-testid="message-reply-btn"
         >
-          <Reply className="h-3.5 w-3.5" /> Reply
+          <Reply className="h-3.5 w-3.5" /> {t("email.message.reply")}
         </button>
         <button
           onClick={(e) => {
@@ -400,22 +414,22 @@ export function MessageItem({
               useComposerStore.getState().openReplyAll(message, account.email);
             }
           }}
-          title="Reply All"
+          title={t("email.message.replyAll")}
           className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs text-text-secondary hover:bg-bg-hover hover:text-text-primary"
           data-testid="message-reply-all-btn"
         >
-          <ReplyAll className="h-3.5 w-3.5" /> Reply All
+          <ReplyAll className="h-3.5 w-3.5" /> {t("email.message.replyAll")}
         </button>
         <button
           onClick={(e) => {
             e.stopPropagation();
             useComposerStore.getState().openForward(message);
           }}
-          title="Forward"
+          title={t("email.message.forward")}
           className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs text-text-secondary hover:bg-bg-hover hover:text-text-primary"
           data-testid="message-forward-btn"
         >
-          <Forward className="h-3.5 w-3.5" /> Forward
+          <Forward className="h-3.5 w-3.5" /> {t("email.message.forward")}
         </button>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -55,6 +56,7 @@ async function saveSetting(key: string, value: string): Promise<void> {
 }
 
 export function SettingsPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { accounts, removeAccount } = useAccountStore();
 
@@ -309,13 +311,15 @@ export function SettingsPage() {
               data-testid="settings-back"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back
+              {t("settingsUi.common.back")}
             </button>
-            <h1 className="text-xl font-bold text-text-primary">Settings</h1>
+            <h1 className="text-xl font-bold text-text-primary">
+              {t("settingsUi.page.title")}
+            </h1>
           </div>
 
           {/* Accounts */}
-          <Section title="Accounts">
+          <Section title={t("settingsUi.accounts.title")}>
             <div className="space-y-2">
               {accounts.map((account) => (
                 <div
@@ -341,7 +345,7 @@ export function SettingsPage() {
                     data-testid={`remove-account-${account.id}`}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
-                    Remove
+                    {t("settingsUi.accounts.remove")}
                   </button>
                 </div>
               ))}
@@ -352,14 +356,14 @@ export function SettingsPage() {
                 className="rounded-lg bg-accent px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
                 data-testid="add-gmail-account"
               >
-                Add Gmail account
+                {t("settingsUi.accounts.addGmail")}
               </button>
               <button
                 onClick={() => navigate("/login")}
                 className="rounded-lg border border-border-primary bg-bg-secondary px-3 py-2 text-sm font-medium text-text-primary transition-colors hover:bg-bg-hover"
                 data-testid="add-imap-account"
               >
-                Add IMAP account
+                {t("settingsUi.accounts.addImap")}
               </button>
             </div>
           </Section>
@@ -390,39 +394,39 @@ export function SettingsPage() {
           />
 
           {/* Keyboard Shortcuts */}
-          <Section title="Keyboard Shortcuts">
+          <Section title={t("settingsUi.shortcuts.title")}>
             <ShortcutEditor />
           </Section>
 
           {/* Filter Rules */}
-          <Section title="Filter Rules">
+          <Section title={t("settingsUi.filters.title")}>
             <FilterEditor />
           </Section>
 
           {/* Bundle Rules */}
-          <Section title="Bundle Rules">
+          <Section title={t("settingsUi.bundles.title")}>
             <BundleEditor />
           </Section>
 
           {/* Smart Folders */}
-          <Section title="Smart Folders">
+          <Section title={t("settingsUi.smartFolders.title")}>
             <SmartFolderEditor />
           </Section>
 
           {/* Smart Labels */}
-          <Section title="Smart Labels">
+          <Section title={t("settingsUi.smartLabels.title")}>
             <SmartLabelEditor />
           </Section>
 
           {/* Quick Steps */}
-          <Section title="Quick Steps">
+          <Section title={t("settingsUi.quickSteps.title")}>
             <QuickStepEditor />
           </Section>
 
           {/* Phishing Detection */}
-          <Section title="Phishing Detection">
+          <Section title={t("settingsUi.phishing.title")}>
             <label className="mb-2 block text-sm text-text-secondary">
-              Detection sensitivity
+              {t("settingsUi.phishing.sensitivity")}
             </label>
             <select
               value={phishingSensitivity}
@@ -432,20 +436,20 @@ export function SettingsPage() {
               className="rounded-lg border border-border-primary bg-bg-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent"
               data-testid="phishing-sensitivity-select"
             >
-              <option value="low">Low</option>
-              <option value="default">Default</option>
-              <option value="high">High</option>
+              <option value="low">{t("settingsUi.phishing.low")}</option>
+              <option value="default">{t("settingsUi.phishing.default")}</option>
+              <option value="high">{t("settingsUi.phishing.high")}</option>
             </select>
             <p className="mt-1.5 text-xs text-text-tertiary">
-              Controls how aggressively links in emails are flagged as suspicious. Higher sensitivity catches more threats but may produce more false positives.
+              {t("settingsUi.phishing.hint")}
             </p>
           </Section>
 
           {/* Notifications */}
-          <Section title="Notifications">
+          <Section title={t("settingsUi.notifications.title")}>
             <ToggleRow
-              label="Desktop notifications"
-              description="Show notifications for new emails"
+              label={t("settingsUi.notifications.desktop")}
+              description={t("settingsUi.notifications.desktopDesc")}
               enabled={notificationsEnabled}
               onToggle={handleNotificationsToggle}
               testId="notifications-toggle"
@@ -453,9 +457,9 @@ export function SettingsPage() {
           </Section>
 
           {/* VIP Notifications */}
-          <Section title="VIP Notifications">
+          <Section title={t("settingsUi.vip.title")}>
             <p className="mb-3 text-xs text-text-tertiary">
-              When VIP senders are configured, only emails from these addresses trigger desktop notifications. If the list is empty, all non-muted emails produce notifications.
+              {t("settingsUi.vip.hint")}
             </p>
             <div className="space-y-2">
               {vips.map((vip) => (
@@ -468,7 +472,7 @@ export function SettingsPage() {
                   <button
                     onClick={() => void handleRemoveVip(vip.email, vip.account_id)}
                     className="rounded-md p-1 text-text-tertiary transition-colors hover:bg-bg-hover hover:text-danger"
-                    title={`Remove ${vip.email}`}
+                    title={t("settingsUi.vip.remove", { email: vip.email })}
                     data-testid={`remove-vip-${vip.email}`}
                   >
                     <X className="h-3.5 w-3.5" />
@@ -487,7 +491,7 @@ export function SettingsPage() {
                     void handleAddVip();
                   }
                 }}
-                placeholder="Add VIP email address"
+                placeholder={t("settingsUi.vip.inputPlaceholder")}
                 className="flex-1 rounded-lg border border-border-primary bg-bg-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent"
                 data-testid="vip-email-input"
               />
@@ -498,7 +502,7 @@ export function SettingsPage() {
                 data-testid="add-vip-btn"
               >
                 <Plus className="h-3.5 w-3.5" />
-                Add
+                {t("settingsUi.vip.add")}
               </button>
             </div>
           </Section>
@@ -510,21 +514,21 @@ export function SettingsPage() {
           />
 
           {/* Templates */}
-          <Section title="Templates">
+          <Section title={t("settingsUi.templates.title")}>
             <TemplateEditor />
           </Section>
 
           {/* Signatures */}
-          <Section title="Signatures">
+          <Section title={t("settingsUi.signatures.title")}>
             <SignatureEditor />
           </Section>
 
           {/* AI Features */}
-          <Section title="AI Features">
+          <Section title={t("settingsUi.ai.title")}>
             <div className="space-y-4">
               <div>
                 <label className="mb-1 block text-sm text-text-secondary">
-                  AI Provider
+                  {t("settingsUi.ai.provider")}
                 </label>
                 <select
                   value={aiProvider}
@@ -539,14 +543,14 @@ export function SettingsPage() {
               </div>
               <div>
                 <label className="mb-1 block text-sm text-text-secondary">
-                  API Key
+                  {t("settingsUi.ai.apiKey")}
                 </label>
                 <div className="flex items-center gap-2">
                   <input
                     type={showAiApiKey ? "text" : "password"}
                     value={aiApiKey}
                     onChange={(e) => void handleAiApiKeySave(e.target.value)}
-                    placeholder="Enter API key"
+                    placeholder={t("settingsUi.ai.apiKeyPlaceholder")}
                     className="flex-1 rounded-lg border border-border-primary bg-bg-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent"
                     data-testid="ai-api-key-input"
                   />
@@ -565,22 +569,22 @@ export function SettingsPage() {
               </div>
               <div className="space-y-3 pt-2">
                 <ToggleRow
-                  label="Thread summaries"
-                  description="AI-generated summaries for email threads"
+                  label={t("settingsUi.ai.threadSummaries")}
+                  description={t("settingsUi.ai.threadSummariesDesc")}
                   enabled={aiSummaryEnabled}
                   onToggle={handleAiSummaryToggle}
                   testId="ai-summary-toggle"
                 />
                 <ToggleRow
-                  label="Smart reply suggestions"
-                  description="AI-suggested reply options for emails"
+                  label={t("settingsUi.ai.smartReplies")}
+                  description={t("settingsUi.ai.smartRepliesDesc")}
                   enabled={aiRepliesEnabled}
                   onToggle={handleAiRepliesToggle}
                   testId="ai-replies-toggle"
                 />
                 <ToggleRow
-                  label="Auto-categorization"
-                  description="Automatically categorize emails using AI"
+                  label={t("settingsUi.ai.autoCategorization")}
+                  description={t("settingsUi.ai.autoCategorizationDesc")}
                   enabled={aiCategoryEnabled}
                   onToggle={handleAiCategoryToggle}
                   testId="ai-category-toggle"
@@ -590,18 +594,18 @@ export function SettingsPage() {
           </Section>
 
           {/* OAuth Credentials */}
-          <Section title="OAuth Credentials">
+          <Section title={t("settingsUi.oauth.title")}>
             <div className="space-y-3">
               <div>
                 <label className="mb-1 block text-sm text-text-secondary">
-                  Google Client ID
+                  {t("settingsUi.oauth.clientId")}
                 </label>
                 <div className="flex items-center gap-2">
                   <input
                     type={showClientId ? "text" : "password"}
                     value={clientId}
                     onChange={(e) => handleClientIdSave(e.target.value)}
-                    placeholder="Enter Client ID"
+                    placeholder={t("settingsUi.oauth.clientIdPlaceholder")}
                     className="flex-1 rounded-lg border border-border-primary bg-bg-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent"
                     data-testid="settings-client-id"
                   />
@@ -620,14 +624,14 @@ export function SettingsPage() {
               </div>
               <div>
                 <label className="mb-1 block text-sm text-text-secondary">
-                  Client Secret
+                  {t("settingsUi.oauth.clientSecret")}
                 </label>
                 <div className="flex items-center gap-2">
                   <input
                     type={showClientSecret ? "text" : "password"}
                     value={clientSecret}
                     onChange={(e) => handleClientSecretSave(e.target.value)}
-                    placeholder="Enter Client Secret"
+                    placeholder={t("settingsUi.oauth.clientSecretPlaceholder")}
                     className="flex-1 rounded-lg border border-border-primary bg-bg-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent"
                     data-testid="settings-client-secret"
                   />
@@ -648,10 +652,12 @@ export function SettingsPage() {
           </Section>
 
           {/* About */}
-          <Section title="About">
+          <Section title={t("settingsUi.about.title")}>
             <div className="space-y-1 text-sm">
               <p className="font-medium text-text-primary">Fumi</p>
-              <p className="text-text-secondary">Version 0.1.0</p>
+              <p className="text-text-secondary">
+                {t("settingsUi.about.version", { version: "0.1.0" })}
+              </p>
               <a
                 href="https://github.com/atani/fumi-app"
                 target="_blank"

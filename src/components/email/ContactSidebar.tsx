@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Mail, Calendar, MessageSquare, X } from "lucide-react";
 import type { Contact, Thread } from "../../types";
 import {
@@ -14,10 +15,10 @@ interface ContactSidebarProps {
   onClose: () => void;
 }
 
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return "Unknown";
+function formatDate(dateStr: string | null): string | null {
+  if (!dateStr) return null;
   const d = new Date(dateStr);
-  if (isNaN(d.getTime())) return "Unknown";
+  if (isNaN(d.getTime())) return null;
   return d.toLocaleDateString(undefined, {
     year: "numeric",
     month: "short",
@@ -40,6 +41,7 @@ export function ContactSidebar({
   accountId,
   onClose,
 }: ContactSidebarProps) {
+  const { t } = useTranslation();
   const [contact, setContact] = useState<Contact | null>(null);
   const [recentThreads, setRecentThreads] = useState<Thread[]>([]);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -74,6 +76,8 @@ export function ContactSidebar({
   }, [accountId, email]);
 
   const displayName = contact?.name ?? name ?? email;
+  const showDate = (dateStr: string | null) =>
+    formatDate(dateStr) ?? t("email.contact.unknownDate");
 
   return (
     <div
@@ -82,11 +86,11 @@ export function ContactSidebar({
     >
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border-secondary px-4 py-3">
-        <span className="text-sm font-semibold text-text-primary">Contact</span>
+        <span className="text-sm font-semibold text-text-primary">{t("email.contact.title")}</span>
         <button
           onClick={onClose}
           className="rounded-lg p-1 text-text-secondary hover:bg-bg-hover hover:text-text-primary"
-          title="Close contact sidebar"
+          title={t("email.contact.close")}
           data-testid="contact-sidebar-close"
         >
           <X className="h-4 w-4" />
@@ -117,16 +121,16 @@ export function ContactSidebar({
           <div className="flex items-center gap-2 text-xs text-text-secondary">
             <MessageSquare className="h-3.5 w-3.5 flex-shrink-0" />
             <span>
-              {contact.frequency} interaction{contact.frequency !== 1 ? "s" : ""}
+              {t("email.contact.interactions", { count: contact.frequency })}
             </span>
           </div>
           <div className="flex items-center gap-2 text-xs text-text-secondary">
             <Calendar className="h-3.5 w-3.5 flex-shrink-0" />
-            <span>First: {formatDate(contact.first_contacted_at)}</span>
+            <span>{t("email.contact.first", { date: showDate(contact.first_contacted_at) })}</span>
           </div>
           <div className="flex items-center gap-2 text-xs text-text-secondary">
             <Mail className="h-3.5 w-3.5 flex-shrink-0" />
-            <span>Last: {formatDate(contact.last_contacted_at)}</span>
+            <span>{t("email.contact.last", { date: showDate(contact.last_contacted_at) })}</span>
           </div>
         </div>
       )}
@@ -134,24 +138,24 @@ export function ContactSidebar({
       {/* Recent threads */}
       <div className="border-t border-border-secondary px-4 py-4">
         <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-text-tertiary">
-          Recent threads
+          {t("email.contact.recentThreads")}
         </h3>
         {recentThreads.length === 0 ? (
-          <p className="text-xs text-text-tertiary">No recent threads found.</p>
+          <p className="text-xs text-text-tertiary">{t("email.contact.noRecentThreads")}</p>
         ) : (
           <ul className="space-y-2">
             {recentThreads.map((thread) => (
               <li key={thread.id}>
                 <div className="rounded-lg px-2 py-1.5 hover:bg-bg-hover">
                   <p className="truncate text-xs font-medium text-text-primary">
-                    {thread.subject || "(No subject)"}
+                    {thread.subject || t("email.contact.noSubject")}
                   </p>
                   <p className="truncate text-[11px] text-text-tertiary">
                     {thread.snippet}
                   </p>
                   {thread.last_message_at && (
                     <p className="text-[10px] text-text-tertiary">
-                      {formatDate(thread.last_message_at)}
+                      {showDate(thread.last_message_at)}
                     </p>
                   )}
                 </div>

@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { Paperclip, X } from "lucide-react";
 import { useComposerStore } from "../../stores/composerStore";
 import type { ComposerAttachment } from "../../types";
@@ -23,7 +24,7 @@ function fileToBase64(file: globalThis.File): Promise<string> {
   });
 }
 
-async function pickFilesViaTauri(): Promise<ComposerAttachment[]> {
+async function pickFilesViaTauri(dialogTitle: string): Promise<ComposerAttachment[]> {
   if (
     typeof window === "undefined" ||
     !("__TAURI_INTERNALS__" in window)
@@ -37,7 +38,7 @@ async function pickFilesViaTauri(): Promise<ComposerAttachment[]> {
 
     const selected = await open({
       multiple: true,
-      title: "Attach files",
+      title: dialogTitle,
     });
 
     if (!selected) return [];
@@ -99,6 +100,7 @@ function guessMimeType(filename: string): string {
 }
 
 export function AttachmentPicker() {
+  const { t } = useTranslation();
   const { attachments, addAttachment, removeAttachment } = useComposerStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -131,7 +133,7 @@ export function AttachmentPicker() {
       typeof window !== "undefined" &&
       "__TAURI_INTERNALS__" in window
     ) {
-      const tauriAttachments = await pickFilesViaTauri();
+      const tauriAttachments = await pickFilesViaTauri(t("composer.attachFiles"));
       for (const attachment of tauriAttachments) {
         addAttachment(attachment);
       }
@@ -148,8 +150,8 @@ export function AttachmentPicker() {
         type="button"
         onClick={handleClick}
         className="rounded p-1 text-text-secondary hover:bg-bg-hover hover:text-text-primary"
-        title="Attach files"
-        aria-label="Attach files"
+        title={t("composer.attachFiles")}
+        aria-label={t("composer.attachFiles")}
       >
         <Paperclip className="h-4 w-4" />
       </button>
@@ -182,8 +184,8 @@ export function AttachmentPicker() {
               <button
                 onClick={() => removeAttachment(attachment.id)}
                 className="ml-0.5 rounded hover:text-danger"
-                title={`Remove ${attachment.filename}`}
-                aria-label={`Remove ${attachment.filename}`}
+                title={t("composer.removeAttachment", { filename: attachment.filename })}
+                aria-label={t("composer.removeAttachment", { filename: attachment.filename })}
               >
                 <X className="h-3 w-3" />
               </button>

@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { RotateCcw } from "lucide-react";
 import {
   useShortcutStore,
@@ -19,6 +20,7 @@ function eventToCombo(e: KeyboardEvent): string {
 }
 
 export function ShortcutEditor() {
+  const { t } = useTranslation();
   const { keyMap, updateKey, resetToDefaults, resetKey } = useShortcutStore();
   const [recordingAction, setRecordingAction] = useState<string | null>(null);
   const [conflict, setConflict] = useState<{
@@ -149,7 +151,7 @@ export function ShortcutEditor() {
                   <div className="flex items-center gap-2">
                     {isRecording ? (
                       <span className="rounded border border-accent bg-accent/10 px-2 py-1 text-xs text-accent animate-pulse">
-                        Press a key...
+                        {t("settingsUi.shortcuts.pressKey")}
                       </span>
                     ) : (
                       <button
@@ -160,7 +162,7 @@ export function ShortcutEditor() {
                             : "bg-bg-secondary text-text-secondary"
                         } hover:bg-bg-hover`}
                         data-testid={`shortcut-key-${actionId}`}
-                        title="Click to rebind"
+                        title={t("settingsUi.shortcuts.clickToRebind")}
                       >
                         {combo ?? defaultCombo}
                       </button>
@@ -169,7 +171,7 @@ export function ShortcutEditor() {
                       <button
                         onClick={() => void resetKey(actionId)}
                         className="rounded p-1 text-text-tertiary transition-colors hover:bg-bg-hover hover:text-text-primary"
-                        title="Reset to default"
+                        title={t("settingsUi.shortcuts.resetToDefault")}
                         data-testid={`shortcut-reset-${actionId}`}
                       >
                         <RotateCcw className="h-3 w-3" />
@@ -180,7 +182,7 @@ export function ShortcutEditor() {
                         onClick={cancelRecording}
                         className="rounded px-1.5 py-0.5 text-xs text-text-tertiary transition-colors hover:text-text-primary"
                       >
-                        Cancel
+                        {t("settingsUi.shortcuts.cancel")}
                       </button>
                     )}
                   </div>
@@ -197,8 +199,8 @@ export function ShortcutEditor() {
           <p className="text-sm text-text-primary">
             <kbd className="rounded bg-bg-secondary px-1 py-0.5 font-mono text-xs">
               {conflict.combo}
-            </kbd>{" "}
-            is already bound to{" "}
+            </kbd>
+            {t("settingsUi.shortcuts.conflictBoundTo")}
             <strong>
               {SHORTCUT_LABELS[conflict.existingActionId as ShortcutActionId] ??
                 conflict.existingActionId}
@@ -211,14 +213,14 @@ export function ShortcutEditor() {
               className="rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-accent-hover"
               data-testid="shortcut-conflict-swap"
             >
-              Swap bindings
+              {t("settingsUi.shortcuts.swapBindings")}
             </button>
             <button
               onClick={resolveConflictCancel}
               className="rounded-md border border-border-primary px-3 py-1.5 text-xs font-medium text-text-secondary transition-colors hover:bg-bg-hover"
               data-testid="shortcut-conflict-cancel"
             >
-              Cancel
+              {t("settingsUi.shortcuts.cancel")}
             </button>
           </div>
         </div>
@@ -232,7 +234,7 @@ export function ShortcutEditor() {
           data-testid="shortcut-reset-all"
         >
           <RotateCcw className="h-3 w-3" />
-          Reset all to defaults
+          {t("settingsUi.shortcuts.resetAll")}
         </button>
       </div>
     </div>

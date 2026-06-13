@@ -1,0 +1,253 @@
+{
+  "common": {
+    "save": "保存",
+    "update": "更新",
+    "cancel": "キャンセル",
+    "add": "追加",
+    "remove": "削除",
+    "back": "戻る",
+    "edit": "編集",
+    "delete": "削除"
+  },
+  "page": {
+    "title": "設定"
+  },
+  "accounts": {
+    "title": "アカウント",
+    "remove": "削除",
+    "addGmail": "Gmail アカウントを追加",
+    "addImap": "IMAP アカウントを追加"
+  },
+  "sync": {
+    "title": "同期",
+    "interval": "同期間隔",
+    "interval30s": "30 秒",
+    "interval1m": "1 分",
+    "interval2m": "2 分",
+    "interval5m": "5 分"
+  },
+  "undoSend": {
+    "title": "送信取り消し",
+    "delay": "送信を取り消せる時間",
+    "off": "オフ",
+    "delay3s": "3 秒",
+    "delay5s": "5 秒",
+    "delay10s": "10 秒",
+    "hint": "メールの送信を遅らせ、指定した時間内なら取り消せるようにします。"
+  },
+  "emailBehavior": {
+    "title": "メールの動作",
+    "markAsRead": "既読にするタイミング",
+    "markImmediately": "すぐに",
+    "markAfter2s": "2 秒後",
+    "markManually": "手動で",
+    "markHint": "メールを開いてから既読にするタイミングを設定します。",
+    "defaultReply": "デフォルトの返信",
+    "reply": "返信",
+    "replyAll": "全員に返信",
+    "defaultReplyHint": "返信ボタンやキーボードショートカットを押したときのデフォルトの返信動作です。",
+    "sendAndArchive": "送信してアーカイブ",
+    "sendAndArchiveDesc": "返信を送信した後、スレッドを自動でアーカイブします"
+  },
+  "autostart": {
+    "title": "自動起動",
+    "launchOnStartup": "起動時に自動で開く",
+    "launchOnStartupDesc": "パソコンにログインしたときに Fumi を起動します"
+  },
+  "shortcuts": {
+    "title": "キーボードショートカット",
+    "pressKey": "キーを押してください...",
+    "clickToRebind": "クリックして再設定",
+    "resetToDefault": "デフォルトに戻す",
+    "cancel": "キャンセル",
+    "conflictBoundTo": " は既に次に割り当てられています: ",
+    "swapBindings": "割り当てを入れ替える",
+    "resetAll": "すべてデフォルトに戻す"
+  },
+  "filters": {
+    "title": "フィルタルール",
+    "noAccount": "フィルタルールを管理するにはアカウントを追加してください。",
+    "editFilter": "フィルタを編集",
+    "newFilter": "新しいフィルタ",
+    "criteria": "条件",
+    "from": "差出人（メールアドレスまたは名前）",
+    "fromPlaceholder": "例: newsletter@example.com",
+    "to": "宛先",
+    "toPlaceholder": "例: team@example.com",
+    "subjectContains": "件名に含む語句",
+    "subjectPlaceholder": "例: 請求書",
+    "hasAttachment": "添付ファイルあり",
+    "actions": "アクション",
+    "applyLabel": "ラベルを適用",
+    "applyLabelPlaceholder": "ラベル ID",
+    "archive": "アーカイブ",
+    "trash": "ゴミ箱",
+    "star": "スター",
+    "markAsRead": "既読にする",
+    "addRule": "フィルタルールを追加"
+  },
+  "bundles": {
+    "title": "バンドルルール",
+    "empty": "バンドルルールが設定されていません。ニュースレターや一斉配信の差出人をまとめ、決まったタイミングで受け取れます。",
+    "disabledSuffix": "（無効）",
+    "editRule": "ルールを編集",
+    "deleteRule": "ルールを削除",
+    "bundleName": "バンドル名",
+    "bundleNamePlaceholder": "例: ニュースレター",
+    "senderPattern": "差出人パターン",
+    "senderPatternPlaceholder": "例: *@newsletter.example.com",
+    "senderPatternHint": "* をワイルドカードとして使えます。例: *@example.com はそのドメインのすべての差出人に一致します。",
+    "deliverySchedule": "配信スケジュール",
+    "instant": "即時（まとめない）",
+    "daily": "毎日",
+    "weekly": "毎週",
+    "enabled": "有効",
+    "addRule": "バンドルルールを追加"
+  },
+  "smartFolders": {
+    "title": "スマートフォルダ",
+    "addFolder": "スマートフォルダを追加",
+    "tokensHintPrefix": "クエリでは動的トークンを使えます: ",
+    "tokensHintSuffix": " — フォルダを開いたときに実際の日付に置き換えられます。",
+    "namePlaceholder": "フォルダ名",
+    "queryPlaceholder": "検索クエリ（例: from:boss@company.com）",
+    "iconPlaceholder": "アイコン名（任意、例: star、inbox）",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "edit": "編集",
+    "delete": "削除"
+  },
+  "smartLabels": {
+    "title": "スマートラベル",
+    "noAccount": "スマートラベルを設定するにはアカウントを追加してください。",
+    "intro": "スマートラベルは受信メールを自動で分類します。高速に一致させる条件を指定するか、どのパターンにも一致しないメールを AI に分類させることもできます。",
+    "enabled": "有効",
+    "saveRule": "ルールを保存",
+    "deleteRule": "ルールを削除",
+    "label": "ラベル",
+    "description": "説明（AI による分類に使用）",
+    "descriptionPlaceholder": "例: チームからのプロジェクト更新に関するメール",
+    "senderPattern": "差出人パターン（高速判定）",
+    "senderPatternPlaceholder": "例: @company.com",
+    "subjectPattern": "件名パターン（高速判定）",
+    "subjectPatternPlaceholder": "例: [weekly-report]",
+    "addRule": "ルールを追加",
+    "processing": "処理中...",
+    "applyToExisting": "既存のメールに適用",
+    "appliedToThreads_one": "{{count}} 件のスレッドにラベルを適用しました。",
+    "appliedToThreads_other": "{{count}} 件のスレッドにラベルを適用しました。",
+    "noThreadsNeeded": "ラベル付けが必要なスレッドはありませんでした。",
+    "backfillFailed": "適用に失敗しました"
+  },
+  "quickSteps": {
+    "title": "クイックステップ",
+    "noAccount": "クイックステップを管理するにはアカウントを追加してください。",
+    "editStep": "クイックステップを編集",
+    "newStep": "新しいクイックステップ",
+    "name": "名前",
+    "namePlaceholder": "例: アーカイブして既読にする",
+    "shortcut": "キーボードショートカット（任意）",
+    "shortcutPlaceholder": "例: Ctrl+Shift+1",
+    "actions": "アクション",
+    "addAction": "アクションを追加",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "newStepButton": "新しいクイックステップ",
+    "addFromPresets": "プリセットから追加",
+    "presets": "プリセット",
+    "action": {
+      "applyLabel": "ラベルを適用",
+      "removeLabel": "ラベルを外す",
+      "archive": "アーカイブ",
+      "trash": "ゴミ箱",
+      "star": "スター",
+      "unstar": "スターを外す",
+      "markRead": "既読にする",
+      "markUnread": "未読にする",
+      "forward": "転送",
+      "reply": "返信",
+      "move": "移動",
+      "snooze": "スヌーズ",
+      "mute": "ミュート",
+      "followUp": "フォローアップ",
+      "categorize": "カテゴリ分け",
+      "addTask": "タスクを追加",
+      "unsubscribe": "配信停止",
+      "openUrl": "URL を開く"
+    },
+    "param": {
+      "applyLabelPlaceholder": "例: IMPORTANT",
+      "removeLabelPlaceholder": "例: INBOX",
+      "movePlaceholder": "例: ARCHIVE",
+      "forwardPlaceholder": "例: user@example.com",
+      "categorizePlaceholder": "例: Updates",
+      "openUrlPlaceholder": "https://...",
+      "snoozePlaceholder": "例: 1h、1d"
+    }
+  },
+  "phishing": {
+    "title": "フィッシング検出",
+    "sensitivity": "検出の感度",
+    "low": "低",
+    "default": "標準",
+    "high": "高",
+    "hint": "メール内のリンクを不審と判定する厳しさを調整します。感度を高くするとより多くの脅威を検出しますが、誤検出も増える場合があります。"
+  },
+  "notifications": {
+    "title": "通知",
+    "desktop": "デスクトップ通知",
+    "desktopDesc": "新着メールの通知を表示します"
+  },
+  "vip": {
+    "title": "VIP 通知",
+    "hint": "VIP の差出人を設定すると、これらのアドレスからのメールだけがデスクトップ通知の対象になります。リストが空の場合は、ミュートしていないすべてのメールが通知されます。",
+    "remove": "{{email}} を削除",
+    "inputPlaceholder": "VIP のメールアドレスを追加",
+    "add": "追加"
+  },
+  "templates": {
+    "title": "テンプレート",
+    "namePlaceholder": "テンプレート名",
+    "subjectPlaceholder": "件名（任意）",
+    "bodyPlaceholder": "本文（任意）",
+    "update": "更新",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "addTemplate": "テンプレートを追加"
+  },
+  "signatures": {
+    "title": "署名",
+    "default": "デフォルト",
+    "setAsDefault": "デフォルトに設定",
+    "namePlaceholder": "署名の名前",
+    "bodyPlaceholder": "署名の本文",
+    "setAsDefaultLabel": "デフォルトの署名に設定",
+    "update": "更新",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "addSignature": "署名を追加"
+  },
+  "ai": {
+    "title": "AI 機能",
+    "provider": "AI プロバイダ",
+    "apiKey": "API キー",
+    "apiKeyPlaceholder": "API キーを入力",
+    "threadSummaries": "スレッドの要約",
+    "threadSummariesDesc": "メールスレッドの要約を AI が生成します",
+    "smartReplies": "スマート返信の候補",
+    "smartRepliesDesc": "メールへの返信候補を AI が提案します",
+    "autoCategorization": "自動カテゴリ分け",
+    "autoCategorizationDesc": "AI を使ってメールを自動でカテゴリ分けします"
+  },
+  "oauth": {
+    "title": "OAuth 認証情報",
+    "clientId": "Google クライアント ID",
+    "clientIdPlaceholder": "クライアント ID を入力",
+    "clientSecret": "クライアントシークレット",
+    "clientSecretPlaceholder": "クライアントシークレットを入力"
+  },
+  "about": {
+    "title": "このアプリについて",
+    "version": "バージョン {{version}}"
+  }
+}

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { PenLine } from "lucide-react";
 import { useAccountStore } from "../../stores/accountStore";
 import { useComposerStore } from "../../stores/composerStore";
@@ -6,6 +7,7 @@ import { getAllSignatures, getDefaultSignature } from "../../services/db/signatu
 import type { Signature } from "../../types";
 
 export function SignatureSelector() {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [signatures, setSignatures] = useState<Signature[]>([]);
   const [activeSignatureId, setActiveSignatureId] = useState<string | null>(null);
@@ -88,18 +90,18 @@ export function SignatureSelector() {
         type="button"
         className="flex items-center gap-1 rounded px-2 py-1 text-xs text-text-secondary hover:bg-bg-hover hover:text-text-primary"
         onClick={() => setIsOpen(!isOpen)}
-        title="Change signature"
+        title={t("composer.changeSignature")}
         data-testid="signature-selector-btn"
       >
         <PenLine className="h-3.5 w-3.5" />
-        Signature
+        {t("composer.signature")}
       </button>
 
       {isOpen && (
         <div className="absolute bottom-full left-0 z-50 mb-1 w-56 rounded-lg border border-border-primary bg-bg-primary shadow-lg">
           {signatures.length === 0 ? (
             <div className="px-3 py-2 text-xs text-text-tertiary">
-              No signatures. Create one in Settings.
+              {t("composer.noSignatures")}
             </div>
           ) : (
             <div className="max-h-48 overflow-y-auto py-1">
@@ -116,7 +118,7 @@ export function SignatureSelector() {
                 >
                   <span className="flex-1 truncate">{s.name}</span>
                   {s.is_default === 1 && (
-                    <span className="text-xs text-text-tertiary">default</span>
+                    <span className="text-xs text-text-tertiary">{t("composer.default")}</span>
                   )}
                 </button>
               ))}
@@ -126,7 +128,7 @@ export function SignatureSelector() {
                   onClick={handleRemove}
                   data-testid="signature-remove"
                 >
-                  Remove signature
+                  {t("composer.removeSignature")}
                 </button>
               )}
             </div>

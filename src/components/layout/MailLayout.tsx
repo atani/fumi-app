@@ -1,5 +1,6 @@
 import { useEffect, useCallback, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Sidebar } from "./Sidebar";
 import { ThreadList } from "./ThreadList";
 import { ReadingPane } from "./ReadingPane";
@@ -29,6 +30,7 @@ import { initGlobalShortcut } from "../../services/globalShortcut";
 
 export function MailLayout() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { activeAccountId, getActiveAccount } = useAccountStore();
   const { loadThreads, setThreads, setSyncing, selectedThreadId, messages, selectThread } =
     useThreadStore();
@@ -222,7 +224,7 @@ export function MailLayout() {
         <OfflineBanner />
         {syncError && (
           <div className="shrink-0 border-b border-danger bg-danger/10 px-4 py-2 text-xs text-danger">
-            Sync error: {syncError}
+            {t("layout.syncError", { error: syncError })}
           </div>
         )}
         <div className={`flex flex-1 overflow-hidden ${readingPanePosition === "bottom" ? "flex-col" : "flex-row"}`}>
@@ -245,8 +247,8 @@ export function MailLayout() {
                   <div className="flex flex-1 items-center justify-center bg-bg-primary">
                     <EmptyState
                       illustration={<ReadingPaneIllustration />}
-                      title="Select a conversation"
-                      description="Choose a thread from the list to read it here"
+                      title={t("layout.selectConversation")}
+                      description={t("layout.selectConversationHint")}
                     />
                   </div>
                 )

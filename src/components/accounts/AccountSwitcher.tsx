@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { ChevronDown, Plus, Check } from "lucide-react";
 import { useAccountStore } from "../../stores/accountStore";
 import { useThreadStore } from "../../stores/threadStore";
@@ -15,6 +16,7 @@ export function AccountSwitcher() {
   const [unreadByAccount, setUnreadByAccount] = useState<Record<string, number>>({});
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const { accounts, activeAccountId, setActiveAccount, getActiveAccount } =
     useAccountStore();
@@ -92,7 +94,9 @@ export function AccountSwitcher() {
           <span
             className="ml-1 rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-medium leading-none text-white"
             data-testid="other-accounts-unread-badge"
-            aria-label={`${otherAccountsUnread} unread in other accounts`}
+            aria-label={t("accounts.unreadInOtherAccounts", {
+              count: otherAccountsUnread,
+            })}
           >
             {formatCount(otherAccountsUnread)}
           </span>
@@ -120,7 +124,7 @@ export function AccountSwitcher() {
                     <span
                       className="rounded-full bg-accent-light px-1.5 py-0.5 text-[10px] font-medium text-accent"
                       data-testid={`account-unread-${account.id}`}
-                      aria-label={`${unread} unread`}
+                      aria-label={t("accounts.unread", { count: unread })}
                     >
                       {formatCount(unread)}
                     </span>
@@ -140,7 +144,7 @@ export function AccountSwitcher() {
               data-testid="add-account-button"
             >
               <Plus className="h-4 w-4" />
-              Add account
+              {t("accounts.addAccount")}
             </button>
           </div>
         </div>

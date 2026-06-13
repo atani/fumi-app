@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { Sparkles, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import type { Message } from "../../types";
 import { summarizeThread } from "../../services/ai/aiService";
@@ -14,6 +15,7 @@ export function ThreadSummary({
   threadId,
   accountId,
 }: ThreadSummaryProps) {
+  const { t } = useTranslation();
   const [summary, setSummary] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
@@ -33,12 +35,12 @@ export function ThreadSummary({
       setIsExpanded(true);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Failed to generate summary",
+        err instanceof Error ? err.message : t("email.summary.generateFailed"),
       );
     } finally {
       setIsLoading(false);
     }
-  }, [summary, messages, threadId, accountId]);
+  }, [summary, messages, threadId, accountId, t]);
 
   return (
     <div data-testid="thread-summary">
@@ -53,7 +55,7 @@ export function ThreadSummary({
         ) : (
           <Sparkles className="h-4 w-4" />
         )}
-        {summary ? "Summary" : "Summarize"}
+        {summary ? t("email.summary.summary") : t("email.summary.summarize")}
         {summary &&
           (isExpanded ? (
             <ChevronUp className="h-3 w-3" />

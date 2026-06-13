@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { X } from "lucide-react";
 
 const PRESET_COLORS = [
@@ -29,6 +30,7 @@ export function LabelForm({
   initialColor = null,
   title,
 }: LabelFormProps) {
+  const { t } = useTranslation();
   const [name, setName] = useState(initialName);
   const [color, setColor] = useState<string | null>(initialColor);
 
@@ -77,26 +79,27 @@ export function LabelForm({
           <button
             onClick={onClose}
             className="rounded-lg p-1 text-text-tertiary hover:bg-bg-hover hover:text-text-primary"
+            aria-label={t("labels.close")}
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
         <label className="mb-1 block text-xs font-medium text-text-secondary">
-          Name
+          {t("labels.name")}
         </label>
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Label name"
+          placeholder={t("labels.namePlaceholder")}
           className="mb-4 w-full rounded-lg border border-border-primary bg-bg-secondary px-3 py-2 text-sm text-text-primary placeholder:text-text-tertiary focus:border-accent focus:outline-none"
           autoFocus
           data-testid="label-name-input"
         />
 
         <label className="mb-2 block text-xs font-medium text-text-secondary">
-          Color
+          {t("labels.color")}
         </label>
         <div className="mb-5 flex flex-wrap gap-2">
           {PRESET_COLORS.map((preset) => (
@@ -120,7 +123,7 @@ export function LabelForm({
             onClick={onClose}
             className="rounded-lg px-3 py-1.5 text-sm text-text-secondary hover:bg-bg-hover"
           >
-            Cancel
+            {t("labels.cancel")}
           </button>
           <button
             onClick={handleSave}
@@ -128,7 +131,7 @@ export function LabelForm({
             className="rounded-lg bg-accent px-3 py-1.5 text-sm text-white hover:bg-accent-hover disabled:opacity-50"
             data-testid="label-form-save"
           >
-            Save
+            {t("labels.save")}
           </button>
         </div>
       </div>

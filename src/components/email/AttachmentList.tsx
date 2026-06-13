@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Paperclip, Image, FileText, File, Download } from "lucide-react";
 import type { Account, Attachment } from "../../types";
 import { getAttachmentData } from "../../services/gmail/api";
@@ -41,6 +42,7 @@ function base64UrlToBytes(base64url: string): Uint8Array {
 }
 
 export function AttachmentList({ attachments, account }: AttachmentListProps) {
+  const { t } = useTranslation();
   const [downloading, setDownloading] = useState<string | null>(null);
 
   if (attachments.length === 0) return null;
@@ -67,7 +69,7 @@ export function AttachmentList({ attachments, account }: AttachmentListProps) {
           const { writeFile } = await import("@tauri-apps/plugin-fs");
           const filePath = await save({
             defaultPath: attachment.filename,
-            filters: [{ name: "All Files", extensions: ["*"] }],
+            filters: [{ name: t("email.allFiles"), extensions: ["*"] }],
           });
           if (filePath) {
             await writeFile(filePath, bytes);
@@ -98,7 +100,7 @@ export function AttachmentList({ attachments, account }: AttachmentListProps) {
             onClick={() => handleDownload(attachment)}
             disabled={isDownloading}
             className="flex items-center gap-2 rounded-lg border border-border-secondary bg-bg-secondary px-3 py-1.5 text-sm text-text-secondary hover:bg-bg-hover disabled:opacity-50"
-            title={`Download ${attachment.filename}`}
+            title={t("email.downloadAttachment", { filename: attachment.filename })}
             data-testid={`attachment-${attachment.id}`}
           >
             <Icon className="h-4 w-4 shrink-0" />

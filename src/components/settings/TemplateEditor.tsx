@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
 import { useAccountStore } from "../../stores/accountStore";
 import {
@@ -14,6 +15,7 @@ function generateId(): string {
 }
 
 export function TemplateEditor() {
+  const { t: translate } = useTranslation();
   const { getActiveAccount } = useAccountStore();
   const [templates, setTemplates] = useState<Template[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -126,7 +128,7 @@ export function TemplateEditor() {
         <div className="space-y-2 rounded-lg border border-border-primary bg-bg-secondary p-4">
           <input
             type="text"
-            placeholder="Template name"
+            placeholder={translate("settingsUi.templates.namePlaceholder")}
             value={editName}
             onChange={(e) => setEditName(e.target.value)}
             className="w-full rounded-lg border border-border-primary bg-bg-primary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent"
@@ -134,14 +136,14 @@ export function TemplateEditor() {
           />
           <input
             type="text"
-            placeholder="Subject (optional)"
+            placeholder={translate("settingsUi.templates.subjectPlaceholder")}
             value={editSubject}
             onChange={(e) => setEditSubject(e.target.value)}
             className="w-full rounded-lg border border-border-primary bg-bg-primary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent"
             data-testid="template-subject-input"
           />
           <textarea
-            placeholder="Body (optional)"
+            placeholder={translate("settingsUi.templates.bodyPlaceholder")}
             value={editBody}
             onChange={(e) => setEditBody(e.target.value)}
             rows={4}
@@ -155,7 +157,9 @@ export function TemplateEditor() {
               data-testid="template-save"
             >
               <Check className="h-3.5 w-3.5" />
-              {editingId ? "Update" : "Save"}
+              {editingId
+                ? translate("settingsUi.templates.update")
+                : translate("settingsUi.templates.save")}
             </button>
             <button
               onClick={resetForm}
@@ -163,7 +167,7 @@ export function TemplateEditor() {
               data-testid="template-cancel"
             >
               <X className="h-3.5 w-3.5" />
-              Cancel
+              {translate("settingsUi.templates.cancel")}
             </button>
           </div>
         </div>
@@ -177,7 +181,7 @@ export function TemplateEditor() {
           data-testid="template-add-btn"
         >
           <Plus className="h-3.5 w-3.5" />
-          Add template
+          {translate("settingsUi.templates.addTemplate")}
         </button>
       )}
     </div>

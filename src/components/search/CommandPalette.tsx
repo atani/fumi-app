@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { Clock, Search, Sparkles, X } from "lucide-react";
 import { search } from "../../services/search/searchService";
 import { parseSearchQuery } from "../../services/search/searchParser";
@@ -15,17 +16,17 @@ import type { Thread } from "../../types";
 
 type PaletteMode = "search" | "ask";
 
-const OPERATOR_HINTS: { operator: string; description: string }[] = [
-  { operator: "from:", description: "sender address" },
-  { operator: "to:", description: "recipient address" },
-  { operator: "subject:", description: "subject line" },
-  { operator: "has:attachment", description: "has attachment" },
-  { operator: "is:unread", description: "unread threads" },
-  { operator: "is:read", description: "read threads" },
-  { operator: "is:starred", description: "starred threads" },
-  { operator: "before:", description: "before date (YYYY-MM-DD)" },
-  { operator: "after:", description: "after date (YYYY-MM-DD)" },
-  { operator: "label:", description: "label name" },
+const OPERATOR_HINTS: { operator: string; descriptionKey: string }[] = [
+  { operator: "from:", descriptionKey: "search.operatorFrom" },
+  { operator: "to:", descriptionKey: "search.operatorTo" },
+  { operator: "subject:", descriptionKey: "search.operatorSubject" },
+  { operator: "has:attachment", descriptionKey: "search.operatorHasAttachment" },
+  { operator: "is:unread", descriptionKey: "search.operatorIsUnread" },
+  { operator: "is:read", descriptionKey: "search.operatorIsRead" },
+  { operator: "is:starred", descriptionKey: "search.operatorIsStarred" },
+  { operator: "before:", descriptionKey: "search.operatorBefore" },
+  { operator: "after:", descriptionKey: "search.operatorAfter" },
+  { operator: "label:", descriptionKey: "search.operatorLabel" },
 ];
 
 function escapeRegex(value: string): string {
@@ -65,6 +66,7 @@ interface CommandPaletteProps {
 }
 
 export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Thread[]>([]);
   const [lastSearchedQuery, setLastSearchedQuery] = useState("");
@@ -288,7 +290,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
             data-testid="palette-mode-search"
           >
             <Search className="h-3.5 w-3.5" />
-            Search
+            {t("search.modeSearch")}
           </button>
           <button
             onClick={() => setMode("ask")}
@@ -300,7 +302,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
             data-testid="palette-mode-ask"
           >
             <Sparkles className="h-3.5 w-3.5" />
-            Ask AI
+            {t("search.modeAsk")}
           </button>
         </div>
 
@@ -316,14 +318,18 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
             type="text"
             value={query}
             onChange={handleInputChange}
-            placeholder={mode === "search" ? "Search emails..." : "Ask about your inbox..."}
+            placeholder={
+              mode === "search"
+                ? t("search.searchPlaceholder")
+                : t("search.askPlaceholder")
+            }
             className="flex-1 bg-transparent text-sm text-text-primary outline-none placeholder:text-text-tertiary"
             data-testid="command-palette-input"
           />
           <button
             onClick={onClose}
             className="shrink-0 rounded p-1 text-text-tertiary hover:bg-bg-hover hover:text-text-primary"
-            aria-label="Close search"
+            aria-label={t("search.closeSearch")}
           >
             <X className="h-4 w-4" />
           </button>
@@ -343,7 +349,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                 className="rounded-md bg-bg-secondary px-2 py-1 text-xs text-text-secondary hover:bg-bg-hover hover:text-text-primary"
               >
                 <span className="font-mono font-semibold">{hint.operator}</span>{" "}
-                <span className="text-text-tertiary">{hint.description}</span>
+                <span className="text-text-tertiary">{t(hint.descriptionKey)}</span>
               </button>
             ))}
           </div>
@@ -354,13 +360,13 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
           <div className="max-h-80 overflow-y-auto">
             {isSearching && (
               <div className="px-4 py-6 text-center text-sm text-text-tertiary">
-                Searching...
+                {t("search.searching")}
               </div>
             )}
 
             {!isSearching && query.trim() && results.length === 0 && (
               <div className="px-4 py-6 text-center text-sm text-text-tertiary">
-                No results found
+                {t("search.noResults")}
               </div>
             )}
 
@@ -385,7 +391,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                       }`}
                     >
                       {highlightText(
-                        thread.subject || "(No subject)",
+                        thread.subject || t("search.noSubject"),
                         highlightTokens,
                       )}
                     </span>
@@ -402,7 +408,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
             {!query.trim() && !isSearching && history.length > 0 && (
               <div data-testid="search-history">
                 <div className="px-4 pt-3 pb-1 text-xs font-medium uppercase tracking-wide text-text-tertiary">
-                  Recent searches
+                  {t("search.recentSearches")}
                 </div>
                 {history.map((item) => (
                   <div
@@ -425,7 +431,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                         removeHistoryItem(item);
                       }}
                       className="shrink-0 rounded p-1 text-text-tertiary opacity-0 hover:bg-bg-primary hover:text-text-primary group-hover:opacity-100"
-                      aria-label={`Remove ${item} from history`}
+                      aria-label={t("search.removeFromHistory", { query: item })}
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -436,7 +442,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
 
             {!query.trim() && !isSearching && history.length === 0 && (
               <div className="px-4 py-6 text-center text-sm text-text-tertiary">
-                Type to search your emails
+                {t("search.emptyPrompt")}
               </div>
             )}
           </div>
@@ -451,7 +457,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
             <kbd className="rounded bg-bg-secondary px-1.5 py-0.5 font-mono">
               Tab
             </kbd>{" "}
-            {mode === "search" ? "ask AI" : "search"}
+            {mode === "search" ? t("search.footerAskAi") : t("search.footerSearch")}
           </span>
           {mode === "search" && (
             <>
@@ -459,13 +465,13 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                 <kbd className="rounded bg-bg-secondary px-1.5 py-0.5 font-mono">
                   ↑↓
                 </kbd>{" "}
-                navigate
+                {t("search.footerNavigate")}
               </span>
               <span>
                 <kbd className="rounded bg-bg-secondary px-1.5 py-0.5 font-mono">
                   ↵
                 </kbd>{" "}
-                open
+                {t("search.footerOpen")}
               </span>
             </>
           )}
@@ -473,7 +479,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
             <kbd className="rounded bg-bg-secondary px-1.5 py-0.5 font-mono">
               esc
             </kbd>{" "}
-            close
+            {t("search.footerClose")}
           </span>
         </div>
       </div>

@@ -6,6 +6,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAccountStore } from "../../stores/accountStore";
 import { listCalendars, listEvents, createEvent } from "../../services/google/calendar";
 import type { CalendarEvent, GoogleCalendar } from "../../types";
@@ -60,6 +61,7 @@ function dateToYMD(date: Date): string {
 
 export function CalendarPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { getActiveAccount } = useAccountStore();
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()));
   const [events, setEvents] = useState<CalendarEvent[]>([]);
@@ -99,12 +101,12 @@ export function CalendarPage() {
       const items = await listEvents(account, primaryCal.id, timeMin, timeMax);
       setEvents(items);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Failed to load events";
+      const msg = err instanceof Error ? err.message : t("calendar.loadError");
       setError(msg);
     } finally {
       setIsLoading(false);
     }
-  }, [getActiveAccount, weekStart]);
+  }, [getActiveAccount, weekStart, t]);
 
   useEffect(() => {
     void loadEvents();
@@ -180,11 +182,13 @@ export function CalendarPage() {
         <button
           onClick={() => navigate("/")}
           className="rounded p-1 text-text-tertiary hover:bg-bg-hover hover:text-text-primary"
-          title="Back to mail"
+          title={t("calendar.backToMail")}
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <h1 className="text-lg font-semibold text-text-primary">Calendar</h1>
+        <h1 className="text-lg font-semibold text-text-primary">
+          {t("calendar.title")}
+        </h1>
         <div className="ml-auto flex items-center gap-2">
           <button
             onClick={handlePrevWeek}
@@ -196,7 +200,7 @@ export function CalendarPage() {
             onClick={handleToday}
             className="rounded-lg border border-border-primary px-3 py-1 text-sm text-text-primary hover:bg-bg-hover"
           >
-            Today
+            {t("calendar.today")}
           </button>
           <button
             onClick={handleNextWeek}
@@ -212,9 +216,7 @@ export function CalendarPage() {
 
       {!isGmail && (
         <div className="flex flex-1 items-center justify-center">
-          <p className="text-text-secondary">
-            Calendar is only available for Gmail accounts.
-          </p>
+          <p className="text-text-secondary">{t("calendar.gmailOnly")}</p>
         </div>
       )}
 
@@ -225,7 +227,7 @@ export function CalendarPage() {
             onClick={() => void loadEvents()}
             className="ml-2 underline hover:no-underline"
           >
-            Retry
+            {t("calendar.retry")}
           </button>
         </div>
       )}

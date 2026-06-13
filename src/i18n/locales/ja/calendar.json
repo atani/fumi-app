@@ -1,0 +1,17 @@
+{
+  "title": "カレンダー",
+  "backToMail": "メールに戻る",
+  "today": "今日",
+  "gmailOnly": "カレンダーは Gmail アカウントでのみ利用できます。",
+  "loadError": "予定の読み込みに失敗しました",
+  "retry": "再試行",
+  "newEvent": "新しい予定",
+  "eventTitle": "タイトル",
+  "eventTitlePlaceholder": "予定のタイトル",
+  "start": "開始",
+  "end": "終了",
+  "description": "説明",
+  "descriptionPlaceholder": "説明（任意）",
+  "cancel": "キャンセル",
+  "create": "作成"
+}

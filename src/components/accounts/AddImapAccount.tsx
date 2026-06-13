@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { useAccountStore } from "../../stores/accountStore";
 import {
   imapTestConnection,
@@ -127,6 +128,7 @@ interface AddImapAccountProps {
 }
 
 export function AddImapAccount({ onClose }: AddImapAccountProps) {
+  const { t } = useTranslation();
   const addAccount = useAccountStore((s) => s.addAccount);
 
   const [step, setStep] = useState<"credentials" | "servers">("credentials");
@@ -165,13 +167,13 @@ export function AddImapAccount({ onClose }: AddImapAccountProps) {
 
   const handleNext = useCallback(() => {
     if (!email || !password) {
-      setError("Email and password are required");
+      setError(t("accounts.credentialsRequired"));
       return;
     }
     setError(null);
     handleEmailBlur();
     setStep("servers");
-  }, [email, password, handleEmailBlur]);
+  }, [email, password, handleEmailBlur, t]);
 
   const handleTestAndSave = useCallback(async () => {
     setTesting(true);
@@ -181,7 +183,7 @@ export function AddImapAccount({ onClose }: AddImapAccountProps) {
     const username = imapUsername || email;
 
     try {
-      setTestStatus("Testing IMAP connection...");
+      setTestStatus(t("accounts.testingImap"));
       await imapTestConnection({
         host: imapHost,
         port: imapPort,
@@ -190,7 +192,7 @@ export function AddImapAccount({ onClose }: AddImapAccountProps) {
         security: imapSecurity,
       });
 
-      setTestStatus("Testing SMTP connection...");
+      setTestStatus(t("accounts.testingSmtp"));
       await smtpTestConnection({
         host: smtpHost,
         port: smtpPort,
@@ -199,7 +201,7 @@ export function AddImapAccount({ onClose }: AddImapAccountProps) {
         security: smtpSecurity,
       });
 
-      setTestStatus("Saving account...");
+      setTestStatus(t("accounts.savingAccount"));
       const accountId = `imap-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
       const account: Account = {
@@ -242,18 +244,19 @@ export function AddImapAccount({ onClose }: AddImapAccountProps) {
     smtpSecurity,
     addAccount,
     onClose,
+    t,
   ]);
 
   const securityOptions: { value: SecurityType; label: string }[] = [
     { value: "ssl", label: "SSL/TLS" },
     { value: "starttls", label: "STARTTLS" },
-    { value: "none", label: "None" },
+    { value: "none", label: t("accounts.securityNone") },
   ];
 
   return (
     <div className="flex flex-col gap-4 p-4">
       <h2 className="text-lg font-semibold text-text-primary">
-        Add IMAP Account
+        {t("accounts.addImapAccount")}
       </h2>
 
       {error && (
@@ -272,37 +275,41 @@ export function AddImapAccount({ onClose }: AddImapAccountProps) {
         <>
           <div className="flex flex-col gap-3">
             <label className="flex flex-col gap-1">
-              <span className="text-sm text-text-secondary">Email</span>
+              <span className="text-sm text-text-secondary">
+                {t("accounts.email")}
+              </span>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onBlur={handleEmailBlur}
-                placeholder="you@example.com"
-                className="rounded-md border border-border-primary bg-bg-secondary px-3 py-2 text-sm text-text-primary placeholder:text-text-tertiary focus:border-accent focus:outline-none"
-              />
-            </label>
-
-            <label className="flex flex-col gap-1">
-              <span className="text-sm text-text-secondary">Password</span>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="App password or account password"
+                placeholder={t("accounts.emailPlaceholder")}
                 className="rounded-md border border-border-primary bg-bg-secondary px-3 py-2 text-sm text-text-primary placeholder:text-text-tertiary focus:border-accent focus:outline-none"
               />
             </label>
 
             <label className="flex flex-col gap-1">
               <span className="text-sm text-text-secondary">
-                Display Name (optional)
+                {t("accounts.password")}
+              </span>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={t("accounts.passwordPlaceholder")}
+                className="rounded-md border border-border-primary bg-bg-secondary px-3 py-2 text-sm text-text-primary placeholder:text-text-tertiary focus:border-accent focus:outline-none"
+              />
+            </label>
+
+            <label className="flex flex-col gap-1">
+              <span className="text-sm text-text-secondary">
+                {t("accounts.displayName")}
               </span>
               <input
                 type="text"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="Your Name"
+                placeholder={t("accounts.displayNamePlaceholder")}
                 className="rounded-md border border-border-primary bg-bg-secondary px-3 py-2 text-sm text-text-primary placeholder:text-text-tertiary focus:border-accent focus:outline-none"
               />
             </label>
@@ -310,7 +317,7 @@ export function AddImapAccount({ onClose }: AddImapAccountProps) {
 
           <div className="flex flex-col gap-2">
             <span className="text-xs text-text-tertiary">
-              Quick setup for known providers:
+              {t("accounts.quickSetup")}
             </span>
             <div className="flex flex-wrap gap-1.5">
               {PROVIDER_PRESETS.map((preset) => (
@@ -332,14 +339,14 @@ export function AddImapAccount({ onClose }: AddImapAccountProps) {
               onClick={onClose}
               className="rounded-md px-4 py-2 text-sm text-text-secondary hover:bg-bg-hover"
             >
-              Cancel
+              {t("accounts.cancel")}
             </button>
             <button
               type="button"
               onClick={handleNext}
               className="rounded-md bg-accent px-4 py-2 text-sm text-white hover:bg-accent-hover"
             >
-              Next
+              {t("accounts.next")}
             </button>
           </div>
         </>
@@ -350,23 +357,27 @@ export function AddImapAccount({ onClose }: AddImapAccountProps) {
           <div className="flex flex-col gap-4">
             <fieldset className="flex flex-col gap-3 rounded-md border border-border-primary p-3">
               <legend className="px-1 text-sm font-medium text-text-secondary">
-                IMAP (Incoming)
+                {t("accounts.imapIncoming")}
               </legend>
 
               <div className="grid grid-cols-2 gap-3">
                 <label className="col-span-2 flex flex-col gap-1 sm:col-span-1">
-                  <span className="text-xs text-text-tertiary">Host</span>
+                  <span className="text-xs text-text-tertiary">
+                    {t("accounts.host")}
+                  </span>
                   <input
                     type="text"
                     value={imapHost}
                     onChange={(e) => setImapHost(e.target.value)}
-                    placeholder="imap.example.com"
+                    placeholder={t("accounts.imapHostPlaceholder")}
                     className="rounded-md border border-border-primary bg-bg-secondary px-3 py-1.5 text-sm text-text-primary focus:border-accent focus:outline-none"
                   />
                 </label>
 
                 <label className="flex flex-col gap-1">
-                  <span className="text-xs text-text-tertiary">Port</span>
+                  <span className="text-xs text-text-tertiary">
+                    {t("accounts.port")}
+                  </span>
                   <input
                     type="number"
                     value={imapPort}
@@ -376,7 +387,9 @@ export function AddImapAccount({ onClose }: AddImapAccountProps) {
                 </label>
 
                 <label className="flex flex-col gap-1">
-                  <span className="text-xs text-text-tertiary">Security</span>
+                  <span className="text-xs text-text-tertiary">
+                    {t("accounts.security")}
+                  </span>
                   <select
                     value={imapSecurity}
                     onChange={(e) =>
@@ -395,7 +408,7 @@ export function AddImapAccount({ onClose }: AddImapAccountProps) {
 
               <label className="flex flex-col gap-1">
                 <span className="text-xs text-text-tertiary">
-                  Username (leave blank to use email)
+                  {t("accounts.usernameHint")}
                 </span>
                 <input
                   type="text"
@@ -409,23 +422,27 @@ export function AddImapAccount({ onClose }: AddImapAccountProps) {
 
             <fieldset className="flex flex-col gap-3 rounded-md border border-border-primary p-3">
               <legend className="px-1 text-sm font-medium text-text-secondary">
-                SMTP (Outgoing)
+                {t("accounts.smtpOutgoing")}
               </legend>
 
               <div className="grid grid-cols-2 gap-3">
                 <label className="col-span-2 flex flex-col gap-1 sm:col-span-1">
-                  <span className="text-xs text-text-tertiary">Host</span>
+                  <span className="text-xs text-text-tertiary">
+                    {t("accounts.host")}
+                  </span>
                   <input
                     type="text"
                     value={smtpHost}
                     onChange={(e) => setSmtpHost(e.target.value)}
-                    placeholder="smtp.example.com"
+                    placeholder={t("accounts.smtpHostPlaceholder")}
                     className="rounded-md border border-border-primary bg-bg-secondary px-3 py-1.5 text-sm text-text-primary focus:border-accent focus:outline-none"
                   />
                 </label>
 
                 <label className="flex flex-col gap-1">
-                  <span className="text-xs text-text-tertiary">Port</span>
+                  <span className="text-xs text-text-tertiary">
+                    {t("accounts.port")}
+                  </span>
                   <input
                     type="number"
                     value={smtpPort}
@@ -435,7 +452,9 @@ export function AddImapAccount({ onClose }: AddImapAccountProps) {
                 </label>
 
                 <label className="flex flex-col gap-1">
-                  <span className="text-xs text-text-tertiary">Security</span>
+                  <span className="text-xs text-text-tertiary">
+                    {t("accounts.security")}
+                  </span>
                   <select
                     value={smtpSecurity}
                     onChange={(e) =>
@@ -460,7 +479,7 @@ export function AddImapAccount({ onClose }: AddImapAccountProps) {
               onClick={() => setStep("credentials")}
               className="rounded-md px-4 py-2 text-sm text-text-secondary hover:bg-bg-hover"
             >
-              Back
+              {t("accounts.back")}
             </button>
             <div className="flex gap-2">
               <button
@@ -468,7 +487,7 @@ export function AddImapAccount({ onClose }: AddImapAccountProps) {
                 onClick={onClose}
                 className="rounded-md px-4 py-2 text-sm text-text-secondary hover:bg-bg-hover"
               >
-                Cancel
+                {t("accounts.cancel")}
               </button>
               <button
                 type="button"
@@ -476,7 +495,9 @@ export function AddImapAccount({ onClose }: AddImapAccountProps) {
                 disabled={testing || !imapHost || !smtpHost}
                 className="rounded-md bg-accent px-4 py-2 text-sm text-white hover:bg-accent-hover disabled:opacity-50"
               >
-                {testing ? "Testing..." : "Test & Add Account"}
+                {testing
+                  ? t("accounts.testing")
+                  : t("accounts.testAndAddAccount")}
               </button>
             </div>
           </div>

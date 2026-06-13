@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { Loader2, MessageSquare } from "lucide-react";
 import type { Message } from "../../types";
 import { suggestReplies } from "../../services/ai/aiService";
@@ -15,6 +16,7 @@ export function SmartReplySuggestions({
   threadId,
   accountId,
 }: SmartReplySuggestionsProps) {
+  const { t } = useTranslation();
   const [replies, setReplies] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,12 +36,12 @@ export function SmartReplySuggestions({
       setReplies(result);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Failed to generate suggestions",
+        err instanceof Error ? err.message : t("email.smartReply.generateFailed"),
       );
     } finally {
       setIsLoading(false);
     }
-  }, [replies.length, isLoading, messages, threadId, accountId]);
+  }, [replies.length, isLoading, messages, threadId, accountId, t]);
 
   const handleSelectReply = useCallback(
     (replyText: string) => {
@@ -72,7 +74,7 @@ export function SmartReplySuggestions({
         ) : (
           <MessageSquare className="h-3.5 w-3.5" />
         )}
-        {isLoading ? "Generating replies..." : "Suggest replies"}
+        {isLoading ? t("email.smartReply.generating") : t("email.smartReply.suggest")}
       </button>
     );
   }

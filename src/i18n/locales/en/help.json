@@ -1,0 +1,239 @@
+{
+  "title": "Help",
+  "backToMail": "Back to mail",
+  "searchPlaceholder": "Search help…",
+  "clearSearch": "Clear search",
+  "tooltipLabel": "Help",
+  "searchResults": "Search results",
+  "resultCount_one": "{{count}} result",
+  "resultCount_other": "{{count}} results",
+  "noResults": "No results found for “{{query}}”",
+  "selectCategory": "Select a category from the sidebar.",
+  "categories": {
+    "getting-started": {
+      "title": "Getting Started",
+      "description": "Set up your account and learn the basics of Fumi."
+    },
+    "composing": {
+      "title": "Composing",
+      "description": "Write and send emails with the rich text composer."
+    },
+    "reading": {
+      "title": "Reading",
+      "description": "Read, organize, and act on your emails."
+    },
+    "search": {
+      "title": "Search",
+      "description": "Find emails quickly with powerful search operators."
+    },
+    "labels": {
+      "title": "Labels",
+      "description": "Organize your emails with custom labels."
+    },
+    "shortcuts": {
+      "title": "Shortcuts",
+      "description": "Navigate and act on emails without leaving the keyboard."
+    },
+    "calendar": {
+      "title": "Calendar",
+      "description": "View and manage your Google Calendar events."
+    },
+    "tasks": {
+      "title": "Tasks",
+      "description": "Track to-dos extracted from emails or created manually."
+    },
+    "ai-features": {
+      "title": "AI Features",
+      "description": "Use AI to summarize, reply, compose, and categorize emails."
+    },
+    "filters": {
+      "title": "Filters",
+      "description": "Automate actions on incoming emails with filter rules."
+    },
+    "templates": {
+      "title": "Templates",
+      "description": "Save reusable email templates for common replies."
+    },
+    "security": {
+      "title": "Security",
+      "description": "Stay safe with phishing detection and authentication checks."
+    },
+    "settings": {
+      "title": "Settings",
+      "description": "Customize Fumi to fit your workflow."
+    }
+  },
+  "cards": {
+    "gs-add-account": {
+      "title": "Add your email account",
+      "description": "Connect a Gmail or IMAP account to start using Fumi.",
+      "steps": [
+        "Open Settings from the sidebar.",
+        "Click Add Account.",
+        "Sign in with Google or enter your IMAP server details.",
+        "Fumi will sync your recent emails automatically."
+      ]
+    },
+    "gs-navigation": {
+      "title": "Navigate the interface",
+      "description": "The sidebar lists your folders and labels. Click a folder to view its threads. Select a thread to read it in the reading pane."
+    },
+    "gs-theme": {
+      "title": "Switch themes",
+      "description": "Toggle between light, dark, and system themes using the theme button at the bottom of the sidebar."
+    },
+    "comp-new": {
+      "title": "Compose a new email",
+      "description": "Click the Compose button in the sidebar or press C to open a new message."
+    },
+    "comp-reply": {
+      "title": "Reply and forward",
+      "description": "Press R to reply, A to reply all, or F to forward the selected thread."
+    },
+    "comp-schedule": {
+      "title": "Schedule send",
+      "description": "Choose a future date and time to send your email automatically.",
+      "steps": [
+        "Open the composer.",
+        "Click the clock icon next to the Send button.",
+        "Pick a date and time, then confirm."
+      ]
+    },
+    "comp-drafts": {
+      "title": "Auto-saved drafts",
+      "description": "Drafts are saved automatically every 3 seconds. If the app closes unexpectedly, you will be prompted to restore your draft on next launch."
+    },
+    "read-thread": {
+      "title": "Thread view",
+      "description": "Emails are grouped into conversation threads. Open a thread to see all messages in order."
+    },
+    "read-archive": {
+      "title": "Archive and trash",
+      "description": "Press E to archive or # to trash the selected thread. Trashing a thread already in Trash deletes it permanently."
+    },
+    "read-snooze": {
+      "title": "Snooze emails",
+      "description": "Snooze a thread to temporarily remove it from your inbox. It will reappear at the time you choose."
+    },
+    "read-star": {
+      "title": "Star and pin",
+      "description": "Press S to star or P to pin a thread for quick access later."
+    },
+    "search-basic": {
+      "title": "Basic search",
+      "description": "Press / or Ctrl+K to open the command palette. Type any keyword to search across all your emails."
+    },
+    "search-operators": {
+      "title": "Search operators",
+      "description": "Use Gmail-style operators for precise results: from:, to:, subject:, has:attachment, is:unread, before:, after:, label:."
+    },
+    "search-smart-folders": {
+      "title": "Smart folders",
+      "description": "Save frequently used searches as smart folders for one-click access from the sidebar."
+    },
+    "label-create": {
+      "title": "Create a label",
+      "description": "Click the + icon in the Labels section of the sidebar, or right-click an existing label to edit or delete it."
+    },
+    "label-apply": {
+      "title": "Apply labels to threads",
+      "description": "Press V to move a thread to a folder or label. You can also drag and drop threads onto sidebar labels."
+    },
+    "label-colors": {
+      "title": "Label colors",
+      "description": "Assign a color to each label so you can spot categories at a glance in the thread list."
+    },
+    "sc-navigation": {
+      "title": "Navigation shortcuts",
+      "description": "J/K to move between threads, O or Enter to open, Escape to go back. G then I for Inbox, G then S for Starred, and more."
+    },
+    "sc-actions": {
+      "title": "Action shortcuts",
+      "description": "E to archive, S to star, # to trash, R to reply, A to reply all, F to forward, C to compose."
+    },
+    "sc-customize": {
+      "title": "Customize shortcuts",
+      "description": "Remap any keyboard shortcut in Settings to match your preferred workflow."
+    },
+    "cal-view": {
+      "title": "Calendar views",
+      "description": "Switch between day, week, and month views. Navigate forward and backward with the toolbar buttons."
+    },
+    "cal-create": {
+      "title": "Create events",
+      "description": "Click on an empty time slot or use the create button to add a new calendar event."
+    },
+    "task-create": {
+      "title": "Create tasks",
+      "description": "Add tasks manually from the Tasks page, or press T on a thread to extract tasks with AI."
+    },
+    "task-filters": {
+      "title": "Filter tasks",
+      "description": "View all tasks, today's tasks, upcoming tasks, or completed tasks using the filter tabs."
+    },
+    "task-recurring": {
+      "title": "Recurring tasks",
+      "description": "Set a recurrence rule (daily, weekly, monthly, yearly) and Fumi will create the next occurrence automatically when you complete one."
+    },
+    "ai-summary": {
+      "title": "Thread summaries",
+      "description": "Get a quick AI-generated summary of long email threads so you can catch up in seconds."
+    },
+    "ai-reply": {
+      "title": "Smart replies",
+      "description": "AI suggests short reply options based on the thread context. Click one to insert it into the composer."
+    },
+    "ai-compose": {
+      "title": "AI compose and rewrite",
+      "description": "Let AI draft an email from a prompt, or transform selected text (shorten, expand, fix grammar, change tone)."
+    },
+    "ai-categorize": {
+      "title": "Auto-categorization",
+      "description": "Fumi sorts incoming mail into Primary, Updates, Promotions, Social, and Newsletters using AI and rule-based heuristics."
+    },
+    "filter-create": {
+      "title": "Create a filter",
+      "description": "Go to Settings and open Filters. Define criteria (sender, subject, keywords) and choose actions (label, archive, star, mark read, trash)."
+    },
+    "filter-logic": {
+      "title": "How filters work",
+      "description": "Filter criteria use AND logic: all conditions must match. When multiple filters match the same message, their actions are merged."
+    },
+    "tpl-create": {
+      "title": "Create a template",
+      "description": "Open Settings, go to Templates, and add a new template with a name, subject, and body."
+    },
+    "tpl-use": {
+      "title": "Use a template",
+      "description": "In the composer, click the template picker to insert a saved template. You can also assign a keyboard shortcut to each template."
+    },
+    "sec-phishing": {
+      "title": "Phishing detection",
+      "description": "Fumi scans links in emails for suspicious patterns (IP URLs, homograph attacks, URL shorteners, brand impersonation) and warns you before you click."
+    },
+    "sec-auth": {
+      "title": "Authentication results",
+      "description": "SPF, DKIM, and DMARC results are parsed from email headers and shown as a badge on each message so you can verify sender authenticity."
+    },
+    "sec-images": {
+      "title": "Remote image blocking",
+      "description": "Remote images are blocked by default to protect your privacy. Allow images from trusted senders via the allowlist."
+    },
+    "set-accounts": {
+      "title": "Manage accounts",
+      "description": "Add or remove email accounts, configure OAuth client IDs, and manage send-as aliases."
+    },
+    "set-appearance": {
+      "title": "Appearance",
+      "description": "Choose a color theme, adjust font scale, change email density, and toggle the reading pane position."
+    },
+    "set-ai": {
+      "title": "AI provider settings",
+      "description": "Configure API keys for Claude, OpenAI, or Gemini. Select which provider to use for each AI feature."
+    },
+    "set-notifications": {
+      "title": "Notifications",
+      "description": "Enable desktop notifications and add VIP senders to get notified only for the emails that matter."
+    }
+  }
+}

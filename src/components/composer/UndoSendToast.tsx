@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { X } from "lucide-react";
 
 interface UndoSendToastProps {
@@ -11,6 +12,7 @@ interface UndoSendToastProps {
 }
 
 export function UndoSendToast({ delayMs, onUndo, onDismiss }: UndoSendToastProps) {
+  const { t } = useTranslation();
   const delaySeconds = Math.round(delayMs / 1000);
   const [remaining, setRemaining] = useState(delaySeconds);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -70,22 +72,22 @@ export function UndoSendToast({ delayMs, onUndo, onDismiss }: UndoSendToastProps
 
       <div className="flex items-center gap-3 px-4 py-3">
         <span className="text-sm text-text-primary" data-testid="undo-send-message">
-          Message sent
+          {t("composer.messageSent")}
         </span>
         <span className="text-xs tabular-nums text-text-tertiary" data-testid="undo-send-countdown">
-          {remaining}s
+          {t("composer.countdownSeconds", { seconds: remaining })}
         </span>
         <button
           onClick={handleUndo}
           className="rounded-md px-3 py-1 text-sm font-medium text-accent hover:bg-accent/10"
           data-testid="undo-send-button"
         >
-          Undo
+          {t("composer.undo")}
         </button>
         <button
           onClick={onDismiss}
           className="rounded p-0.5 text-text-tertiary hover:text-text-primary"
-          aria-label="Dismiss"
+          aria-label={t("composer.dismiss")}
           data-testid="undo-send-dismiss"
         >
           <X className="h-3.5 w-3.5" />

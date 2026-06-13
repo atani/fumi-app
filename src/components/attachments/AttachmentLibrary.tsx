@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { ArrowLeft, Grid3X3, List, Paperclip } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAccountStore } from "../../stores/accountStore";
@@ -10,10 +11,10 @@ import type { AttachmentWithDate } from "../../services/db/attachments";
 type ViewMode = "grid" | "list";
 type TypeFilter = "all" | "images" | "documents";
 
-const TYPE_FILTERS: { id: TypeFilter; label: string }[] = [
-  { id: "all", label: "All" },
-  { id: "images", label: "Images" },
-  { id: "documents", label: "Documents" },
+const TYPE_FILTERS: { id: TypeFilter; labelKey: string }[] = [
+  { id: "all", labelKey: "attachments.filterAll" },
+  { id: "images", labelKey: "attachments.filterImages" },
+  { id: "documents", labelKey: "attachments.filterDocuments" },
 ];
 
 function matchesTypeFilter(mimeType: string, filter: TypeFilter): boolean {
@@ -35,17 +36,28 @@ function matchesTypeFilter(mimeType: string, filter: TypeFilter): boolean {
   }
 }
 
-function groupByDate(
-  attachments: AttachmentWithDate[],
-): { label: string; items: AttachmentWithDate[] }[] {
-  const groups = new Map<string, AttachmentWithDate[]>();
+interface DateGroup {
+  /** Stable identity for React keys and grouping. */
+  key: string;
+  /** Translation key for known relative buckets, or null for absolute dates. */
+  labelKey: string | null;
+  /** Pre-formatted, locale-aware label for absolute-date buckets. */
+  labelValue: string | null;
+  items: AttachmentWithDate[];
+}
+
+function groupByDate(attachments: AttachmentWithDate[]): DateGroup[] {
+  const groups = new Map<string, DateGroup>();
 
   for (const att of attachments) {
     const dateStr = att.message_date;
-    let label: string;
+    let key: string;
+    let labelKey: string | null;
+    let labelValue: string | null = null;
 
     if (!dateStr) {
-      label = "Unknown date";
+      key = "unknown";
+      labelKey = "attachments.groupUnknownDate";
     } else {
       const d = new Date(dateStr);
       const now = new Date();
@@ -56,36 +68,40 @@ function groupByDate(
       );
 
       if (diffDays === 0) {
-        label = "Today";
+        key = "today";
+        labelKey = "attachments.groupToday";
       } else if (diffDays === 1) {
-        label = "Yesterday";
+        key = "yesterday";
+        labelKey = "attachments.groupYesterday";
       } else if (diffDays < 7) {
-        label = "This week";
+        key = "thisWeek";
+        labelKey = "attachments.groupThisWeek";
       } else if (diffDays < 30) {
-        label = "This month";
+        key = "thisMonth";
+        labelKey = "attachments.groupThisMonth";
       } else {
-        label = d.toLocaleDateString(undefined, {
+        labelValue = d.toLocaleDateString(undefined, {
           year: "numeric",
           month: "long",
         });
+        key = labelValue;
+        labelKey = null;
       }
     }
 
-    const existing = groups.get(label);
+    const existing = groups.get(key);
     if (existing) {
-      existing.push(att);
+      existing.items.push(att);
     } else {
-      groups.set(label, [att]);
+      groups.set(key, { key, labelKey, labelValue, items: [att] });
     }
   }
 
-  return Array.from(groups.entries()).map(([label, items]) => ({
-    label,
-    items,
-  }));
+  return Array.from(groups.values());
 }
 
 export function AttachmentLibrary() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { activeAccountId } = useAccountStore();
   const [attachments, setAttachments] = useState<AttachmentWithDate[]>([]);
@@ -131,7 +147,7 @@ export function AttachmentLibrary() {
           <ArrowLeft className="h-5 w-5" />
         </button>
         <Paperclip className="h-5 w-5 text-accent" />
-        <h1 className="text-xl font-bold text-text-primary">Attachments</h1>
+        <h1 className="text-xl font-bold text-text-primary">{t("attachments.title")}</h1>
 
         <div className="ml-auto flex items-center gap-2">
           {/* Type filter */}
@@ -147,7 +163,7 @@ export function AttachmentLibrary() {
                 }`}
                 data-testid={`filter-${f.id}`}
               >
-                {f.label}
+                {t(f.labelKey)}
               </button>
             ))}
           </div>
@@ -161,7 +177,7 @@ export function AttachmentLibrary() {
                   ? "bg-accent text-white"
                   : "text-text-secondary hover:text-text-primary"
               }`}
-              title="Grid view"
+              title={t("attachments.gridView")}
               data-testid="view-mode-grid"
             >
               <Grid3X3 className="h-4 w-4" />
@@ -173,7 +189,7 @@ export function AttachmentLibrary() {
                   ? "bg-accent text-white"
                   : "text-text-secondary hover:text-text-primary"
               }`}
-              title="List view"
+              title={t("attachments.listView")}
               data-testid="view-mode-list"
             >
               <List className="h-4 w-4" />
@@ -186,19 +202,19 @@ export function AttachmentLibrary() {
       <div className="flex-1 overflow-y-auto px-6 py-4">
         {loading ? (
           <div className="flex h-full items-center justify-center">
-            <p className="text-text-secondary">Loading attachments...</p>
+            <p className="text-text-secondary">{t("attachments.loading")}</p>
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center gap-2">
             <Paperclip className="h-12 w-12 text-text-tertiary" />
-            <p className="text-text-secondary">No attachments found</p>
+            <p className="text-text-secondary">{t("attachments.empty")}</p>
           </div>
         ) : (
           <div className="space-y-6">
             {grouped.map((group) => (
-              <div key={group.label}>
+              <div key={group.key}>
                 <h2 className="mb-3 text-sm font-medium text-text-tertiary">
-                  {group.label}
+                  {group.labelKey ? t(group.labelKey) : group.labelValue}
                 </h2>
                 {viewMode === "grid" ? (
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">

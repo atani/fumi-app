@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Clock, Sun, Moon, Calendar, ChevronRight, X } from "lucide-react";
 
 interface SnoozeDialogProps {
@@ -8,7 +9,7 @@ interface SnoozeDialogProps {
 }
 
 interface SnoozePreset {
-  label: string;
+  labelKey: string;
   icon: typeof Clock;
   getDate: () => Date;
 }
@@ -18,7 +19,7 @@ function getPresets(): SnoozePreset[] {
 
   return [
     {
-      label: "Later today",
+      labelKey: "email.snooze.laterToday",
       icon: Clock,
       getDate: () => {
         const d = new Date(now);
@@ -27,7 +28,7 @@ function getPresets(): SnoozePreset[] {
       },
     },
     {
-      label: "Tomorrow morning",
+      labelKey: "email.snooze.tomorrowMorning",
       icon: Sun,
       getDate: () => {
         const d = new Date(now);
@@ -37,7 +38,7 @@ function getPresets(): SnoozePreset[] {
       },
     },
     {
-      label: "Tomorrow afternoon",
+      labelKey: "email.snooze.tomorrowAfternoon",
       icon: Moon,
       getDate: () => {
         const d = new Date(now);
@@ -47,7 +48,7 @@ function getPresets(): SnoozePreset[] {
       },
     },
     {
-      label: "This weekend",
+      labelKey: "email.snooze.thisWeekend",
       icon: Calendar,
       getDate: () => {
         const d = new Date(now);
@@ -60,7 +61,7 @@ function getPresets(): SnoozePreset[] {
       },
     },
     {
-      label: "Next week",
+      labelKey: "email.snooze.nextWeek",
       icon: ChevronRight,
       getDate: () => {
         const d = new Date(now);
@@ -86,6 +87,7 @@ function formatPresetTime(date: Date): string {
 }
 
 export function SnoozeDialog({ isOpen, onClose, onSnooze }: SnoozeDialogProps) {
+  const { t } = useTranslation();
   const [showCustom, setShowCustom] = useState(false);
   const [customDate, setCustomDate] = useState("");
   const [customTime, setCustomTime] = useState("09:00");
@@ -120,7 +122,7 @@ export function SnoozeDialog({ isOpen, onClose, onSnooze }: SnoozeDialogProps) {
       {/* Dialog */}
       <div className="fixed left-1/2 top-1/2 z-50 w-80 -translate-x-1/2 -translate-y-1/2 rounded-xl border border-border-primary bg-bg-primary shadow-xl">
         <div className="flex items-center justify-between border-b border-border-primary px-4 py-3">
-          <h3 className="text-sm font-semibold text-text-primary">Snooze until...</h3>
+          <h3 className="text-sm font-semibold text-text-primary">{t("email.snooze.title")}</h3>
           <button
             onClick={onClose}
             className="rounded p-1 text-text-tertiary hover:bg-bg-hover hover:text-text-primary"
@@ -136,12 +138,12 @@ export function SnoozeDialog({ isOpen, onClose, onSnooze }: SnoozeDialogProps) {
               const date = preset.getDate();
               return (
                 <button
-                  key={preset.label}
+                  key={preset.labelKey}
                   onClick={() => handlePreset(preset)}
                   className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-text-primary hover:bg-bg-hover"
                 >
                   <Icon className="h-4 w-4 text-text-secondary" />
-                  <span className="flex-1 text-left">{preset.label}</span>
+                  <span className="flex-1 text-left">{t(preset.labelKey)}</span>
                   <span className="text-xs text-text-tertiary">
                     {formatPresetTime(date)}
                   </span>
@@ -154,13 +156,13 @@ export function SnoozeDialog({ isOpen, onClose, onSnooze }: SnoozeDialogProps) {
               className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-text-primary hover:bg-bg-hover"
             >
               <Calendar className="h-4 w-4 text-text-secondary" />
-              <span className="flex-1 text-left">Pick date & time</span>
+              <span className="flex-1 text-left">{t("email.snooze.pickDateTime")}</span>
             </button>
           </div>
         ) : (
           <div className="space-y-3 p-4">
             <div>
-              <label className="mb-1 block text-xs text-text-secondary">Date</label>
+              <label className="mb-1 block text-xs text-text-secondary">{t("email.snooze.date")}</label>
               <input
                 type="date"
                 value={customDate}
@@ -170,7 +172,7 @@ export function SnoozeDialog({ isOpen, onClose, onSnooze }: SnoozeDialogProps) {
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs text-text-secondary">Time</label>
+              <label className="mb-1 block text-xs text-text-secondary">{t("email.snooze.time")}</label>
               <input
                 type="time"
                 value={customTime}
@@ -183,14 +185,14 @@ export function SnoozeDialog({ isOpen, onClose, onSnooze }: SnoozeDialogProps) {
                 onClick={() => setShowCustom(false)}
                 className="flex-1 rounded-lg border border-border-primary px-3 py-2 text-sm text-text-secondary hover:bg-bg-hover"
               >
-                Back
+                {t("email.snooze.back")}
               </button>
               <button
                 onClick={handleCustomSubmit}
                 disabled={!customDate}
                 className="flex-1 rounded-lg bg-accent px-3 py-2 text-sm text-white hover:bg-accent-hover disabled:opacity-50"
               >
-                Snooze
+                {t("email.snooze.snooze")}
               </button>
             </div>
           </div>

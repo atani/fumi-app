@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { useThreadStore } from "../../stores/threadStore";
 import { useAccountStore } from "../../stores/accountStore";
 import { useComposerStore } from "../../stores/composerStore";
@@ -35,6 +36,7 @@ interface ReadingPaneProps {
 }
 
 export function ReadingPane({ onBack, showBackButton }: ReadingPaneProps = {}) {
+  const { t } = useTranslation();
   const { threads, selectedThreadId, messages } = useThreadStore();
   const accounts = useAccountStore((s) => s.accounts);
   const activeAccountId = useAccountStore((s) => s.activeAccountId);
@@ -199,7 +201,7 @@ export function ReadingPane({ onBack, showBackButton }: ReadingPaneProps = {}) {
   if (messages.length === 0) {
     return (
       <div className="flex flex-1 items-center justify-center bg-bg-primary">
-        <p className="text-text-tertiary">Loading messages...</p>
+        <p className="text-text-tertiary">{t("layout.loadingMessages")}</p>
       </div>
     );
   }
@@ -258,14 +260,14 @@ export function ReadingPane({ onBack, showBackButton }: ReadingPaneProps = {}) {
             <button
               onClick={onBack}
               className="shrink-0 rounded-lg p-2 text-text-secondary hover:bg-bg-hover hover:text-text-primary"
-              aria-label="Back to thread list"
+              aria-label={t("layout.backToList")}
               data-testid="reading-pane-back-btn"
             >
               <ArrowLeft className="h-4 w-4" />
             </button>
           )}
           <h2 className="truncate text-lg font-semibold text-text-primary">
-            {lastMessage?.subject || "(No subject)"}
+            {lastMessage?.subject || t("layout.noSubject")}
           </h2>
           {selectedThreadId && activeAccountId && (
             <ThreadSummary
@@ -278,7 +280,7 @@ export function ReadingPane({ onBack, showBackButton }: ReadingPaneProps = {}) {
         <div className="flex items-center gap-1">
           <button
             onClick={() => setIsContactSidebarOpen((prev) => !prev)}
-            title={isContactSidebarOpen ? "Hide contact info" : "Show contact info"}
+            title={isContactSidebarOpen ? t("layout.hideContactInfo") : t("layout.showContactInfo")}
             className={`rounded-lg p-2 hover:bg-bg-hover ${
               isContactSidebarOpen
                 ? "text-accent"
@@ -294,7 +296,7 @@ export function ReadingPane({ onBack, showBackButton }: ReadingPaneProps = {}) {
                 void openThreadWindow(selectedThreadId, activeAccountId);
               }
             }}
-            title="Pop out"
+            title={t("layout.popOut")}
             className="rounded-lg p-2 text-text-secondary hover:bg-bg-hover hover:text-text-primary"
             data-testid="pop-out-btn"
           >
@@ -302,7 +304,7 @@ export function ReadingPane({ onBack, showBackButton }: ReadingPaneProps = {}) {
           </button>
           <button
             onClick={() => setIsMoveDialogOpen(true)}
-            title="Apply labels (v)"
+            title={t("layout.applyLabels")}
             className="rounded-lg p-2 text-text-secondary hover:bg-bg-hover hover:text-text-primary"
             data-testid="move-to-label-btn"
           >
@@ -310,14 +312,14 @@ export function ReadingPane({ onBack, showBackButton }: ReadingPaneProps = {}) {
           </button>
           <button
             onClick={handleArchive}
-            title="Archive"
+            title={t("layout.archive")}
             className="rounded-lg p-2 text-text-secondary hover:bg-bg-hover hover:text-text-primary"
           >
             <Archive className="h-4 w-4" />
           </button>
           <button
             onClick={handleStar}
-            title={thread?.is_starred ? "Unstar" : "Star"}
+            title={thread?.is_starred ? t("layout.unstar") : t("layout.star")}
             className={`rounded-lg p-2 hover:bg-bg-hover ${
               thread?.is_starred
                 ? "text-yellow-500"
@@ -331,14 +333,14 @@ export function ReadingPane({ onBack, showBackButton }: ReadingPaneProps = {}) {
           </button>
           <button
             onClick={() => setIsSnoozeOpen(true)}
-            title="Snooze"
+            title={t("layout.snooze")}
             className="rounded-lg p-2 text-text-secondary hover:bg-bg-hover hover:text-text-primary"
           >
             <Clock className="h-4 w-4" />
           </button>
           <button
             onClick={() => setIsFollowUpOpen(true)}
-            title="Follow up"
+            title={t("layout.followUp")}
             className="rounded-lg p-2 text-text-secondary hover:bg-bg-hover hover:text-text-primary"
             data-testid="follow-up-btn"
           >
@@ -346,7 +348,7 @@ export function ReadingPane({ onBack, showBackButton }: ReadingPaneProps = {}) {
           </button>
           <button
             onClick={handleMuteToggle}
-            title={thread?.is_muted ? "Unmute (m)" : "Mute (m)"}
+            title={thread?.is_muted ? t("layout.unmuteShortcut") : t("layout.muteShortcut")}
             className={`rounded-lg p-2 hover:bg-bg-hover ${
               thread?.is_muted
                 ? "text-warning"
@@ -362,7 +364,7 @@ export function ReadingPane({ onBack, showBackButton }: ReadingPaneProps = {}) {
           </button>
           <button
             onClick={handleTrash}
-            title="Trash"
+            title={t("layout.trash")}
             className="rounded-lg p-2 text-text-secondary hover:bg-bg-hover hover:text-danger"
           >
             <Trash2 className="h-4 w-4" />
@@ -402,7 +404,7 @@ export function ReadingPane({ onBack, showBackButton }: ReadingPaneProps = {}) {
                 <button
                   onClick={() => void handleRemoveLabel(label.id)}
                   className="ml-0.5 rounded-full p-0.5 hover:bg-black/10"
-                  title={`Remove ${label.name}`}
+                  title={t("layout.removeLabel", { name: label.name })}
                 >
                   <X className="h-3 w-3" />
                 </button>
@@ -449,7 +451,7 @@ export function ReadingPane({ onBack, showBackButton }: ReadingPaneProps = {}) {
               }}
               className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary hover:bg-bg-hover"
             >
-              <ReplyAll className="h-4 w-4" /> Reply All
+              <ReplyAll className="h-4 w-4" /> {t("layout.replyAll")}
             </button>
             <button
               onClick={() => {
@@ -457,7 +459,7 @@ export function ReadingPane({ onBack, showBackButton }: ReadingPaneProps = {}) {
               }}
               className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary hover:bg-bg-hover"
             >
-              <Reply className="h-4 w-4" /> Reply
+              <Reply className="h-4 w-4" /> {t("layout.reply")}
             </button>
           </>
         ) : (
@@ -468,7 +470,7 @@ export function ReadingPane({ onBack, showBackButton }: ReadingPaneProps = {}) {
               }}
               className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary hover:bg-bg-hover"
             >
-              <Reply className="h-4 w-4" /> Reply
+              <Reply className="h-4 w-4" /> {t("layout.reply")}
             </button>
             <button
               onClick={() => {
@@ -478,7 +480,7 @@ export function ReadingPane({ onBack, showBackButton }: ReadingPaneProps = {}) {
               }}
               className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary hover:bg-bg-hover"
             >
-              <ReplyAll className="h-4 w-4" /> Reply All
+              <ReplyAll className="h-4 w-4" /> {t("layout.replyAll")}
             </button>
           </>
         )}
@@ -488,7 +490,7 @@ export function ReadingPane({ onBack, showBackButton }: ReadingPaneProps = {}) {
           }}
           className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary hover:bg-bg-hover"
         >
-          <Forward className="h-4 w-4" /> Forward
+          <Forward className="h-4 w-4" /> {t("layout.forward")}
         </button>
         <button
           onClick={() => {
@@ -509,14 +511,14 @@ export function ReadingPane({ onBack, showBackButton }: ReadingPaneProps = {}) {
           disabled={isAutoDrafting}
           className="flex items-center gap-2 rounded-lg border border-accent/30 bg-accent/5 px-4 py-2 text-sm text-accent hover:bg-accent/10 disabled:opacity-50"
           data-testid="auto-draft-btn"
-          title="Auto-draft reply using AI"
+          title={t("layout.autoDraftTitle")}
         >
           {isAutoDrafting ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
             <Sparkles className="h-4 w-4" />
           )}
-          Auto-draft
+          {t("layout.autoDraft")}
         </button>
       </div>
 

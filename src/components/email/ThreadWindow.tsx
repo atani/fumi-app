@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Reply,
   ReplyAll,
@@ -27,6 +28,7 @@ interface ThreadWindowProps {
 }
 
 export function ThreadWindow({ threadId, accountId }: ThreadWindowProps) {
+  const { t } = useTranslation();
   const [messages, setMessages] = useState<Message[]>([]);
   const [account, setAccount] = useState<Account | null>(null);
   const [isStarred, setIsStarred] = useState(false);
@@ -85,7 +87,7 @@ export function ThreadWindow({ threadId, accountId }: ThreadWindowProps) {
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center bg-bg-primary">
-        <p className="text-text-tertiary">Loading thread...</p>
+        <p className="text-text-tertiary">{t("email.thread.loading")}</p>
       </div>
     );
   }
@@ -93,7 +95,7 @@ export function ThreadWindow({ threadId, accountId }: ThreadWindowProps) {
   if (messages.length === 0) {
     return (
       <div className="flex h-screen items-center justify-center bg-bg-primary">
-        <p className="text-text-tertiary">Thread not found</p>
+        <p className="text-text-tertiary">{t("email.thread.notFound")}</p>
       </div>
     );
   }
@@ -105,19 +107,19 @@ export function ThreadWindow({ threadId, accountId }: ThreadWindowProps) {
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border-primary px-6 py-3">
         <h2 className="truncate text-lg font-semibold text-text-primary">
-          {lastMessage?.subject || "(No subject)"}
+          {lastMessage?.subject || t("email.thread.noSubject")}
         </h2>
         <div className="flex items-center gap-1">
           <button
             onClick={handleArchive}
-            title="Archive"
+            title={t("email.thread.archive")}
             className="rounded-lg p-2 text-text-secondary hover:bg-bg-hover hover:text-text-primary"
           >
             <Archive className="h-4 w-4" />
           </button>
           <button
             onClick={handleStar}
-            title={isStarred ? "Unstar" : "Star"}
+            title={isStarred ? t("email.thread.unstar") : t("email.thread.star")}
             className={`rounded-lg p-2 hover:bg-bg-hover ${
               isStarred
                 ? "text-yellow-500"
@@ -131,7 +133,7 @@ export function ThreadWindow({ threadId, accountId }: ThreadWindowProps) {
           </button>
           <button
             onClick={handleTrash}
-            title="Trash"
+            title={t("email.thread.trash")}
             className="rounded-lg p-2 text-text-secondary hover:bg-bg-hover hover:text-danger"
           >
             <Trash2 className="h-4 w-4" />
@@ -165,7 +167,7 @@ export function ThreadWindow({ threadId, accountId }: ThreadWindowProps) {
             </div>
 
             <div className="mt-1 text-xs text-text-secondary">
-              To: {message.to_addresses}
+              {t("email.thread.to", { addresses: message.to_addresses })}
             </div>
 
             <div className="mt-4 text-sm text-text-primary">
@@ -194,7 +196,7 @@ export function ThreadWindow({ threadId, accountId }: ThreadWindowProps) {
           }}
           className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary hover:bg-bg-hover"
         >
-          <Reply className="h-4 w-4" /> Reply
+          <Reply className="h-4 w-4" /> {t("email.thread.reply")}
         </button>
         <button
           onClick={() => {
@@ -206,7 +208,7 @@ export function ThreadWindow({ threadId, accountId }: ThreadWindowProps) {
           }}
           className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary hover:bg-bg-hover"
         >
-          <ReplyAll className="h-4 w-4" /> Reply All
+          <ReplyAll className="h-4 w-4" /> {t("email.thread.replyAll")}
         </button>
         <button
           onClick={() => {
@@ -216,7 +218,7 @@ export function ThreadWindow({ threadId, accountId }: ThreadWindowProps) {
           }}
           className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary hover:bg-bg-hover"
         >
-          <Forward className="h-4 w-4" /> Forward
+          <Forward className="h-4 w-4" /> {t("email.thread.forward")}
         </button>
       </div>
     </div>

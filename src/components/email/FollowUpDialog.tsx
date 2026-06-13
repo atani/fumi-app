@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { BellRing, X } from "lucide-react";
 
 interface FollowUpDialogProps {
@@ -8,15 +9,15 @@ interface FollowUpDialogProps {
 }
 
 interface FollowUpPreset {
-  label: string;
+  labelKey: string;
   hours: number;
 }
 
 const PRESETS: FollowUpPreset[] = [
-  { label: "1 day", hours: 24 },
-  { label: "2 days", hours: 48 },
-  { label: "3 days", hours: 72 },
-  { label: "1 week", hours: 168 },
+  { labelKey: "email.followUp.preset1Day", hours: 24 },
+  { labelKey: "email.followUp.preset2Days", hours: 48 },
+  { labelKey: "email.followUp.preset3Days", hours: 72 },
+  { labelKey: "email.followUp.preset1Week", hours: 168 },
 ];
 
 export function FollowUpDialog({
@@ -24,6 +25,7 @@ export function FollowUpDialog({
   onClose,
   onSetFollowUp,
 }: FollowUpDialogProps) {
+  const { t } = useTranslation();
   const [showCustom, setShowCustom] = useState(false);
   const [customHours, setCustomHours] = useState("48");
 
@@ -50,7 +52,7 @@ export function FollowUpDialog({
       <div className="fixed left-1/2 top-1/2 z-50 w-80 -translate-x-1/2 -translate-y-1/2 rounded-xl border border-border-primary bg-bg-primary shadow-xl">
         <div className="flex items-center justify-between border-b border-border-primary px-4 py-3">
           <h3 className="text-sm font-semibold text-text-primary">
-            Follow up if no reply in...
+            {t("email.followUp.title")}
           </h3>
           <button
             onClick={onClose}
@@ -69,9 +71,9 @@ export function FollowUpDialog({
                 className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-text-primary hover:bg-bg-hover"
               >
                 <BellRing className="h-4 w-4 text-text-secondary" />
-                <span className="flex-1 text-left">{preset.label}</span>
+                <span className="flex-1 text-left">{t(preset.labelKey)}</span>
                 <span className="text-xs text-text-tertiary">
-                  {preset.hours}h
+                  {t("email.followUp.hours", { count: preset.hours })}
                 </span>
               </button>
             ))}
@@ -81,14 +83,14 @@ export function FollowUpDialog({
               className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-text-primary hover:bg-bg-hover"
             >
               <BellRing className="h-4 w-4 text-text-secondary" />
-              <span className="flex-1 text-left">Custom duration</span>
+              <span className="flex-1 text-left">{t("email.followUp.custom")}</span>
             </button>
           </div>
         ) : (
           <div className="space-y-3 p-4">
             <div>
               <label className="mb-1 block text-xs text-text-secondary">
-                Hours until reminder
+                {t("email.followUp.hoursLabel")}
               </label>
               <input
                 type="number"
@@ -104,13 +106,13 @@ export function FollowUpDialog({
                 onClick={() => setShowCustom(false)}
                 className="flex-1 rounded-lg border border-border-primary px-3 py-2 text-sm text-text-secondary hover:bg-bg-hover"
               >
-                Back
+                {t("email.followUp.back")}
               </button>
               <button
                 onClick={handleCustomSubmit}
                 className="flex-1 rounded-lg bg-accent px-3 py-2 text-sm text-white hover:bg-accent-hover"
               >
-                Set reminder
+                {t("email.followUp.setReminder")}
               </button>
             </div>
           </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { FileText, Download, Loader2 } from "lucide-react";
 import type { Account, Attachment } from "../../types";
 import { getAttachmentData } from "../../services/gmail/api";
@@ -50,6 +51,7 @@ export function InlineAttachmentPreview({
   attachment,
   account,
 }: InlineAttachmentPreviewProps) {
+  const { t } = useTranslation();
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [downloading, setDownloading] = useState(false);
@@ -107,7 +109,7 @@ export function InlineAttachmentPreview({
           const { writeFile } = await import("@tauri-apps/plugin-fs");
           const filePath = await save({
             defaultPath: attachment.filename,
-            filters: [{ name: "All Files", extensions: ["*"] }],
+            filters: [{ name: t("email.allFiles"), extensions: ["*"] }],
           });
           if (filePath) {
             await writeFile(filePath, bytes);
@@ -123,7 +125,7 @@ export function InlineAttachmentPreview({
     } finally {
       setDownloading(false);
     }
-  }, [account, attachment]);
+  }, [account, attachment, t]);
 
   if (isImage) {
     return (
@@ -144,14 +146,14 @@ export function InlineAttachmentPreview({
           />
         ) : (
           <div className="flex h-20 w-20 items-center justify-center bg-bg-secondary text-xs text-text-tertiary">
-            Failed
+            {t("email.preview.failed")}
           </div>
         )}
         <button
           onClick={() => void handleDownload()}
           disabled={downloading}
           className="absolute bottom-1 right-1 hidden rounded bg-black/60 p-1 text-white group-hover:block"
-          title={`Download ${attachment.filename}`}
+          title={t("email.downloadAttachment", { filename: attachment.filename })}
         >
           <Download className="h-3 w-3" />
         </button>
@@ -165,7 +167,7 @@ export function InlineAttachmentPreview({
         onClick={() => void handleDownload()}
         disabled={downloading}
         className="flex items-center gap-2 rounded-lg border border-border-secondary bg-bg-secondary px-3 py-2 text-sm text-text-secondary hover:bg-bg-hover disabled:opacity-50"
-        title={`Download ${attachment.filename}`}
+        title={t("email.downloadAttachment", { filename: attachment.filename })}
         data-testid={`inline-preview-${attachment.id}`}
       >
         <FileText className="h-5 w-5 flex-shrink-0 text-red-500" />

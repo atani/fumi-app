@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { X, Loader2, CheckSquare, Sparkles } from "lucide-react";
 import type { Message } from "../../types";
 import {
@@ -29,6 +30,7 @@ export function AiTaskExtractDialog({
   threadId,
   accountId,
 }: AiTaskExtractDialogProps) {
+  const { t } = useTranslation();
   const { createTask } = useTaskStore();
   const [extractedTasks, setExtractedTasks] = useState<ExtractedTask[]>([]);
   const [selectedIndices, setSelectedIndices] = useState<Set<number>>(
@@ -49,7 +51,7 @@ export function AiTaskExtractDialog({
       setHasExtracted(true);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Failed to extract tasks",
+        err instanceof Error ? err.message : t("tasks.extract.errorExtract"),
       );
     } finally {
       setIsExtracting(false);
@@ -83,7 +85,9 @@ export function AiTaskExtractDialog({
       }
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save tasks");
+      setError(
+        err instanceof Error ? err.message : t("tasks.extract.errorSave"),
+      );
     } finally {
       setIsSaving(false);
     }
@@ -102,7 +106,7 @@ export function AiTaskExtractDialog({
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-accent" />
             <h2 className="text-lg font-semibold text-text-primary">
-              Extract Tasks from Thread
+              {t("tasks.extract.title")}
             </h2>
           </div>
           <button
@@ -116,13 +120,13 @@ export function AiTaskExtractDialog({
         {!hasExtracted && !isExtracting && (
           <div className="flex flex-col items-center gap-3 py-8">
             <p className="text-center text-sm text-text-secondary">
-              Use AI to find actionable tasks in this email thread.
+              {t("tasks.extract.intro")}
             </p>
             <button
               onClick={() => void handleExtract()}
               className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover"
             >
-              Extract Tasks
+              {t("tasks.extract.action")}
             </button>
           </div>
         )}
@@ -131,7 +135,7 @@ export function AiTaskExtractDialog({
           <div className="flex items-center justify-center gap-2 py-8">
             <Loader2 className="h-5 w-5 animate-spin text-accent" />
             <span className="text-sm text-text-secondary">
-              Analyzing thread...
+              {t("tasks.extract.analyzing")}
             </span>
           </div>
         )}
@@ -146,7 +150,7 @@ export function AiTaskExtractDialog({
           <>
             {extractedTasks.length === 0 ? (
               <p className="py-6 text-center text-sm text-text-secondary">
-                No actionable tasks found in this thread.
+                {t("tasks.extract.empty")}
               </p>
             ) : (
               <div className="max-h-80 space-y-2 overflow-y-auto">
@@ -174,12 +178,15 @@ export function AiTaskExtractDialog({
                         <span
                           className={`rounded-full px-1.5 py-0.5 text-xs font-medium ${PRIORITY_STYLES[task.priority]}`}
                         >
-                          {task.priority}
+                          {t(`tasks.priority.${task.priority}`)}
                         </span>
                         {task.due_date && (
                           <span className="text-xs text-text-tertiary">
-                            Due:{" "}
-                            {new Date(task.due_date).toLocaleDateString()}
+                            {t("tasks.extract.due", {
+                              date: new Date(
+                                task.due_date,
+                              ).toLocaleDateString(),
+                            })}
                           </span>
                         )}
                       </div>
@@ -195,7 +202,7 @@ export function AiTaskExtractDialog({
                   onClick={onClose}
                   className="rounded-lg px-4 py-2 text-sm text-text-secondary hover:bg-bg-hover"
                 >
-                  Cancel
+                  {t("tasks.cancel")}
                 </button>
                 <button
                   onClick={() => void handleSave()}
@@ -207,8 +214,9 @@ export function AiTaskExtractDialog({
                   ) : (
                     <CheckSquare className="h-4 w-4" />
                   )}
-                  Add {selectedIndices.size} task
-                  {selectedIndices.size === 1 ? "" : "s"}
+                  {t("tasks.extract.addCount", {
+                    count: selectedIndices.size,
+                  })}
                 </button>
               </div>
             )}

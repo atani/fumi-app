@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useThreadStore } from "../../stores/threadStore";
 import type { ThreadCategory } from "../../services/ai/aiService";
 
@@ -10,6 +11,7 @@ const CATEGORIES: ThreadCategory[] = [
 ];
 
 export function CategoryTabs() {
+  const { t } = useTranslation();
   const { activeCategory, setActiveCategory, categoryCounts } =
     useThreadStore();
 
@@ -17,7 +19,7 @@ export function CategoryTabs() {
     <div
       className="flex border-b border-border-primary bg-bg-primary"
       role="tablist"
-      aria-label="Inbox categories"
+      aria-label={t("email.categories.ariaLabel")}
     >
       {CATEGORIES.map((category) => {
         const isActive = activeCategory === category;
@@ -38,7 +40,7 @@ export function CategoryTabs() {
             }`}
             data-testid={`category-tab-${category}`}
           >
-            {category}
+            {t(`email.categories.${category}`)}
             {count > 0 && (
               <span
                 className={`rounded-full px-1.5 py-0.5 text-[10px] leading-none ${

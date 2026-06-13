@@ -1,0 +1,44 @@
+{
+  "title": "タスク",
+  "backToMail": "メールに戻る",
+  "completedCount": "{{total}} 件中 {{completed}} 件完了",
+  "loading": "タスクを読み込み中…",
+  "add": "追加",
+  "cancel": "キャンセル",
+  "quickAddPlaceholder": "タスクを追加…",
+  "markComplete": "完了にする",
+  "markIncomplete": "未完了に戻す",
+  "editTask": "タスクを編集",
+  "deleteTask": "タスクを削除",
+  "subtaskCount_one": "サブタスク {{count}} 件",
+  "subtaskCount_other": "サブタスク {{count}} 件",
+  "filters": {
+    "all": "すべて",
+    "today": "今日",
+    "upcoming": "予定",
+    "completed": "完了済み"
+  },
+  "empty": {
+    "all": "タスクはまだありません。上から追加できます。",
+    "today": "今日のタスクはありません。",
+    "upcoming": "予定のタスクはありません。",
+    "completed": "完了したタスクはありません。"
+  },
+  "priority": {
+    "high": "高",
+    "medium": "中",
+    "low": "低"
+  },
+  "extract": {
+    "title": "スレッドからタスクを抽出",
+    "intro": "AI でこのメールスレッドから対応すべきタスクを見つけます。",
+    "action": "タスクを抽出",
+    "analyzing": "スレッドを解析中…",
+    "empty": "このスレッドに対応すべきタスクは見つかりませんでした。",
+    "due": "期限: {{date}}",
+    "addCount_one": "{{count}} 件のタスクを追加",
+    "addCount_other": "{{count}} 件のタスクを追加",
+    "errorExtract": "タスクの抽出に失敗しました",
+    "errorSave": "タスクの保存に失敗しました"
+  }
+}

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Section, ToggleRow } from "./shared";
 
 interface AutostartSectionProps {
@@ -9,11 +10,12 @@ export function AutostartSection({
   autostartEnabled,
   onAutostartToggle,
 }: AutostartSectionProps) {
+  const { t } = useTranslation();
   return (
-    <Section title="Autostart">
+    <Section title={t("settingsUi.autostart.title")}>
       <ToggleRow
-        label="Launch on startup"
-        description="Start Fumi when you log in to your computer"
+        label={t("settingsUi.autostart.launchOnStartup")}
+        description={t("settingsUi.autostart.launchOnStartupDesc")}
         enabled={autostartEnabled}
         onToggle={onAutostartToggle}
         testId="autostart-toggle"

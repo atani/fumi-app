@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { Send, X, ChevronUp, Minus, ChevronDown } from "lucide-react";
 import { useComposerStore } from "../../stores/composerStore";
 import { useAccountStore } from "../../stores/accountStore";
@@ -22,6 +23,7 @@ import { createScheduledEmail } from "../../services/db/scheduledEmails";
 import { FromSelector } from "./FromSelector";
 
 export function Composer() {
+  const { t } = useTranslation();
   const {
     isOpen,
     mode,
@@ -175,11 +177,11 @@ export function Composer() {
   const handleSend = useCallback(async () => {
     const account = getActiveAccount();
     if (!account) {
-      setError("No active account");
+      setError(t("composer.noActiveAccount"));
       return;
     }
     if (!to.trim()) {
-      setError("Recipient is required");
+      setError(t("composer.recipientRequired"));
       return;
     }
 
@@ -241,7 +243,7 @@ export function Composer() {
         .catch((err: unknown) => {
           // "Send cancelled" is expected on undo — ignore it
           if (err instanceof Error && err.message === "Send cancelled") return;
-          setError(err instanceof Error ? err.message : "Failed to send email");
+          setError(err instanceof Error ? err.message : t("composer.failedToSend"));
         });
     } else {
       // Send immediately (no undo delay)
@@ -259,22 +261,22 @@ export function Composer() {
         }
         close();
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to send email");
+        setError(err instanceof Error ? err.message : t("composer.failedToSend"));
       } finally {
         setIsSending(false);
       }
     }
-  }, [getActiveAccount, to, cc, bcc, subject, body, fromAddress, inReplyTo, references, replyToMessage, draftId, attachments, close, mode, undoSendDelayMs, sendAndArchiveEnabled]);
+  }, [getActiveAccount, to, cc, bcc, subject, body, fromAddress, inReplyTo, references, replyToMessage, draftId, attachments, close, mode, undoSendDelayMs, sendAndArchiveEnabled, t]);
 
 
   const handleScheduleSend = useCallback(async (scheduledDate: Date) => {
     const account = getActiveAccount();
     if (!account) {
-      setError("No active account");
+      setError(t("composer.noActiveAccount"));
       return;
     }
     if (!to.trim()) {
-      setError("Recipient is required");
+      setError(t("composer.recipientRequired"));
       return;
     }
 
@@ -303,9 +305,9 @@ export function Composer() {
 
       close();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to schedule email");
+      setError(err instanceof Error ? err.message : t("composer.failedToSchedule"));
     }
-  }, [getActiveAccount, to, cc, bcc, subject, body, attachments, draftId, close]);
+  }, [getActiveAccount, to, cc, bcc, subject, body, attachments, draftId, close, t]);
 
   // Ctrl+Enter to send
   const handleKeyDown = useCallback(
@@ -332,12 +334,12 @@ export function Composer() {
 
   const modeLabel =
     mode === "compose"
-      ? "New Message"
+      ? t("composer.newMessage")
       : mode === "reply"
-        ? "Reply"
+        ? t("composer.reply")
         : mode === "replyAll"
-          ? "Reply All"
-          : "Forward";
+          ? t("composer.replyAll")
+          : t("composer.forward");
 
   const activeAccount = getActiveAccount();
 
@@ -362,7 +364,7 @@ export function Composer() {
               e.stopPropagation();
               setIsMinimized(!isMinimized);
             }}
-            aria-label={isMinimized ? "Expand" : "Minimize"}
+            aria-label={isMinimized ? t("composer.expand") : t("composer.minimize")}
           >
             {isMinimized ? (
               <ChevronUp className="h-4 w-4" />
@@ -376,7 +378,7 @@ export function Composer() {
               e.stopPropagation();
               close();
             }}
-            aria-label="Close composer"
+            aria-label={t("composer.closeComposer")}
           >
             <X className="h-4 w-4" />
           </button>
@@ -399,12 +401,12 @@ export function Composer() {
           {/* To field */}
           <div className="flex items-center border-b border-border-secondary px-4 py-1.5">
             <label className="w-12 shrink-0 text-xs text-text-tertiary">
-              To
+              {t("composer.to")}
             </label>
             <AddressInput
               value={to}
               onChange={(v) => updateField("to", v)}
-              placeholder="recipient@example.com"
+              placeholder={t("composer.recipientPlaceholder")}
               autoFocus={mode === "compose"}
             />
             <div className="flex gap-1 text-xs text-text-tertiary">
@@ -413,7 +415,7 @@ export function Composer() {
                   className="hover:text-text-primary"
                   onClick={() => setShowCc(true)}
                 >
-                  Cc
+                  {t("composer.cc")}
                 </button>
               )}
               {!showBcc && (
@@ -421,7 +423,7 @@ export function Composer() {
                   className="hover:text-text-primary"
                   onClick={() => setShowBcc(true)}
                 >
-                  Bcc
+                  {t("composer.bcc")}
                 </button>
               )}
             </div>
@@ -431,7 +433,7 @@ export function Composer() {
           {showCc && (
             <div className="flex items-center border-b border-border-secondary px-4 py-1.5">
               <label className="w-12 shrink-0 text-xs text-text-tertiary">
-                Cc
+                {t("composer.cc")}
               </label>
               <AddressInput
                 value={cc}
@@ -454,7 +456,7 @@ export function Composer() {
           {showBcc && (
             <div className="flex items-center border-b border-border-secondary px-4 py-1.5">
               <label className="w-12 shrink-0 text-xs text-text-tertiary">
-                Bcc
+                {t("composer.bcc")}
               </label>
               <AddressInput
                 value={bcc}
@@ -476,7 +478,7 @@ export function Composer() {
           {/* Subject field */}
           <div className="flex items-center border-b border-border-secondary px-4 py-1.5">
             <label className="w-12 shrink-0 text-xs text-text-tertiary">
-              Subject
+              {t("composer.subject")}
             </label>
             <input
               type="text"
@@ -490,7 +492,7 @@ export function Composer() {
           <textarea
             ref={bodyRef}
             className="min-h-[200px] resize-none bg-transparent px-4 py-3 text-sm text-text-primary outline-none placeholder:text-text-tertiary"
-            placeholder="Write your message..."
+            placeholder={t("composer.bodyPlaceholder")}
             value={body}
             onChange={(e) => updateField("body", e.target.value)}
             autoFocus={mode !== "compose"}
@@ -516,13 +518,13 @@ export function Composer() {
                   disabled={isSending}
                 >
                   <Send className="h-4 w-4" />
-                  {isSending ? "Sending..." : "Send"}
+                  {isSending ? t("composer.sending") : t("composer.send")}
                 </button>
                 <button
                   className="flex items-center rounded-r-lg border-l border-white/20 bg-accent px-1.5 py-1.5 text-white hover:bg-accent-hover disabled:opacity-50"
                   onClick={() => setShowScheduleDialog(true)}
                   disabled={isSending}
-                  aria-label="Schedule send"
+                  aria-label={t("composer.scheduleSend")}
                 >
                   <ChevronDown className="h-4 w-4" />
                 </button>
@@ -533,11 +535,12 @@ export function Composer() {
             <span className="text-xs text-text-tertiary">
               {draftSaved && (
                 <span className="mr-2 text-green-500" data-testid="draft-saved-indicator">
-                  Draft saved
+                  {t("composer.draftSaved")}
                 </span>
               )}
-              {navigator.platform.includes("Mac") ? "Cmd" : "Ctrl"}+Enter to
-              send
+              {t("composer.sendShortcut", {
+                key: navigator.platform.includes("Mac") ? "Cmd" : "Ctrl",
+              })}
             </span>
           </div>
         </div>

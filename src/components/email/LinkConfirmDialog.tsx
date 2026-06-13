@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { ExternalLink, AlertTriangle, X } from "lucide-react";
 
 interface LinkConfirmDialogProps {
@@ -24,6 +25,7 @@ export function LinkConfirmDialog({
   onConfirm,
   onCancel,
 }: LinkConfirmDialogProps) {
+  const { t } = useTranslation();
   const handleBackdropClick = useCallback(
     (e: React.MouseEvent) => {
       if (e.target === e.currentTarget) onCancel();
@@ -58,7 +60,7 @@ export function LinkConfirmDialog({
           <div className="flex items-center gap-2">
             <ExternalLink className="h-5 w-5 text-text-secondary" />
             <h3 className="text-sm font-semibold text-text-primary">
-              Open external link?
+              {t("email.link.title")}
             </h3>
           </div>
           <button
@@ -77,8 +79,10 @@ export function LinkConfirmDialog({
           >
             <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-600 dark:text-red-400" />
             <p className="text-xs text-red-700 dark:text-red-400">
-              The link text shows <strong>{displayDomain}</strong> but the
-              actual destination is <strong>{urlDomain}</strong>
+              {t("email.link.mismatchPrefix")}
+              <strong>{displayDomain}</strong>
+              {t("email.link.mismatchMiddle")}
+              <strong>{urlDomain}</strong>
             </p>
           </div>
         )}
@@ -86,12 +90,12 @@ export function LinkConfirmDialog({
         <div className="mb-4 rounded-lg bg-bg-secondary p-3">
           {displayText && (
             <div className="mb-2">
-              <span className="text-xs text-text-tertiary">Display text: </span>
+              <span className="text-xs text-text-tertiary">{t("email.link.displayText")}</span>
               <span className="text-xs text-text-secondary">{displayText}</span>
             </div>
           )}
           <div>
-            <span className="text-xs text-text-tertiary">Destination: </span>
+            <span className="text-xs text-text-tertiary">{t("email.link.destination")}</span>
             <span
               className="break-all text-xs text-accent"
               data-testid="link-confirm-url"
@@ -107,14 +111,14 @@ export function LinkConfirmDialog({
             className="rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary hover:bg-bg-hover"
             data-testid="link-confirm-cancel"
           >
-            Cancel
+            {t("email.link.cancel")}
           </button>
           <button
             onClick={onConfirm}
             className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover"
             data-testid="link-confirm-open"
           >
-            Open link
+            {t("email.link.open")}
           </button>
         </div>
       </div>

@@ -1,0 +1,239 @@
+{
+  "title": "ヘルプ",
+  "backToMail": "メールに戻る",
+  "searchPlaceholder": "ヘルプを検索…",
+  "clearSearch": "検索をクリア",
+  "tooltipLabel": "ヘルプ",
+  "searchResults": "検索結果",
+  "resultCount_one": "{{count}} 件",
+  "resultCount_other": "{{count}} 件",
+  "noResults": "「{{query}}」に一致する結果は見つかりませんでした",
+  "selectCategory": "サイドバーからカテゴリを選んでください。",
+  "categories": {
+    "getting-started": {
+      "title": "はじめに",
+      "description": "アカウントを設定して、Fumi の基本を学びましょう。"
+    },
+    "composing": {
+      "title": "作成",
+      "description": "リッチテキストエディタでメールを書いて送信します。"
+    },
+    "reading": {
+      "title": "閲覧",
+      "description": "メールを読み、整理し、対応します。"
+    },
+    "search": {
+      "title": "検索",
+      "description": "強力な検索演算子でメールをすばやく見つけます。"
+    },
+    "labels": {
+      "title": "ラベル",
+      "description": "カスタムラベルでメールを整理します。"
+    },
+    "shortcuts": {
+      "title": "ショートカット",
+      "description": "キーボードから手を離さずにメールを操作します。"
+    },
+    "calendar": {
+      "title": "カレンダー",
+      "description": "Google カレンダーの予定を表示・管理します。"
+    },
+    "tasks": {
+      "title": "タスク",
+      "description": "メールから抽出したタスクや手動で作成したタスクを管理します。"
+    },
+    "ai-features": {
+      "title": "AI 機能",
+      "description": "AI でメールの要約・返信・作成・分類を行います。"
+    },
+    "filters": {
+      "title": "フィルタ",
+      "description": "フィルタルールで受信メールの操作を自動化します。"
+    },
+    "templates": {
+      "title": "テンプレート",
+      "description": "よく使う返信を再利用できるテンプレートとして保存します。"
+    },
+    "security": {
+      "title": "セキュリティ",
+      "description": "フィッシング検出と認証チェックで安全に利用できます。"
+    },
+    "settings": {
+      "title": "設定",
+      "description": "Fumi を自分のワークフローに合わせてカスタマイズします。"
+    }
+  },
+  "cards": {
+    "gs-add-account": {
+      "title": "メールアカウントを追加する",
+      "description": "Gmail または IMAP アカウントを接続して Fumi を使い始めます。",
+      "steps": [
+        "サイドバーから設定を開きます。",
+        "「アカウントを追加」をクリックします。",
+        "Google でサインインするか、IMAP サーバーの情報を入力します。",
+        "Fumi が最近のメールを自動で同期します。"
+      ]
+    },
+    "gs-navigation": {
+      "title": "画面を操作する",
+      "description": "サイドバーにフォルダとラベルが並びます。フォルダをクリックするとスレッド一覧が表示され、スレッドを選ぶと閲覧ペインで読めます。"
+    },
+    "gs-theme": {
+      "title": "テーマを切り替える",
+      "description": "サイドバー下部のテーマボタンで、ライト・ダーク・システムのテーマを切り替えられます。"
+    },
+    "comp-new": {
+      "title": "新しいメールを作成する",
+      "description": "サイドバーの「作成」ボタンをクリックするか、C キーを押すと新規メールを開けます。"
+    },
+    "comp-reply": {
+      "title": "返信と転送",
+      "description": "選択中のスレッドに対して、R キーで返信、A キーで全員に返信、F キーで転送できます。"
+    },
+    "comp-schedule": {
+      "title": "送信予約",
+      "description": "未来の日時を指定して、メールを自動で送信します。",
+      "steps": [
+        "エディタを開きます。",
+        "送信ボタンの隣の時計アイコンをクリックします。",
+        "日時を選んで確定します。"
+      ]
+    },
+    "comp-drafts": {
+      "title": "下書きの自動保存",
+      "description": "下書きは 3 秒ごとに自動保存されます。アプリが予期せず終了した場合は、次回起動時に下書きの復元を確認します。"
+    },
+    "read-thread": {
+      "title": "スレッド表示",
+      "description": "メールは会話スレッドにまとめられます。スレッドを開くと、すべてのメッセージを順番に確認できます。"
+    },
+    "read-archive": {
+      "title": "アーカイブとゴミ箱",
+      "description": "選択中のスレッドを、E キーでアーカイブ、# キーでゴミ箱に移動します。すでにゴミ箱にあるスレッドをさらに削除すると完全に消去されます。"
+    },
+    "read-snooze": {
+      "title": "メールのスヌーズ",
+      "description": "スレッドをスヌーズすると、一時的に受信トレイから外せます。指定した時刻に再び表示されます。"
+    },
+    "read-star": {
+      "title": "スターとピン留め",
+      "description": "S キーでスター、P キーでピン留めすると、あとからすばやくアクセスできます。"
+    },
+    "search-basic": {
+      "title": "基本の検索",
+      "description": "/ キーまたは Ctrl+K でコマンドパレットを開きます。キーワードを入力すると、すべてのメールを横断して検索できます。"
+    },
+    "search-operators": {
+      "title": "検索演算子",
+      "description": "Gmail 形式の演算子で絞り込めます: from:、to:、subject:、has:attachment、is:unread、before:、after:、label:。"
+    },
+    "search-smart-folders": {
+      "title": "スマートフォルダ",
+      "description": "よく使う検索条件をスマートフォルダとして保存すると、サイドバーからワンクリックで開けます。"
+    },
+    "label-create": {
+      "title": "ラベルを作成する",
+      "description": "サイドバーのラベル欄で + アイコンをクリックします。既存のラベルを右クリックすると編集や削除ができます。"
+    },
+    "label-apply": {
+      "title": "スレッドにラベルを付ける",
+      "description": "V キーでスレッドをフォルダやラベルに移動できます。スレッドをサイドバーのラベルにドラッグ&ドロップすることもできます。"
+    },
+    "label-colors": {
+      "title": "ラベルの色",
+      "description": "各ラベルに色を割り当てると、スレッド一覧でカテゴリをひと目で見分けられます。"
+    },
+    "sc-navigation": {
+      "title": "移動のショートカット",
+      "description": "J/K でスレッド間を移動、O または Enter で開く、Escape で戻ります。G に続けて I で受信トレイ、G に続けて S でスター付きなど。"
+    },
+    "sc-actions": {
+      "title": "操作のショートカット",
+      "description": "E でアーカイブ、S でスター、# でゴミ箱、R で返信、A で全員に返信、F で転送、C で作成。"
+    },
+    "sc-customize": {
+      "title": "ショートカットのカスタマイズ",
+      "description": "設定で任意のキーボードショートカットを、好みのワークフローに合わせて変更できます。"
+    },
+    "cal-view": {
+      "title": "カレンダー表示",
+      "description": "日・週・月の表示を切り替えられます。ツールバーのボタンで前後に移動します。"
+    },
+    "cal-create": {
+      "title": "予定を作成する",
+      "description": "空いている時間帯をクリックするか、作成ボタンを使って新しい予定を追加します。"
+    },
+    "task-create": {
+      "title": "タスクを作成する",
+      "description": "タスクページから手動で追加するか、スレッド上で T キーを押すと AI でタスクを抽出できます。"
+    },
+    "task-filters": {
+      "title": "タスクを絞り込む",
+      "description": "フィルタタブで、すべて・今日・予定・完了済みのタスクを切り替えて表示できます。"
+    },
+    "task-recurring": {
+      "title": "繰り返しタスク",
+      "description": "繰り返しルール（毎日・毎週・毎月・毎年）を設定すると、完了時に次回のタスクを Fumi が自動で作成します。"
+    },
+    "ai-summary": {
+      "title": "スレッドの要約",
+      "description": "長いメールスレッドの要約を AI が生成し、数秒で内容を把握できます。"
+    },
+    "ai-reply": {
+      "title": "スマート返信",
+      "description": "スレッドの文脈をもとに、AI が短い返信候補を提案します。クリックするとエディタに挿入されます。"
+    },
+    "ai-compose": {
+      "title": "AI による作成と書き換え",
+      "description": "プロンプトから AI にメールを下書きさせたり、選択したテキストを変換（短縮・拡張・文法修正・トーン変更）したりできます。"
+    },
+    "ai-categorize": {
+      "title": "自動分類",
+      "description": "Fumi は AI とルールベースの判定を使って、受信メールをメイン・更新情報・プロモーション・ソーシャル・ニュースレターに振り分けます。"
+    },
+    "filter-create": {
+      "title": "フィルタを作成する",
+      "description": "設定からフィルタを開きます。条件（送信者・件名・キーワード）を定義し、操作（ラベル付け・アーカイブ・スター・既読・ゴミ箱）を選びます。"
+    },
+    "filter-logic": {
+      "title": "フィルタの仕組み",
+      "description": "フィルタ条件は AND で判定され、すべての条件に一致する必要があります。複数のフィルタが同じメッセージに一致した場合は、それぞれの操作が統合されます。"
+    },
+    "tpl-create": {
+      "title": "テンプレートを作成する",
+      "description": "設定からテンプレートを開き、名前・件名・本文を指定して新しいテンプレートを追加します。"
+    },
+    "tpl-use": {
+      "title": "テンプレートを使う",
+      "description": "エディタでテンプレート選択をクリックすると、保存したテンプレートを挿入できます。各テンプレートにキーボードショートカットを割り当てることもできます。"
+    },
+    "sec-phishing": {
+      "title": "フィッシング検出",
+      "description": "Fumi はメール内のリンクから不審なパターン（IP アドレスの URL、ホモグラフ攻撃、URL 短縮、ブランドのなりすまし）を検出し、クリック前に警告します。"
+    },
+    "sec-auth": {
+      "title": "認証結果",
+      "description": "SPF・DKIM・DMARC の結果をメールヘッダーから解析し、各メッセージにバッジとして表示します。送信者の正当性を確認できます。"
+    },
+    "sec-images": {
+      "title": "リモート画像のブロック",
+      "description": "プライバシー保護のため、リモート画像はデフォルトでブロックされます。信頼できる送信者からの画像は許可リストで表示できます。"
+    },
+    "set-accounts": {
+      "title": "アカウントの管理",
+      "description": "メールアカウントの追加・削除、OAuth クライアント ID の設定、送信元エイリアスの管理を行います。"
+    },
+    "set-appearance": {
+      "title": "外観",
+      "description": "カラーテーマの選択、フォントサイズの調整、メールの表示密度の変更、閲覧ペインの位置の切り替えができます。"
+    },
+    "set-ai": {
+      "title": "AI プロバイダー設定",
+      "description": "Claude・OpenAI・Gemini の API キーを設定します。各 AI 機能で使うプロバイダーを選べます。"
+    },
+    "set-notifications": {
+      "title": "通知",
+      "description": "デスクトップ通知を有効にし、VIP 送信者を追加すると、重要なメールだけ通知を受け取れます。"
+    }
+  }
+}

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { Plus, Pencil, Trash2, Check, X, Star } from "lucide-react";
 import { useAccountStore } from "../../stores/accountStore";
 import {
@@ -14,6 +15,7 @@ function generateId(): string {
 }
 
 export function SignatureEditor() {
+  const { t } = useTranslation();
   const { getActiveAccount } = useAccountStore();
   const [signatures, setSignatures] = useState<Signature[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -118,7 +120,7 @@ export function SignatureEditor() {
               <p className="truncate text-sm font-medium text-text-primary">{s.name}</p>
               {s.is_default === 1 && (
                 <span className="rounded-full bg-accent/10 px-2 py-0.5 text-xs text-accent">
-                  default
+                  {t("settingsUi.signatures.default")}
                 </span>
               )}
             </div>
@@ -128,7 +130,7 @@ export function SignatureEditor() {
             <button
               onClick={() => handleSetDefault(s)}
               className="rounded p-1.5 text-text-tertiary hover:bg-bg-hover hover:text-accent"
-              title="Set as default"
+              title={t("settingsUi.signatures.setAsDefault")}
               data-testid={`signature-set-default-${s.id}`}
             >
               <Star className="h-3.5 w-3.5" />
@@ -156,14 +158,14 @@ export function SignatureEditor() {
         <div className="space-y-2 rounded-lg border border-border-primary bg-bg-secondary p-4">
           <input
             type="text"
-            placeholder="Signature name"
+            placeholder={t("settingsUi.signatures.namePlaceholder")}
             value={editName}
             onChange={(e) => setEditName(e.target.value)}
             className="w-full rounded-lg border border-border-primary bg-bg-primary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent"
             data-testid="signature-name-input"
           />
           <textarea
-            placeholder="Signature body"
+            placeholder={t("settingsUi.signatures.bodyPlaceholder")}
             value={editBody}
             onChange={(e) => setEditBody(e.target.value)}
             rows={4}
@@ -178,7 +180,7 @@ export function SignatureEditor() {
               className="rounded"
               data-testid="signature-default-checkbox"
             />
-            Set as default signature
+            {t("settingsUi.signatures.setAsDefaultLabel")}
           </label>
           <div className="flex gap-2">
             <button
@@ -187,7 +189,9 @@ export function SignatureEditor() {
               data-testid="signature-save"
             >
               <Check className="h-3.5 w-3.5" />
-              {editingId ? "Update" : "Save"}
+              {editingId
+                ? t("settingsUi.signatures.update")
+                : t("settingsUi.signatures.save")}
             </button>
             <button
               onClick={resetForm}
@@ -195,7 +199,7 @@ export function SignatureEditor() {
               data-testid="signature-cancel"
             >
               <X className="h-3.5 w-3.5" />
-              Cancel
+              {t("settingsUi.signatures.cancel")}
             </button>
           </div>
         </div>
@@ -209,7 +213,7 @@ export function SignatureEditor() {
           data-testid="signature-add-btn"
         >
           <Plus className="h-3.5 w-3.5" />
-          Add signature
+          {t("settingsUi.signatures.addSignature")}
         </button>
       )}
     </div>

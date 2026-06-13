@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { FileText } from "lucide-react";
 import { useAccountStore } from "../../stores/accountStore";
 import { useComposerStore } from "../../stores/composerStore";
@@ -6,6 +7,7 @@ import { getAllTemplates } from "../../services/db/templates";
 import type { Template } from "../../types";
 
 export function TemplatePicker() {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [templates, setTemplates] = useState<Template[]>([]);
   const { getActiveAccount } = useAccountStore();
@@ -48,18 +50,18 @@ export function TemplatePicker() {
         type="button"
         className="flex items-center gap-1 rounded px-2 py-1 text-xs text-text-secondary hover:bg-bg-hover hover:text-text-primary"
         onClick={() => setIsOpen(!isOpen)}
-        title="Insert template"
+        title={t("composer.insertTemplate")}
         data-testid="template-picker-btn"
       >
         <FileText className="h-3.5 w-3.5" />
-        Templates
+        {t("composer.templates")}
       </button>
 
       {isOpen && (
         <div className="absolute bottom-full left-0 z-50 mb-1 w-56 rounded-lg border border-border-primary bg-bg-primary shadow-lg">
           {templates.length === 0 ? (
             <div className="px-3 py-2 text-xs text-text-tertiary">
-              No templates. Create one in Settings.
+              {t("composer.noTemplates")}
             </div>
           ) : (
             <div className="max-h-48 overflow-y-auto py-1">

@@ -1,7 +1,9 @@
 import { WifiOff } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useUIStore } from "../../stores/uiStore";
 
 export function OfflineBanner() {
+  const { t } = useTranslation();
   const isOnline = useUIStore((s) => s.isOnline);
 
   if (isOnline) return null;
@@ -13,9 +15,7 @@ export function OfflineBanner() {
       data-testid="offline-banner"
     >
       <WifiOff size={14} />
-      <span>
-        You&apos;re offline. Changes will sync when reconnected.
-      </span>
+      <span>{t("ui.offlineBanner")}</span>
     </div>
   );
 }

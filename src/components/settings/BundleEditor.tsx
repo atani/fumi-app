@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { Plus, Trash2, Pencil, X, Check } from "lucide-react";
 import { useAccountStore } from "../../stores/accountStore";
 import {
@@ -13,6 +14,7 @@ function generateId(): string {
 }
 
 export function BundleEditor() {
+  const { t } = useTranslation();
   const { getActiveAccount } = useAccountStore();
   const [rules, setRules] = useState<BundleRule[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -101,8 +103,7 @@ export function BundleEditor() {
       {/* Rule list */}
       {rules.length === 0 && !isFormVisible && (
         <p className="text-sm text-text-tertiary">
-          No bundle rules configured. Bundle newsletters and bulk senders to
-          receive them on a schedule.
+          {t("settingsUi.bundles.empty")}
         </p>
       )}
 
@@ -119,14 +120,14 @@ export function BundleEditor() {
               </p>
               <p className="truncate text-xs text-text-tertiary">
                 {rule.sender_pattern} &middot; {rule.schedule}
-                {!rule.enabled && " (disabled)"}
+                {!rule.enabled && t("settingsUi.bundles.disabledSuffix")}
               </p>
             </div>
             <div className="flex items-center gap-1.5 ml-2">
               <button
                 onClick={() => startEditing(rule)}
                 className="rounded p-1 text-text-tertiary hover:bg-bg-hover hover:text-text-primary"
-                aria-label="Edit rule"
+                aria-label={t("settingsUi.bundles.editRule")}
                 data-testid={`edit-bundle-${rule.id}`}
               >
                 <Pencil className="h-3.5 w-3.5" />
@@ -134,7 +135,7 @@ export function BundleEditor() {
               <button
                 onClick={() => void handleDelete(rule.id)}
                 className="rounded p-1 text-text-tertiary hover:bg-bg-hover hover:text-danger"
-                aria-label="Delete rule"
+                aria-label={t("settingsUi.bundles.deleteRule")}
                 data-testid={`delete-bundle-${rule.id}`}
               >
                 <Trash2 className="h-3.5 w-3.5" />
@@ -152,37 +153,36 @@ export function BundleEditor() {
         >
           <div>
             <label className="mb-1 block text-xs text-text-secondary">
-              Bundle name
+              {t("settingsUi.bundles.bundleName")}
             </label>
             <input
               type="text"
               value={bundleName}
               onChange={(e) => setBundleName(e.target.value)}
-              placeholder="e.g. Newsletters"
+              placeholder={t("settingsUi.bundles.bundleNamePlaceholder")}
               className="w-full rounded-lg border border-border-primary bg-bg-primary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent"
               data-testid="bundle-name-input"
             />
           </div>
           <div>
             <label className="mb-1 block text-xs text-text-secondary">
-              Sender pattern
+              {t("settingsUi.bundles.senderPattern")}
             </label>
             <input
               type="text"
               value={senderPattern}
               onChange={(e) => setSenderPattern(e.target.value)}
-              placeholder="e.g. *@newsletter.example.com"
+              placeholder={t("settingsUi.bundles.senderPatternPlaceholder")}
               className="w-full rounded-lg border border-border-primary bg-bg-primary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent"
               data-testid="bundle-pattern-input"
             />
             <p className="mt-1 text-xs text-text-tertiary">
-              Use * as a wildcard. Example: *@example.com matches all senders
-              from that domain.
+              {t("settingsUi.bundles.senderPatternHint")}
             </p>
           </div>
           <div>
             <label className="mb-1 block text-xs text-text-secondary">
-              Delivery schedule
+              {t("settingsUi.bundles.deliverySchedule")}
             </label>
             <select
               value={schedule}
@@ -192,9 +192,9 @@ export function BundleEditor() {
               className="rounded-lg border border-border-primary bg-bg-primary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent"
               data-testid="bundle-schedule-select"
             >
-              <option value="instant">Instant (no bundling)</option>
-              <option value="daily">Daily</option>
-              <option value="weekly">Weekly</option>
+              <option value="instant">{t("settingsUi.bundles.instant")}</option>
+              <option value="daily">{t("settingsUi.bundles.daily")}</option>
+              <option value="weekly">{t("settingsUi.bundles.weekly")}</option>
             </select>
           </div>
           <div className="flex items-center gap-2">
@@ -210,7 +210,7 @@ export function BundleEditor() {
               htmlFor="bundle-enabled"
               className="text-sm text-text-secondary"
             >
-              Enabled
+              {t("settingsUi.bundles.enabled")}
             </label>
           </div>
           <div className="flex items-center gap-2 pt-1">
@@ -221,7 +221,7 @@ export function BundleEditor() {
               data-testid="bundle-save-btn"
             >
               <Check className="h-3.5 w-3.5" />
-              Save
+              {t("settingsUi.common.save")}
             </button>
             <button
               onClick={resetForm}
@@ -229,7 +229,7 @@ export function BundleEditor() {
               data-testid="bundle-cancel-btn"
             >
               <X className="h-3.5 w-3.5" />
-              Cancel
+              {t("settingsUi.common.cancel")}
             </button>
           </div>
         </div>
@@ -243,7 +243,7 @@ export function BundleEditor() {
           data-testid="add-bundle-btn"
         >
           <Plus className="h-3.5 w-3.5" />
-          Add bundle rule
+          {t("settingsUi.bundles.addRule")}
         </button>
       )}
     </div>

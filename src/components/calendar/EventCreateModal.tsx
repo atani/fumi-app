@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface EventCreateModalProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ export function EventCreateModal({
   initialDate,
   initialHour,
 }: EventCreateModalProps) {
+  const { t } = useTranslation();
   const now = new Date();
   const startDefault = new Date(now);
   if (initialDate) {
@@ -66,7 +68,7 @@ export function EventCreateModal({
       <div className="w-full max-w-md rounded-xl border border-border-primary bg-bg-primary p-6 shadow-xl">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-text-primary">
-            New Event
+            {t("calendar.newEvent")}
           </h2>
           <button
             onClick={onClose}
@@ -79,14 +81,14 @@ export function EventCreateModal({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="mb-1 block text-sm font-medium text-text-secondary">
-              Title
+              {t("calendar.eventTitle")}
             </label>
             <input
               type="text"
               value={summary}
               onChange={(e) => setSummary(e.target.value)}
               className="w-full rounded-lg border border-border-primary bg-bg-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent"
-              placeholder="Event title"
+              placeholder={t("calendar.eventTitlePlaceholder")}
               autoFocus
             />
           </div>
@@ -94,7 +96,7 @@ export function EventCreateModal({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="mb-1 block text-sm font-medium text-text-secondary">
-                Start
+                {t("calendar.start")}
               </label>
               <input
                 type="datetime-local"
@@ -105,7 +107,7 @@ export function EventCreateModal({
             </div>
             <div>
               <label className="mb-1 block text-sm font-medium text-text-secondary">
-                End
+                {t("calendar.end")}
               </label>
               <input
                 type="datetime-local"
@@ -118,14 +120,14 @@ export function EventCreateModal({
 
           <div>
             <label className="mb-1 block text-sm font-medium text-text-secondary">
-              Description
+              {t("calendar.description")}
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
               className="w-full rounded-lg border border-border-primary bg-bg-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent"
-              placeholder="Optional description"
+              placeholder={t("calendar.descriptionPlaceholder")}
             />
           </div>
 
@@ -135,14 +137,14 @@ export function EventCreateModal({
               onClick={onClose}
               className="rounded-lg px-4 py-2 text-sm text-text-secondary hover:bg-bg-hover"
             >
-              Cancel
+              {t("calendar.cancel")}
             </button>
             <button
               type="submit"
               disabled={!summary.trim()}
               className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
             >
-              Create
+              {t("calendar.create")}
             </button>
           </div>
         </form>
