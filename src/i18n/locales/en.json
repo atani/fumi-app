@@ -1,0 +1,41 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "delete": "Delete",
+    "loading": "Loading…"
+  },
+  "login": {
+    "tagline": "Fast, lightweight email client",
+    "signIn": "Sign in with Google",
+    "connecting": "Connecting…",
+    "clientIdPlaceholder": "Google OAuth Client ID",
+    "clientSecretPlaceholder": "Client Secret",
+    "errorGeneric": "Authentication failed"
+  },
+  "settings": {
+    "appearance": "Appearance",
+    "theme": "Theme",
+    "themeSystem": "System",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "accentColor": "Accent color",
+    "fontSize": "Font size",
+    "fontSmall": "Small",
+    "fontDefault": "Default",
+    "fontLarge": "Large",
+    "fontXLarge": "X-Large",
+    "density": "Email list density",
+    "densityCompact": "Compact",
+    "densityDefault": "Default",
+    "densityComfortable": "Comfortable",
+    "readingPane": "Reading pane",
+    "readingPaneRight": "Right",
+    "readingPaneBottom": "Bottom",
+    "readingPaneHidden": "Hidden",
+    "readingPaneHint": "Controls where the email preview appears. When hidden, double-click or press Enter to open a thread.",
+    "language": "Language",
+    "languageHint": "Choose the display language for the app."
+  }
+}

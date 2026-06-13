@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Mail } from "lucide-react";
 import { useAccountStore } from "../../stores/accountStore";
 import {
@@ -22,6 +23,7 @@ export function LoginPage() {
   const [clientSecret, setClientSecret] = useState("");
   const { addAccount } = useAccountStore();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // When the build ships its own verified OAuth client, end users sign in with
   // one click and never touch Google Cloud credentials.
@@ -104,7 +106,7 @@ export function LoginPage() {
       await addAccount(account);
       navigate("/");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Authentication failed");
+      setError(err instanceof Error ? err.message : t("login.errorGeneric"));
     } finally {
       setIsLoading(false);
     }
@@ -125,9 +127,7 @@ export function LoginPage() {
             <Mail className="h-8 w-8 text-accent" />
           </div>
           <h1 className="mt-6 text-3xl font-bold text-text-primary">Fumi</h1>
-          <p className="mt-2 text-text-secondary">
-            Fast, lightweight email client
-          </p>
+          <p className="mt-2 text-text-secondary">{t("login.tagline")}</p>
         </div>
 
         <div className="mt-10 space-y-4">
@@ -137,7 +137,7 @@ export function LoginPage() {
                 type="text"
                 value={clientId}
                 onChange={(e) => setClientId(e.target.value)}
-                placeholder="Google OAuth Client ID"
+                placeholder={t("login.clientIdPlaceholder")}
                 className="w-full rounded-lg border border-border-primary bg-bg-secondary px-4 py-3 text-sm text-text-primary outline-none focus:border-accent"
                 data-testid="client-id-input"
               />
@@ -145,7 +145,7 @@ export function LoginPage() {
                 type="password"
                 value={clientSecret}
                 onChange={(e) => setClientSecret(e.target.value)}
-                placeholder="Client Secret"
+                placeholder={t("login.clientSecretPlaceholder")}
                 className="w-full rounded-lg border border-border-primary bg-bg-secondary px-4 py-3 text-sm text-text-primary outline-none focus:border-accent"
                 data-testid="client-secret-input"
               />
@@ -179,7 +179,7 @@ export function LoginPage() {
                 fillOpacity={0.8}
               />
             </svg>
-            {isLoading ? "Connecting..." : "Sign in with Google"}
+            {isLoading ? t("login.connecting") : t("login.signIn")}
           </button>
 
           {error && (

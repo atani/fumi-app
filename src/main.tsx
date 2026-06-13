@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { App } from "./App";
 import { ThreadWindow } from "./components/email/ThreadWindow";
+import "./i18n";
 import "./styles/globals.css";
 
 function Root() {

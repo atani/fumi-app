@@ -1,0 +1,41 @@
+{
+  "common": {
+    "save": "保存",
+    "cancel": "キャンセル",
+    "close": "閉じる",
+    "delete": "削除",
+    "loading": "読み込み中…"
+  },
+  "login": {
+    "tagline": "軽快なメールクライアント",
+    "signIn": "Google でサインイン",
+    "connecting": "接続中…",
+    "clientIdPlaceholder": "Google OAuth クライアント ID",
+    "clientSecretPlaceholder": "クライアントシークレット",
+    "errorGeneric": "認証に失敗しました"
+  },
+  "settings": {
+    "appearance": "外観",
+    "theme": "テーマ",
+    "themeSystem": "システム",
+    "themeLight": "ライト",
+    "themeDark": "ダーク",
+    "accentColor": "アクセントカラー",
+    "fontSize": "文字サイズ",
+    "fontSmall": "小",
+    "fontDefault": "標準",
+    "fontLarge": "大",
+    "fontXLarge": "特大",
+    "density": "一覧の表示密度",
+    "densityCompact": "高密度",
+    "densityDefault": "標準",
+    "densityComfortable": "ゆったり",
+    "readingPane": "プレビューペイン",
+    "readingPaneRight": "右",
+    "readingPaneBottom": "下",
+    "readingPaneHidden": "非表示",
+    "readingPaneHint": "メールのプレビューを表示する位置を選びます。非表示の場合はダブルクリックまたは Enter キーでスレッドを開きます。",
+    "language": "言語",
+    "languageHint": "アプリの表示言語を選択します。"
+  }
+}
