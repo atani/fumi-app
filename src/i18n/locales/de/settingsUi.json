@@ -1,0 +1,253 @@
+{
+  "common": {
+    "save": "Speichern",
+    "update": "Aktualisieren",
+    "cancel": "Abbrechen",
+    "add": "Hinzufügen",
+    "remove": "Entfernen",
+    "back": "Zurück",
+    "edit": "Bearbeiten",
+    "delete": "Löschen"
+  },
+  "page": {
+    "title": "Einstellungen"
+  },
+  "accounts": {
+    "title": "Konten",
+    "remove": "Entfernen",
+    "addGmail": "Gmail-Konto hinzufügen",
+    "addImap": "IMAP-Konto hinzufügen"
+  },
+  "sync": {
+    "title": "Synchronisierung",
+    "interval": "Synchronisierungsintervall",
+    "interval30s": "30 Sekunden",
+    "interval1m": "1 Minute",
+    "interval2m": "2 Minuten",
+    "interval5m": "5 Minuten"
+  },
+  "undoSend": {
+    "title": "Senden rückgängig machen",
+    "delay": "Verzögerung zum Rückgängigmachen",
+    "off": "Aus",
+    "delay3s": "3 Sekunden",
+    "delay5s": "5 Sekunden",
+    "delay10s": "10 Sekunden",
+    "hint": "Verzögere das Senden von E-Mails, damit du es innerhalb des gewählten Zeitfensters rückgängig machen kannst."
+  },
+  "emailBehavior": {
+    "title": "E-Mail-Verhalten",
+    "markAsRead": "Als gelesen markieren",
+    "markImmediately": "Sofort",
+    "markAfter2s": "Nach 2 Sekunden",
+    "markManually": "Manuell",
+    "markHint": "Wann E-Mails nach dem Öffnen als gelesen markiert werden.",
+    "defaultReply": "Standardantwort",
+    "reply": "Antworten",
+    "replyAll": "Allen antworten",
+    "defaultReplyHint": "Die Standardaktion beim Drücken der Antwort-Schaltfläche oder des Tastenkürzels.",
+    "sendAndArchive": "Senden & archivieren",
+    "sendAndArchiveDesc": "Konversationen nach dem Senden einer Antwort automatisch archivieren"
+  },
+  "autostart": {
+    "title": "Automatischer Start",
+    "launchOnStartup": "Beim Systemstart starten",
+    "launchOnStartupDesc": "Fumi starten, wenn du dich an deinem Computer anmeldest"
+  },
+  "shortcuts": {
+    "title": "Tastenkürzel",
+    "pressKey": "Taste drücken...",
+    "clickToRebind": "Zum Neubelegen klicken",
+    "resetToDefault": "Auf Standard zurücksetzen",
+    "cancel": "Abbrechen",
+    "conflictBoundTo": " ist bereits belegt mit ",
+    "swapBindings": "Belegungen tauschen",
+    "resetAll": "Alle auf Standard zurücksetzen"
+  },
+  "filters": {
+    "title": "Filterregeln",
+    "noAccount": "Füge ein Konto hinzu, um Filterregeln zu verwalten.",
+    "editFilter": "Filter bearbeiten",
+    "newFilter": "Neuer Filter",
+    "criteria": "Kriterien",
+    "from": "Von (Adresse oder Name)",
+    "fromPlaceholder": "z. B. newsletter@example.com",
+    "to": "An",
+    "toPlaceholder": "z. B. team@example.com",
+    "subjectContains": "Betreff enthält",
+    "subjectPlaceholder": "z. B. Rechnung",
+    "hasAttachment": "Hat Anhang",
+    "actions": "Aktionen",
+    "applyLabel": "Label anwenden",
+    "applyLabelPlaceholder": "Label-ID",
+    "archive": "Archivieren",
+    "trash": "In den Papierkorb",
+    "star": "Mit Stern markieren",
+    "markAsRead": "Als gelesen markieren",
+    "addRule": "Filterregel hinzufügen"
+  },
+  "bundles": {
+    "title": "Sammlungsregeln",
+    "empty": "Keine Sammlungsregeln konfiguriert. Fasse Newsletter und Massenabsender zusammen, um sie nach einem Zeitplan zu erhalten.",
+    "disabledSuffix": " (deaktiviert)",
+    "editRule": "Regel bearbeiten",
+    "deleteRule": "Regel löschen",
+    "bundleName": "Name der Sammlung",
+    "bundleNamePlaceholder": "z. B. Newsletter",
+    "senderPattern": "Absendermuster",
+    "senderPatternPlaceholder": "z. B. *@newsletter.example.com",
+    "senderPatternHint": "Verwende * als Platzhalter. Beispiel: *@example.com erfasst alle Absender dieser Domain.",
+    "deliverySchedule": "Zustellungszeitplan",
+    "instant": "Sofort (keine Sammlung)",
+    "daily": "Täglich",
+    "weekly": "Wöchentlich",
+    "enabled": "Aktiviert",
+    "addRule": "Sammlungsregel hinzufügen"
+  },
+  "smartFolders": {
+    "title": "Intelligente Ordner",
+    "addFolder": "Intelligenten Ordner hinzufügen",
+    "tokensHintPrefix": "Verwende dynamische Platzhalter in Abfragen: ",
+    "tokensHintSuffix": " — diese werden beim Öffnen des Ordners durch die tatsächlichen Daten ersetzt.",
+    "namePlaceholder": "Ordnername",
+    "queryPlaceholder": "Suchabfrage (z. B. from:boss@company.com)",
+    "iconPlaceholder": "Symbolname (optional, z. B. star, inbox)",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "edit": "Bearbeiten",
+    "delete": "Löschen"
+  },
+  "smartLabels": {
+    "title": "Intelligente Labels",
+    "noAccount": "Füge ein Konto hinzu, um intelligente Labels zu konfigurieren.",
+    "intro": "Intelligente Labels klassifizieren eingehende E-Mails automatisch. Definiere Kriterien für schnelle Treffer oder lass KI Nachrichten klassifizieren, die keinem Muster entsprechen.",
+    "enabled": "Aktiviert",
+    "saveRule": "Regel speichern",
+    "deleteRule": "Regel löschen",
+    "label": "Label",
+    "description": "Beschreibung (für die KI-Klassifizierung verwendet)",
+    "descriptionPlaceholder": "z. B. E-Mails über Projekt-Updates aus dem Team",
+    "senderPattern": "Absendermuster (schneller Pfad)",
+    "senderPatternPlaceholder": "z. B. @company.com",
+    "subjectPattern": "Betreffmuster (schneller Pfad)",
+    "subjectPatternPlaceholder": "z. B. [Wochenbericht]",
+    "addRule": "Regel hinzufügen",
+    "processing": "Wird verarbeitet...",
+    "applyToExisting": "Auf vorhandene E-Mails anwenden",
+    "appliedToThreads_one": "Labels auf {{count}} Konversation angewendet.",
+    "appliedToThreads_other": "Labels auf {{count}} Konversationen angewendet.",
+    "noThreadsNeeded": "Keine Konversationen benötigten Labels.",
+    "backfillFailed": "Nachträgliche Anwendung fehlgeschlagen"
+  },
+  "quickSteps": {
+    "title": "Schnellaktionen",
+    "noAccount": "Füge ein Konto hinzu, um Schnellaktionen zu verwalten.",
+    "editStep": "Schnellaktion bearbeiten",
+    "newStep": "Neue Schnellaktion",
+    "name": "Name",
+    "namePlaceholder": "z. B. Archivieren & als gelesen markieren",
+    "shortcut": "Tastenkürzel (optional)",
+    "shortcutPlaceholder": "z. B. Strg+Umschalt+1",
+    "actions": "Aktionen",
+    "addAction": "Aktion hinzufügen",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "newStepButton": "Neue Schnellaktion",
+    "addFromPresets": "Aus Vorlagen hinzufügen",
+    "presets": "Vorlagen",
+    "action": {
+      "applyLabel": "Label anwenden",
+      "removeLabel": "Label entfernen",
+      "archive": "Archivieren",
+      "trash": "In den Papierkorb",
+      "star": "Mit Stern markieren",
+      "unstar": "Stern entfernen",
+      "markRead": "Als gelesen markieren",
+      "markUnread": "Als ungelesen markieren",
+      "forward": "Weiterleiten",
+      "reply": "Antworten",
+      "move": "Verschieben",
+      "snooze": "Schlummern",
+      "mute": "Stummschalten",
+      "followUp": "Nachfassen",
+      "categorize": "Kategorisieren",
+      "addTask": "Aufgabe hinzufügen",
+      "unsubscribe": "Abbestellen",
+      "openUrl": "URL öffnen"
+    },
+    "param": {
+      "applyLabelPlaceholder": "z. B. WICHTIG",
+      "removeLabelPlaceholder": "z. B. INBOX",
+      "movePlaceholder": "z. B. ARCHIVE",
+      "forwardPlaceholder": "z. B. user@example.com",
+      "categorizePlaceholder": "z. B. Updates",
+      "openUrlPlaceholder": "https://...",
+      "snoozePlaceholder": "z. B. 1h, 1d"
+    }
+  },
+  "phishing": {
+    "title": "Phishing-Erkennung",
+    "sensitivity": "Erkennungsempfindlichkeit",
+    "low": "Niedrig",
+    "default": "Standard",
+    "high": "Hoch",
+    "hint": "Legt fest, wie aggressiv Links in E-Mails als verdächtig markiert werden. Höhere Empfindlichkeit erkennt mehr Bedrohungen, kann aber mehr Fehlalarme erzeugen."
+  },
+  "notifications": {
+    "title": "Benachrichtigungen",
+    "desktop": "Desktop-Benachrichtigungen",
+    "desktopDesc": "Benachrichtigungen für neue E-Mails anzeigen"
+  },
+  "vip": {
+    "title": "VIP-Benachrichtigungen",
+    "hint": "Wenn VIP-Absender konfiguriert sind, lösen nur E-Mails von diesen Adressen Desktop-Benachrichtigungen aus. Ist die Liste leer, erzeugen alle nicht stummgeschalteten E-Mails Benachrichtigungen.",
+    "remove": "{{email}} entfernen",
+    "inputPlaceholder": "VIP-E-Mail-Adresse hinzufügen",
+    "add": "Hinzufügen"
+  },
+  "templates": {
+    "title": "Vorlagen",
+    "namePlaceholder": "Name der Vorlage",
+    "subjectPlaceholder": "Betreff (optional)",
+    "bodyPlaceholder": "Text (optional)",
+    "update": "Aktualisieren",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "addTemplate": "Vorlage hinzufügen"
+  },
+  "signatures": {
+    "title": "Signaturen",
+    "default": "Standard",
+    "setAsDefault": "Als Standard festlegen",
+    "namePlaceholder": "Name der Signatur",
+    "bodyPlaceholder": "Signaturtext",
+    "setAsDefaultLabel": "Als Standardsignatur festlegen",
+    "update": "Aktualisieren",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "addSignature": "Signatur hinzufügen"
+  },
+  "ai": {
+    "title": "KI-Funktionen",
+    "provider": "KI-Anbieter",
+    "apiKey": "API-Schlüssel",
+    "apiKeyPlaceholder": "API-Schlüssel eingeben",
+    "threadSummaries": "Konversationszusammenfassungen",
+    "threadSummariesDesc": "KI-generierte Zusammenfassungen für E-Mail-Konversationen",
+    "smartReplies": "Intelligente Antwortvorschläge",
+    "smartRepliesDesc": "Von KI vorgeschlagene Antwortoptionen für E-Mails",
+    "autoCategorization": "Automatische Kategorisierung",
+    "autoCategorizationDesc": "E-Mails automatisch mit KI kategorisieren"
+  },
+  "oauth": {
+    "title": "OAuth-Anmeldedaten",
+    "clientId": "Google-Client-ID",
+    "clientIdPlaceholder": "Client-ID eingeben",
+    "clientSecret": "Client-Geheimnis",
+    "clientSecretPlaceholder": "Client-Geheimnis eingeben"
+  },
+  "about": {
+    "title": "Über",
+    "version": "Version {{version}}"
+  }
+}

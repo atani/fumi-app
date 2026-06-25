@@ -1,0 +1,79 @@
+{
+  "common": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "close": "Schließen",
+    "delete": "Löschen",
+    "loading": "Wird geladen…"
+  },
+  "login": {
+    "tagline": "Schneller, schlanker E-Mail-Client",
+    "signIn": "Mit Google anmelden",
+    "connecting": "Verbindung wird hergestellt…",
+    "clientIdPlaceholder": "Google OAuth-Client-ID",
+    "clientSecretPlaceholder": "Client-Geheimnis",
+    "errorGeneric": "Authentifizierung fehlgeschlagen",
+    "unverifiedHint": "Falls Google einen Bildschirm „Nicht verifizierte App“ anzeigt, wähle Erweitert → Weiter, um fortzufahren."
+  },
+  "nav": {
+    "compose": "Verfassen",
+    "inbox": "Posteingang",
+    "starred": "Mit Stern",
+    "snoozed": "Geschlummert",
+    "sent": "Gesendet",
+    "drafts": "Entwürfe",
+    "trash": "Papierkorb",
+    "spam": "Spam",
+    "allMail": "Alle Nachrichten",
+    "labels": "Labels",
+    "createLabel": "Label erstellen",
+    "editLabel": "Label bearbeiten",
+    "bundles": "Sammlungen",
+    "smartFolders": "Intelligente Ordner",
+    "tasks": "Aufgaben",
+    "attachments": "Anhänge",
+    "calendar": "Kalender",
+    "help": "Hilfe",
+    "settings": "Einstellungen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "themeTitle": "Design: {{theme}}"
+  },
+  "settings": {
+    "appearance": "Erscheinungsbild",
+    "theme": "Design",
+    "themeSystem": "System",
+    "themeLight": "Hell",
+    "themeDark": "Dunkel",
+    "accentColor": "Akzentfarbe",
+    "fontSize": "Schriftgröße",
+    "fontSmall": "Klein",
+    "fontDefault": "Standard",
+    "fontLarge": "Groß",
+    "fontXLarge": "Sehr groß",
+    "density": "Dichte der E-Mail-Liste",
+    "densityCompact": "Kompakt",
+    "densityDefault": "Standard",
+    "densityComfortable": "Großzügig",
+    "readingPane": "Lesebereich",
+    "readingPaneRight": "Rechts",
+    "readingPaneBottom": "Unten",
+    "readingPaneHidden": "Ausgeblendet",
+    "readingPaneHint": "Legt fest, wo die E-Mail-Vorschau erscheint. Wenn ausgeblendet, öffne eine Konversation per Doppelklick oder mit der Eingabetaste.",
+    "language": "Sprache",
+    "languageHint": "Wähle die Anzeigesprache für die App."
+  },
+  "notifications": {
+    "followUpTitle": "Erinnerung an Nachfassen",
+    "followUpBody": "Noch keine Antwort: {{subject}}",
+    "noSubject": "(Kein Betreff)",
+    "newMessages": "{{count}} neue Nachrichten"
+  },
+  "app": {
+    "loading": "Wird geladen…",
+    "unsentDraft": "Du hast einen ungesendeten Entwurf",
+    "unsentDraftNamed": "Du hast einen ungesendeten Entwurf: „{{subject}}“",
+    "restore": "Wiederherstellen",
+    "discard": "Verwerfen"
+  }
+}

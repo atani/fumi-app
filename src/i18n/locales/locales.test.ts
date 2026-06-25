@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { enResources, jaResources } from "../index";
+import { enResources, jaResources, deResources } from "../index";
 
 /** Recursively collect dot-joined key paths from a nested translation object. */
 function keyPaths(obj: Record<string, unknown>, prefix = ""): string[] {
@@ -15,6 +15,7 @@ function keyPaths(obj: Record<string, unknown>, prefix = ""): string[] {
 describe("locale parity (all namespaces)", () => {
   const enKeys = keyPaths(enResources).sort();
   const jaKeys = keyPaths(jaResources).sort();
+  const deKeys = keyPaths(deResources).sort();
 
   it("Japanese has every key English has", () => {
     const missing = enKeys.filter((k) => !jaKeys.includes(k));
@@ -26,10 +27,21 @@ describe("locale parity (all namespaces)", () => {
     expect(extra, `Extra in Japanese: ${extra.join(", ")}`).toEqual([]);
   });
 
+  it("German has every key English has", () => {
+    const missing = enKeys.filter((k) => !deKeys.includes(k));
+    expect(missing, `Missing in German: ${missing.join(", ")}`).toEqual([]);
+  });
+
+  it("German has no extra keys English lacks", () => {
+    const extra = deKeys.filter((k) => !enKeys.includes(k));
+    expect(extra, `Extra in German: ${extra.join(", ")}`).toEqual([]);
+  });
+
   it("no string value is empty", () => {
     const empties = [
       ...keyPaths(enResources).filter((k) => isEmpty(resolve(enResources, k))),
       ...keyPaths(jaResources).filter((k) => isEmpty(resolve(jaResources, k))),
+      ...keyPaths(deResources).filter((k) => isEmpty(resolve(deResources, k))),
     ];
     expect(empties, `Empty values: ${empties.join(", ")}`).toEqual([]);
   });

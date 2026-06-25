@@ -1,0 +1,44 @@
+{
+  "title": "Aufgaben",
+  "backToMail": "Zurück zu E-Mails",
+  "completedCount": "{{completed}}/{{total}} erledigt",
+  "loading": "Aufgaben werden geladen…",
+  "add": "Hinzufügen",
+  "cancel": "Abbrechen",
+  "quickAddPlaceholder": "Aufgabe hinzufügen…",
+  "markComplete": "Als erledigt markieren",
+  "markIncomplete": "Als nicht erledigt markieren",
+  "editTask": "Aufgabe bearbeiten",
+  "deleteTask": "Aufgabe löschen",
+  "subtaskCount_one": "{{count}} Teilaufgabe",
+  "subtaskCount_other": "{{count}} Teilaufgaben",
+  "filters": {
+    "all": "Alle",
+    "today": "Heute",
+    "upcoming": "Anstehend",
+    "completed": "Erledigt"
+  },
+  "empty": {
+    "all": "Noch keine Aufgaben. Füge oben eine hinzu.",
+    "today": "Keine Aufgaben für heute.",
+    "upcoming": "Keine anstehenden Aufgaben.",
+    "completed": "Keine erledigten Aufgaben."
+  },
+  "priority": {
+    "high": "Hoch",
+    "medium": "Mittel",
+    "low": "Niedrig"
+  },
+  "extract": {
+    "title": "Aufgaben aus Konversation extrahieren",
+    "intro": "Nutze KI, um umsetzbare Aufgaben in dieser E-Mail-Konversation zu finden.",
+    "action": "Aufgaben extrahieren",
+    "analyzing": "Konversation wird analysiert…",
+    "empty": "Keine umsetzbaren Aufgaben in dieser Konversation gefunden.",
+    "due": "Fällig: {{date}}",
+    "addCount_one": "{{count}} Aufgabe hinzufügen",
+    "addCount_other": "{{count}} Aufgaben hinzufügen",
+    "errorExtract": "Aufgaben konnten nicht extrahiert werden",
+    "errorSave": "Aufgaben konnten nicht gespeichert werden"
+  }
+}

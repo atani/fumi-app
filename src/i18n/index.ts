@@ -5,6 +5,7 @@ import LanguageDetector from "i18next-browser-languagedetector";
 // Core namespaces (common UI, login, core settings, navigation).
 import enCore from "./locales/en.json";
 import jaCore from "./locales/ja.json";
+import deCore from "./locales/de.json";
 
 // Per-feature namespaces. Each file is the subtree for one feature; it is
 // merged under a top-level key so components reference it as t("<feature>.key").
@@ -37,9 +38,25 @@ import jaDnd from "./locales/ja/dnd.json";
 import enLicense from "./locales/en/license.json";
 import jaLicense from "./locales/ja/license.json";
 
+import deEmail from "./locales/de/email.json";
+import deSettingsUi from "./locales/de/settingsUi.json";
+import deComposer from "./locales/de/composer.json";
+import deUi from "./locales/de/ui.json";
+import deTasks from "./locales/de/tasks.json";
+import deHelp from "./locales/de/help.json";
+import deLabels from "./locales/de/labels.json";
+import deCalendar from "./locales/de/calendar.json";
+import deAccounts from "./locales/de/accounts.json";
+import deSearch from "./locales/de/search.json";
+import deAttachments from "./locales/de/attachments.json";
+import deLayout from "./locales/de/layout.json";
+import deDnd from "./locales/de/dnd.json";
+import deLicense from "./locales/de/license.json";
+
 export const SUPPORTED_LANGUAGES = [
   { code: "en", label: "English" },
   { code: "ja", label: "日本語" },
+  { code: "de", label: "Deutsch" },
 ] as const;
 
 export type LanguageCode = (typeof SUPPORTED_LANGUAGES)[number]["code"];
@@ -80,6 +97,24 @@ export const jaResources = {
   license: jaLicense,
 };
 
+export const deResources = {
+  ...deCore,
+  email: deEmail,
+  settingsUi: deSettingsUi,
+  composer: deComposer,
+  ui: deUi,
+  tasks: deTasks,
+  help: deHelp,
+  labels: deLabels,
+  calendar: deCalendar,
+  accounts: deAccounts,
+  search: deSearch,
+  attachments: deAttachments,
+  layout: deLayout,
+  dnd: deDnd,
+  license: deLicense,
+};
+
 // Resources are bundled inline so init is synchronous — no Suspense needed.
 void i18n
   .use(LanguageDetector)
@@ -88,6 +123,7 @@ void i18n
     resources: {
       en: { translation: enResources },
       ja: { translation: jaResources },
+      de: { translation: deResources },
     },
     fallbackLng: "en",
     supportedLngs: SUPPORTED_LANGUAGES.map((l) => l.code),

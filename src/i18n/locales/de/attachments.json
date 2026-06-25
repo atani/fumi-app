@@ -1,0 +1,16 @@
+{
+  "title": "Anhänge",
+  "filterAll": "Alle",
+  "filterImages": "Bilder",
+  "filterDocuments": "Dokumente",
+  "gridView": "Rasteransicht",
+  "listView": "Listenansicht",
+  "loading": "Anhänge werden geladen...",
+  "empty": "Keine Anhänge gefunden",
+  "download": "Herunterladen",
+  "groupUnknownDate": "Unbekanntes Datum",
+  "groupToday": "Heute",
+  "groupYesterday": "Gestern",
+  "groupThisWeek": "Diese Woche",
+  "groupThisMonth": "Diesen Monat"
+}
