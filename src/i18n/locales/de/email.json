@@ -1,0 +1,128 @@
+{
+  "allFiles": "Alle Dateien",
+  "downloadAttachment": "{{filename}} herunterladen",
+  "auth": {
+    "pass": "Bestanden",
+    "fail": "Fehlgeschlagen",
+    "none": "Keine",
+    "unknown": "Unbekannt",
+    "heading": "E-Mail-Authentifizierung"
+  },
+  "categories": {
+    "ariaLabel": "Posteingang-Kategorien",
+    "Primary": "Allgemein",
+    "Updates": "Updates",
+    "Promotions": "Werbung",
+    "Social": "Soziale Netzwerke",
+    "Newsletters": "Newsletter"
+  },
+  "contact": {
+    "unknownDate": "Unbekannt",
+    "title": "Kontakt",
+    "close": "Kontakt-Seitenleiste schließen",
+    "interactions_one": "{{count}} Interaktion",
+    "interactions_other": "{{count}} Interaktionen",
+    "first": "Erste: {{date}}",
+    "last": "Letzte: {{date}}",
+    "recentThreads": "Neueste Konversationen",
+    "noRecentThreads": "Keine neueren Konversationen gefunden.",
+    "noSubject": "(Kein Betreff)"
+  },
+  "renderer": {
+    "imageBlocked": "[Bild blockiert]",
+    "imagesBlocked": "Bilder von diesem Absender werden blockiert.",
+    "loadImages": "Bilder von diesem Absender laden",
+    "iframeTitle": "E-Mail-Inhalt"
+  },
+  "followUp": {
+    "title": "Nachfassen, falls keine Antwort in...",
+    "preset1Day": "1 Tag",
+    "preset2Days": "2 Tage",
+    "preset3Days": "3 Tage",
+    "preset1Week": "1 Woche",
+    "hours": "{{count}} Std.",
+    "custom": "Eigene Dauer",
+    "hoursLabel": "Stunden bis zur Erinnerung",
+    "back": "Zurück",
+    "setReminder": "Erinnerung festlegen"
+  },
+  "preview": {
+    "failed": "Fehlgeschlagen"
+  },
+  "link": {
+    "title": "Externen Link öffnen?",
+    "mismatchPrefix": "Der Linktext zeigt ",
+    "mismatchMiddle": ", aber das tatsächliche Ziel ist ",
+    "displayText": "Anzeigetext: ",
+    "destination": "Ziel: ",
+    "cancel": "Abbrechen",
+    "open": "Link öffnen"
+  },
+  "message": {
+    "unknownSender": "Unbekannt",
+    "justNow": "gerade eben",
+    "minutesAgo": "vor {{count}} Min.",
+    "hoursAgo": "vor {{count}} Std.",
+    "daysAgo": "vor {{count}} T.",
+    "to": "An: {{addresses}}",
+    "cc": "Cc: {{addresses}}",
+    "unsubscribe": "Abbestellen",
+    "unsubscribing": "Wird abbestellt...",
+    "unsubscribed": "Abbestellt",
+    "unsubscribeFailed": "Abbestellen fehlgeschlagen — erneut versuchen",
+    "hideQuotedText": "Zitierten Text ausblenden",
+    "showQuotedText": "Zitierten Text anzeigen",
+    "reply": "Antworten",
+    "replyAll": "Allen antworten",
+    "forward": "Weiterleiten"
+  },
+  "labels": {
+    "title": "Labels anwenden",
+    "noUserLabels": "Keine eigenen Labels gefunden",
+    "cancel": "Abbrechen",
+    "saving": "Wird gespeichert...",
+    "apply": "Anwenden"
+  },
+  "phishing": {
+    "danger": "Diese Nachricht enthält verdächtige Links",
+    "warning": "Einige Links in dieser Nachricht erfordern Aufmerksamkeit",
+    "report": "Melden",
+    "trustSender": "Ich vertraue diesem Absender"
+  },
+  "smartReply": {
+    "generateFailed": "Vorschläge konnten nicht erstellt werden",
+    "generating": "Antworten werden erstellt...",
+    "suggest": "Antworten vorschlagen"
+  },
+  "snooze": {
+    "laterToday": "Später heute",
+    "tomorrowMorning": "Morgen früh",
+    "tomorrowAfternoon": "Morgen Nachmittag",
+    "thisWeekend": "Dieses Wochenende",
+    "nextWeek": "Nächste Woche",
+    "title": "Schlummern bis...",
+    "pickDateTime": "Datum & Uhrzeit wählen",
+    "date": "Datum",
+    "time": "Uhrzeit",
+    "back": "Zurück",
+    "snooze": "Schlummern"
+  },
+  "summary": {
+    "generateFailed": "Zusammenfassung konnte nicht erstellt werden",
+    "summary": "Zusammenfassung",
+    "summarize": "Zusammenfassen"
+  },
+  "thread": {
+    "noSubject": "(Kein Betreff)",
+    "loading": "Konversation wird geladen...",
+    "notFound": "Konversation nicht gefunden",
+    "archive": "Archivieren",
+    "star": "Mit Stern markieren",
+    "unstar": "Stern entfernen",
+    "trash": "In den Papierkorb",
+    "to": "An: {{addresses}}",
+    "reply": "Antworten",
+    "replyAll": "Allen antworten",
+    "forward": "Weiterleiten"
+  }
+}
