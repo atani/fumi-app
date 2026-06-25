@@ -48,6 +48,12 @@
 <body>
   <div class="logo">&#x2709;&#xFE0F;</div>
   <div class="title">Fumi</div>
-  <div class="loading">Loading...</div>
+  <div class="loading" id="loading">Loading…</div>
+  <script>
+    // The splash renders before React/i18n, so localize from the OS language.
+    if ((navigator.language || "").toLowerCase().startsWith("ja")) {
+      document.getElementById("loading").textContent = "読み込み中…";
+    }
+  </script>
 </body>
 </html>

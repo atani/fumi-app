@@ -1,0 +1,17 @@
+{
+  "title": "Kalender",
+  "backToMail": "Zurück zu E-Mails",
+  "today": "Heute",
+  "gmailOnly": "Der Kalender ist nur für Gmail-Konten verfügbar.",
+  "loadError": "Termine konnten nicht geladen werden",
+  "retry": "Erneut versuchen",
+  "newEvent": "Neuer Termin",
+  "eventTitle": "Titel",
+  "eventTitlePlaceholder": "Titel des Termins",
+  "start": "Beginn",
+  "end": "Ende",
+  "description": "Beschreibung",
+  "descriptionPlaceholder": "Optionale Beschreibung",
+  "cancel": "Abbrechen",
+  "create": "Erstellen"
+}

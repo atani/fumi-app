@@ -1,0 +1,239 @@
+{
+  "title": "Hilfe",
+  "backToMail": "Zurück zu E-Mails",
+  "searchPlaceholder": "Hilfe durchsuchen…",
+  "clearSearch": "Suche löschen",
+  "tooltipLabel": "Hilfe",
+  "searchResults": "Suchergebnisse",
+  "resultCount_one": "{{count}} Ergebnis",
+  "resultCount_other": "{{count}} Ergebnisse",
+  "noResults": "Keine Ergebnisse für „{{query}}“ gefunden",
+  "selectCategory": "Wähle eine Kategorie aus der Seitenleiste.",
+  "categories": {
+    "getting-started": {
+      "title": "Erste Schritte",
+      "description": "Richte dein Konto ein und lerne die Grundlagen von Fumi kennen."
+    },
+    "composing": {
+      "title": "Verfassen",
+      "description": "Schreibe und sende E-Mails mit dem Rich-Text-Editor."
+    },
+    "reading": {
+      "title": "Lesen",
+      "description": "Lies, organisiere und bearbeite deine E-Mails."
+    },
+    "search": {
+      "title": "Suche",
+      "description": "Finde E-Mails schnell mit leistungsstarken Suchoperatoren."
+    },
+    "labels": {
+      "title": "Labels",
+      "description": "Organisiere deine E-Mails mit eigenen Labels."
+    },
+    "shortcuts": {
+      "title": "Tastenkürzel",
+      "description": "Navigiere und bearbeite E-Mails, ohne die Tastatur zu verlassen."
+    },
+    "calendar": {
+      "title": "Kalender",
+      "description": "Sieh dir deine Google-Kalender-Termine an und verwalte sie."
+    },
+    "tasks": {
+      "title": "Aufgaben",
+      "description": "Behalte To-dos im Blick, die aus E-Mails extrahiert oder manuell erstellt wurden."
+    },
+    "ai-features": {
+      "title": "KI-Funktionen",
+      "description": "Nutze KI, um E-Mails zusammenzufassen, zu beantworten, zu verfassen und zu kategorisieren."
+    },
+    "filters": {
+      "title": "Filter",
+      "description": "Automatisiere Aktionen für eingehende E-Mails mit Filterregeln."
+    },
+    "templates": {
+      "title": "Vorlagen",
+      "description": "Speichere wiederverwendbare E-Mail-Vorlagen für häufige Antworten."
+    },
+    "security": {
+      "title": "Sicherheit",
+      "description": "Bleib sicher dank Phishing-Erkennung und Authentifizierungsprüfungen."
+    },
+    "settings": {
+      "title": "Einstellungen",
+      "description": "Passe Fumi an deinen Workflow an."
+    }
+  },
+  "cards": {
+    "gs-add-account": {
+      "title": "E-Mail-Konto hinzufügen",
+      "description": "Verbinde ein Gmail- oder IMAP-Konto, um Fumi zu nutzen.",
+      "steps": [
+        "Öffne die Einstellungen über die Seitenleiste.",
+        "Klicke auf Konto hinzufügen.",
+        "Melde dich mit Google an oder gib deine IMAP-Serverdaten ein.",
+        "Fumi synchronisiert deine neuesten E-Mails automatisch."
+      ]
+    },
+    "gs-navigation": {
+      "title": "Durch die Oberfläche navigieren",
+      "description": "Die Seitenleiste listet deine Ordner und Labels auf. Klicke auf einen Ordner, um seine Konversationen zu sehen. Wähle eine Konversation, um sie im Lesebereich zu lesen."
+    },
+    "gs-theme": {
+      "title": "Designs wechseln",
+      "description": "Wechsle zwischen hellem, dunklem und Systemdesign über die Design-Schaltfläche unten in der Seitenleiste."
+    },
+    "comp-new": {
+      "title": "Neue E-Mail verfassen",
+      "description": "Klicke auf die Schaltfläche Verfassen in der Seitenleiste oder drücke C, um eine neue Nachricht zu öffnen."
+    },
+    "comp-reply": {
+      "title": "Antworten und weiterleiten",
+      "description": "Drücke R zum Antworten, A zum Allen antworten oder F zum Weiterleiten der ausgewählten Konversation."
+    },
+    "comp-schedule": {
+      "title": "Geplantes Senden",
+      "description": "Wähle ein zukünftiges Datum und eine Uhrzeit, um deine E-Mail automatisch zu senden.",
+      "steps": [
+        "Öffne den Editor.",
+        "Klicke auf das Uhr-Symbol neben der Schaltfläche Senden.",
+        "Wähle Datum und Uhrzeit und bestätige."
+      ]
+    },
+    "comp-drafts": {
+      "title": "Automatisch gespeicherte Entwürfe",
+      "description": "Entwürfe werden alle 3 Sekunden automatisch gespeichert. Falls die App unerwartet geschlossen wird, wirst du beim nächsten Start gefragt, ob du deinen Entwurf wiederherstellen möchtest."
+    },
+    "read-thread": {
+      "title": "Konversationsansicht",
+      "description": "E-Mails werden zu Konversationen gruppiert. Öffne eine Konversation, um alle Nachrichten der Reihe nach zu sehen."
+    },
+    "read-archive": {
+      "title": "Archivieren und Papierkorb",
+      "description": "Drücke E zum Archivieren oder #, um die ausgewählte Konversation in den Papierkorb zu legen. Eine bereits im Papierkorb befindliche Konversation wird dadurch endgültig gelöscht."
+    },
+    "read-snooze": {
+      "title": "E-Mails schlummern",
+      "description": "Lass eine Konversation schlummern, um sie vorübergehend aus dem Posteingang zu entfernen. Sie erscheint zur gewählten Zeit wieder."
+    },
+    "read-star": {
+      "title": "Mit Stern markieren und anheften",
+      "description": "Drücke S, um eine Konversation mit Stern zu markieren, oder P, um sie für schnellen Zugriff anzuheften."
+    },
+    "search-basic": {
+      "title": "Einfache Suche",
+      "description": "Drücke / oder Strg+K, um die Befehlspalette zu öffnen. Gib ein beliebiges Stichwort ein, um alle deine E-Mails zu durchsuchen."
+    },
+    "search-operators": {
+      "title": "Suchoperatoren",
+      "description": "Verwende Operatoren im Gmail-Stil für präzise Ergebnisse: from:, to:, subject:, has:attachment, is:unread, before:, after:, label:."
+    },
+    "search-smart-folders": {
+      "title": "Intelligente Ordner",
+      "description": "Speichere häufig genutzte Suchen als intelligente Ordner für den Zugriff mit einem Klick aus der Seitenleiste."
+    },
+    "label-create": {
+      "title": "Label erstellen",
+      "description": "Klicke auf das +-Symbol im Bereich Labels der Seitenleiste oder klicke mit der rechten Maustaste auf ein vorhandenes Label, um es zu bearbeiten oder zu löschen."
+    },
+    "label-apply": {
+      "title": "Labels auf Konversationen anwenden",
+      "description": "Drücke V, um eine Konversation in einen Ordner oder ein Label zu verschieben. Du kannst Konversationen auch per Drag-and-drop auf Labels in der Seitenleiste ziehen."
+    },
+    "label-colors": {
+      "title": "Label-Farben",
+      "description": "Weise jedem Label eine Farbe zu, damit du Kategorien in der Konversationsliste auf einen Blick erkennst."
+    },
+    "sc-navigation": {
+      "title": "Navigations-Tastenkürzel",
+      "description": "J/K, um zwischen Konversationen zu wechseln, O oder Eingabe zum Öffnen, Esc zum Zurückgehen. G dann I für Posteingang, G dann S für Mit Stern und mehr."
+    },
+    "sc-actions": {
+      "title": "Aktions-Tastenkürzel",
+      "description": "E zum Archivieren, S für Stern, # für Papierkorb, R zum Antworten, A für Allen antworten, F zum Weiterleiten, C zum Verfassen."
+    },
+    "sc-customize": {
+      "title": "Tastenkürzel anpassen",
+      "description": "Belege jedes Tastenkürzel in den Einstellungen neu, damit es zu deinem bevorzugten Workflow passt."
+    },
+    "cal-view": {
+      "title": "Kalenderansichten",
+      "description": "Wechsle zwischen Tages-, Wochen- und Monatsansicht. Navigiere mit den Schaltflächen in der Symbolleiste vor und zurück."
+    },
+    "cal-create": {
+      "title": "Termine erstellen",
+      "description": "Klicke auf einen freien Zeitfenster oder nutze die Schaltfläche Erstellen, um einen neuen Kalendertermin hinzuzufügen."
+    },
+    "task-create": {
+      "title": "Aufgaben erstellen",
+      "description": "Füge Aufgaben manuell auf der Aufgabenseite hinzu oder drücke T in einer Konversation, um Aufgaben mit KI zu extrahieren."
+    },
+    "task-filters": {
+      "title": "Aufgaben filtern",
+      "description": "Zeige alle Aufgaben, heutige Aufgaben, anstehende Aufgaben oder erledigte Aufgaben über die Filter-Tabs an."
+    },
+    "task-recurring": {
+      "title": "Wiederkehrende Aufgaben",
+      "description": "Lege eine Wiederholungsregel fest (täglich, wöchentlich, monatlich, jährlich), und Fumi erstellt automatisch das nächste Vorkommen, sobald du eines abschließt."
+    },
+    "ai-summary": {
+      "title": "Konversationszusammenfassungen",
+      "description": "Erhalte eine schnelle, KI-generierte Zusammenfassung langer E-Mail-Konversationen, damit du in Sekunden auf dem Laufenden bist."
+    },
+    "ai-reply": {
+      "title": "Intelligente Antworten",
+      "description": "Die KI schlägt kurze Antwortoptionen basierend auf dem Konversationskontext vor. Klicke auf eine, um sie in den Editor einzufügen."
+    },
+    "ai-compose": {
+      "title": "KI-Verfassen und -Umschreiben",
+      "description": "Lass die KI eine E-Mail aus einer Vorgabe entwerfen oder ausgewählten Text umwandeln (kürzen, erweitern, Grammatik korrigieren, Ton ändern)."
+    },
+    "ai-categorize": {
+      "title": "Automatische Kategorisierung",
+      "description": "Fumi sortiert eingehende Post mithilfe von KI und regelbasierten Heuristiken in Allgemein, Updates, Werbung, Soziale Netzwerke und Newsletter."
+    },
+    "filter-create": {
+      "title": "Filter erstellen",
+      "description": "Gehe zu den Einstellungen und öffne Filter. Definiere Kriterien (Absender, Betreff, Stichwörter) und wähle Aktionen (Label, archivieren, Stern, als gelesen markieren, Papierkorb)."
+    },
+    "filter-logic": {
+      "title": "So funktionieren Filter",
+      "description": "Filterkriterien verwenden UND-Logik: Alle Bedingungen müssen zutreffen. Wenn mehrere Filter auf dieselbe Nachricht zutreffen, werden ihre Aktionen zusammengeführt."
+    },
+    "tpl-create": {
+      "title": "Vorlage erstellen",
+      "description": "Öffne die Einstellungen, gehe zu Vorlagen und füge eine neue Vorlage mit Name, Betreff und Text hinzu."
+    },
+    "tpl-use": {
+      "title": "Vorlage verwenden",
+      "description": "Klicke im Editor auf die Vorlagenauswahl, um eine gespeicherte Vorlage einzufügen. Du kannst jeder Vorlage auch ein Tastenkürzel zuweisen."
+    },
+    "sec-phishing": {
+      "title": "Phishing-Erkennung",
+      "description": "Fumi prüft Links in E-Mails auf verdächtige Muster (IP-URLs, Homograph-Angriffe, URL-Kürzungsdienste, Markenimitation) und warnt dich, bevor du klickst."
+    },
+    "sec-auth": {
+      "title": "Authentifizierungsergebnisse",
+      "description": "SPF-, DKIM- und DMARC-Ergebnisse werden aus den E-Mail-Headern ausgelesen und als Kennzeichnung an jeder Nachricht angezeigt, damit du die Echtheit des Absenders prüfen kannst."
+    },
+    "sec-images": {
+      "title": "Blockieren externer Bilder",
+      "description": "Externe Bilder werden standardmäßig blockiert, um deine Privatsphäre zu schützen. Erlaube Bilder von vertrauenswürdigen Absendern über die Zulassungsliste."
+    },
+    "set-accounts": {
+      "title": "Konten verwalten",
+      "description": "Füge E-Mail-Konten hinzu oder entferne sie, konfiguriere OAuth-Client-IDs und verwalte Senden-als-Aliase."
+    },
+    "set-appearance": {
+      "title": "Erscheinungsbild",
+      "description": "Wähle ein Farbdesign, passe die Schriftgröße an, ändere die E-Mail-Dichte und schalte die Position des Lesebereichs um."
+    },
+    "set-ai": {
+      "title": "KI-Anbieter-Einstellungen",
+      "description": "Konfiguriere API-Schlüssel für Claude, OpenAI oder Gemini. Wähle aus, welcher Anbieter für jede KI-Funktion verwendet wird."
+    },
+    "set-notifications": {
+      "title": "Benachrichtigungen",
+      "description": "Aktiviere Desktop-Benachrichtigungen und füge VIP-Absender hinzu, um nur über die E-Mails benachrichtigt zu werden, die wichtig sind."
+    }
+  }
+}
