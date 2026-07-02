@@ -8,7 +8,7 @@ Fumi ("the App", "we", "us") is a desktop email client for macOS, Windows, and L
 
 ## Summary
 
-Fumi is a **local-first** application. Your email, calendar, contacts, and account credentials are stored **only on your device**. **We operate no servers that receive your data, and the App contains no analytics or telemetry.** Your data is transmitted only to the services you connect to (Google, your IMAP/SMTP provider) and — only if you opt in — to the AI provider you configure with your own API key.
+Fumi is a **local-first** application. Your email, calendar, contacts, and account credentials are stored **only on your device**. **We operate no servers that receive your data, and the App contains no analytics or telemetry.** Your data is transmitted only to the services you connect to (Google, your IMAP/SMTP provider) and — only if you opt in — to the AI provider you configure with your own API key. To verify your paid license, the App also sends your license key (and nothing else about you) to our payment provider; see [License verification](#license-verification).
 
 ## Information the App accesses
 
@@ -41,9 +41,13 @@ Fumi's use of information received from Google APIs adheres to the [Google API S
 - Google user data is **not used for advertising**.
 - **No humans read** your Google user data, except where you give explicit consent, where required for security/legal reasons, or where the data is aggregated and anonymized.
 
+## License verification
+
+Fumi is a paid app. To activate and verify your license, the App sends your **license key** and a generated **installation identifier** to our licensing and payment provider, **Lemon Squeezy** (our reseller and merchant of record) — when you activate a license and when the App starts (to confirm the license is still valid). This request contains **only** the license key and installation identifier; it never includes your email, contacts, or message content. It is governed by [Lemon Squeezy's privacy policy](https://www.lemonsqueezy.com/privacy). We do not operate the server; no data other than the license key and installation identifier leaves your device for this purpose.
+
 ## Data sharing
 
-We do not sell, rent, or share your data. The only outbound transmissions are: (1) to Google and your IMAP/SMTP provider to operate your account, and (2) to the AI provider you optionally configure.
+We do not sell, rent, or share your data. The only outbound transmissions are: (1) to Google and your IMAP/SMTP provider to operate your account, (2) to the AI provider you optionally configure, and (3) to our licensing provider (Lemon Squeezy) to verify your license key, as described above.
 
 ## Data retention and deletion
 

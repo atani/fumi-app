@@ -48,12 +48,21 @@ async function lsPost(path: string, body: Record<string, string>): Promise<LsAct
     body: new URLSearchParams(body).toString(),
   };
 
+  let res: Response;
   if (isTauri()) {
     const { fetch: tauriFetch } = await import("@tauri-apps/plugin-http");
-    const res = await tauriFetch(url, init);
-    return (await res.json()) as LsActivateResponse;
+    res = await tauriFetch(url, init);
+  } else {
+    res = await fetch(url, init);
   }
-  const res = await fetch(url, init);
+
+  // Treat transient server errors (rate limit / 5xx) as a network failure so
+  // callers keep an already-activated license instead of wrongly clearing it.
+  // Definitive client responses (2xx / 4xx like 400/404 for a bad key) are
+  // parsed so activate can distinguish an invalid key.
+  if (res.status === 429 || res.status >= 500) {
+    throw new Error(`Lemon Squeezy licensing server error (${res.status})`);
+  }
   return (await res.json()) as LsActivateResponse;
 }
 
@@ -87,8 +96,10 @@ async function setSetting(key: string, value: string): Promise<void> {
       "INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT(key) DO UPDATE SET value = $2",
       [key, value],
     );
-  } catch {
-    // DB unavailable (tests / browser-only) — ignore.
+  } catch (err) {
+    // A failed write of a license/trial key means a paid activation may not
+    // persist; leave a trace so a "paid but locked out" report is diagnosable.
+    console.error(`Failed to persist license setting "${key}":`, err);
   }
 }
 
@@ -190,19 +201,26 @@ export async function validateStoredLicense(): Promise<boolean> {
       instance_id: stored.instanceId,
     });
   } catch {
-    return true; // offline grace — don't lock out a paying user
+    return true; // offline / transient server error — don't lock out a paying user
   }
 
-  if (res.valid && productMatches(res.meta)) {
+  // Only an explicit `valid: false` clears the license. Product verification
+  // happens at activation time, not on every launch — re-checking `meta` here
+  // would wrongly wipe a valid license when the validate response omits `meta`.
+  if (res.valid === false) {
+    console.warn("License reported invalid by server; clearing local license.");
+    await deleteSetting("license_key");
+    await deleteSetting("license_instance_id");
+    await deleteSetting("license_validated_at");
+    return false;
+  }
+
+  // valid === true, or an ambiguous response: keep the license (never lock out
+  // a paying user on an unexpected payload).
+  if (res.valid === true) {
     await setSetting("license_validated_at", String(Date.now()));
-    return true;
   }
-
-  // Explicitly invalid/deactivated upstream — clear local license.
-  await deleteSetting("license_key");
-  await deleteSetting("license_instance_id");
-  await deleteSetting("license_validated_at");
-  return false;
+  return true;
 }
 
 /** Deactivate this installation's license (frees a seat). */

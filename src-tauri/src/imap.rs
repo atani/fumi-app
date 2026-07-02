@@ -66,7 +66,13 @@ fn extract_snippet(text: &str, max_len: usize) -> String {
     if trimmed.len() <= max_len {
         trimmed.to_string()
     } else {
-        format!("{}...", &trimmed[..max_len])
+        // Back off to a UTF-8 char boundary so slicing never splits a multibyte
+        // character (Japanese, emoji, …), which would panic and abort the fetch.
+        let mut end = max_len;
+        while end > 0 && !trimmed.is_char_boundary(end) {
+            end -= 1;
+        }
+        format!("{}...", &trimmed[..end])
     }
 }
 

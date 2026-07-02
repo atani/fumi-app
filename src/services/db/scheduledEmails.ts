@@ -47,6 +47,20 @@ export async function getPendingScheduledEmails(
   );
 }
 
+/**
+ * Atomically claim a due email for sending by moving it from 'pending' to
+ * 'sending'. Returns true only if THIS call transitioned the row, so two
+ * overlapping checker runs can never both send the same email.
+ */
+export async function claimScheduledEmail(id: string): Promise<boolean> {
+  const db = await getDb();
+  const result = await db.execute(
+    "UPDATE scheduled_emails SET status = 'sending' WHERE id = $1 AND status = 'pending'",
+    [id],
+  );
+  return (result?.rowsAffected ?? 0) > 0;
+}
+
 export async function updateScheduledEmailStatus(
   id: string,
   status: "sent" | "failed",

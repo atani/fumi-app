@@ -185,6 +185,26 @@ describe("validateStoredLicense", () => {
     expect(settings.has("license_instance_id")).toBe(false);
     expect(settings.has("license_validated_at")).toBe(false);
   });
+
+  it("keeps the license on a transient server error (429/5xx), never locking out", async () => {
+    seedLicense();
+    const fetchMock = stubFetch();
+    // A rate-limit / outage must not clear a paid license.
+    fetchMock.mockResolvedValue({ status: 503, json: async () => ({}) });
+
+    expect(await validateStoredLicense()).toBe(true);
+    expect(settings.get("license_key")).toBe("K");
+  });
+
+  it("keeps the license on an ambiguous response with no 'valid' field", async () => {
+    seedLicense();
+    const fetchMock = stubFetch();
+    // e.g. an unexpected 200 body missing `valid`/`meta` must not wipe a license.
+    fetchMock.mockResolvedValue({ json: async () => ({ license_key: {} }) });
+
+    expect(await validateStoredLicense()).toBe(true);
+    expect(settings.get("license_key")).toBe("K");
+  });
 });
 
 describe("deactivateLicense", () => {
