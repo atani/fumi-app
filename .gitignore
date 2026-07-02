@@ -29,3 +29,6 @@ playwright-report/
 
 # Local build secrets
 .env
+
+# review-fix-loop work dir
+.agents/
