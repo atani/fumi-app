@@ -97,6 +97,23 @@ export async function notifyFollowUp(subject: string): Promise<void> {
 }
 
 /**
+ * Notify that a message failed to send. Used for background (undo-delay) sends,
+ * where the composer is already closed so an inline error would be invisible.
+ */
+export async function notifySendFailed(subject: string): Promise<void> {
+  if (!isTauri() || !permissionGranted) return;
+
+  const { sendNotification } = await import("@tauri-apps/plugin-notification");
+
+  sendNotification({
+    title: i18n.t("notifications.sendFailedTitle"),
+    body: i18n.t("notifications.sendFailedBody", {
+      subject: subject || i18n.t("notifications.noSubject"),
+    }),
+  });
+}
+
+/**
  * Notify about new messages, filtering out muted threads and applying VIP rules.
  * If VIPs are configured for the account, only notify for threads from VIP senders.
  * If no VIPs are configured, notify for all non-muted threads.

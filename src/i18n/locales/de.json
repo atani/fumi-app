@@ -67,7 +67,9 @@
     "followUpTitle": "Erinnerung an Nachfassen",
     "followUpBody": "Noch keine Antwort: {{subject}}",
     "noSubject": "(Kein Betreff)",
-    "newMessages": "{{count}} neue Nachrichten"
+    "newMessages": "{{count}} neue Nachrichten",
+    "sendFailedTitle": "Nachricht nicht gesendet",
+    "sendFailedBody": "Senden fehlgeschlagen: {{subject}}"
   },
   "app": {
     "loading": "Wird geladen…",

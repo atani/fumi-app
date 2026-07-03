@@ -67,7 +67,9 @@
     "followUpTitle": "フォローアップのリマインダー",
     "followUpBody": "まだ返信がありません: {{subject}}",
     "noSubject": "(件名なし)",
-    "newMessages": "新着メッセージ {{count}} 件"
+    "newMessages": "新着メッセージ {{count}} 件",
+    "sendFailedTitle": "メールを送信できませんでした",
+    "sendFailedBody": "送信に失敗しました: {{subject}}"
   },
   "app": {
     "loading": "読み込み中…",

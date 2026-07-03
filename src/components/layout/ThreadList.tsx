@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, memo } from "react";
 import { useTranslation } from "react-i18next";
 import { useDraggable } from "@dnd-kit/core";
 import { useThreadStore } from "../../stores/threadStore";
@@ -61,7 +61,20 @@ interface DraggableThreadItemProps {
   onContextMenu: (e: React.MouseEvent, threadId: string) => void;
 }
 
-function DraggableThreadItem({
+/** Formats a thread date as a time (today) or short date. Module-level so the
+ * reference is stable and doesn't defeat the memoized row below. */
+function formatThreadDate(dateStr: string | null): string {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  const now = new Date();
+  const isToday = date.toDateString() === now.toDateString();
+  if (isToday) {
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  return date.toLocaleDateString([], { month: "short", day: "numeric" });
+}
+
+const DraggableThreadItem = memo(function DraggableThreadItem({
   thread,
   isActive,
   isSelected,
@@ -151,7 +164,7 @@ function DraggableThreadItem({
       </p>
     </button>
   );
-}
+});
 
 interface ThreadListProps {
   onOpenSearch?: () => void;
@@ -184,20 +197,6 @@ export function ThreadList({ onOpenSearch }: ThreadListProps) {
     if (!isInbox || activeCategory === null) return threads;
     return threads.filter((t) => categoryMap[t.id] === activeCategory);
   }, [threads, isInbox, activeCategory, categoryMap]);
-
-  const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return "";
-    const date = new Date(dateStr);
-    const now = new Date();
-    const isToday = date.toDateString() === now.toDateString();
-    if (isToday) {
-      return date.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    }
-    return date.toLocaleDateString([], { month: "short", day: "numeric" });
-  };
 
   const handleThreadClick = useCallback(
     (e: React.MouseEvent, threadId: string) => {
@@ -485,7 +484,7 @@ export function ThreadList({ onOpenSearch }: ThreadListProps) {
               isMultiSelect={isMultiSelect}
               isRead={thread.is_read}
               density={emailDensity}
-              formatDate={formatDate}
+              formatDate={formatThreadDate}
               onClick={handleThreadClick}
               onDoubleClick={readingPanePosition === "hidden" ? handleThreadDoubleClick : undefined}
               onCheckboxClick={handleCheckboxClick}

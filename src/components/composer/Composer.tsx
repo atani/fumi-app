@@ -6,6 +6,7 @@ import { useAccountStore } from "../../stores/accountStore";
 import { sendEmail } from "../../services/gmail/send";
 import { archiveThread } from "../../services/emailActions";
 import { scheduleSend } from "../../services/gmail/scheduledSend";
+import { notifySendFailed } from "../../services/notifications/notificationManager";
 import type { ScheduledSend } from "../../services/gmail/scheduledSend";
 import {
   startAutoSave,
@@ -243,7 +244,11 @@ export function Composer() {
         .catch((err: unknown) => {
           // "Send cancelled" is expected on undo — ignore it
           if (err instanceof Error && err.message === "Send cancelled") return;
-          setError(err instanceof Error ? err.message : t("composer.failedToSend"));
+          // The composer is already closed here, so an inline error would be
+          // invisible and the failed send would look like a success. Surface it
+          // via a notification and a persisted log instead.
+          console.error("Scheduled (undo-delay) send failed:", err);
+          void notifySendFailed(subject);
         });
     } else {
       // Send immediately (no undo delay)

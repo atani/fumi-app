@@ -2,6 +2,17 @@ import { useRef, useEffect, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import DOMPurify from "dompurify";
 import { ShieldCheck } from "lucide-react";
+import { LinkConfirmDialog } from "./LinkConfirmDialog";
+
+/** Open a URL in the user's external browser (or a new tab outside Tauri). */
+async function openExternalUrl(url: string): Promise<void> {
+  if (typeof window !== "undefined" && "__TAURI_INTERNALS__" in window) {
+    const { openUrl } = await import("@tauri-apps/plugin-opener");
+    await openUrl(url);
+  } else {
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
+}
 
 // Block CSS exfiltration via url() inside inline style attributes.
 // DOMPurify hooks are global singletons, so register once at module load.
@@ -41,6 +52,29 @@ export function EmailRenderer({
   const { t } = useTranslation();
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [hasBlockedImages, setHasBlockedImages] = useState(false);
+  const [linkPrompt, setLinkPrompt] = useState<{
+    url: string;
+    text: string | null;
+  } | null>(null);
+
+  // Intercept link clicks inside the email so they never navigate the iframe and
+  // always go through the anti-phishing confirmation before opening externally.
+  const handleIframeClick = useCallback((e: MouseEvent) => {
+    const target = e.target as HTMLElement | null;
+    const anchor = target?.closest?.("a") as HTMLAnchorElement | null;
+    if (!anchor) return;
+    const href = anchor.getAttribute("href");
+    if (!href) return;
+
+    e.preventDefault();
+    if (/^https?:/i.test(href)) {
+      // Show destination + display/href domain-mismatch warning before opening.
+      setLinkPrompt({ url: href, text: anchor.textContent?.trim() || null });
+    } else if (/^mailto:/i.test(href)) {
+      void openExternalUrl(href);
+    }
+    // Other schemes (tel:, javascript:, …) are intentionally ignored.
+  }, []);
 
   const sanitize = useCallback(
     (dirty: string): string => {
@@ -174,14 +208,19 @@ export function EmailRenderer({
 
     // Also listen for load events (images, etc.)
     const iframe = iframeRef.current;
-    const handleLoad = () => resizeIframe();
+    const handleLoad = () => {
+      resizeIframe();
+      // srcdoc is same-origin, so the parent can intercept in-email link clicks.
+      iframe?.contentDocument?.addEventListener("click", handleIframeClick);
+    };
     iframe?.addEventListener("load", handleLoad);
 
     return () => {
       clearTimeout(timerId);
       iframe?.removeEventListener("load", handleLoad);
+      iframe?.contentDocument?.removeEventListener("click", handleIframeClick);
     };
-  }, [html, sanitize, writeToIframe, resizeIframe]);
+  }, [html, sanitize, writeToIframe, resizeIframe, handleIframeClick]);
 
   // Plain text fallback
   if (!html) {
@@ -220,6 +259,16 @@ export function EmailRenderer({
         data-testid="email-renderer-iframe"
         className="block w-full border-none"
         style={{ minHeight: "50px" }}
+      />
+      <LinkConfirmDialog
+        isOpen={linkPrompt !== null}
+        url={linkPrompt?.url ?? ""}
+        displayText={linkPrompt?.text ?? null}
+        onConfirm={() => {
+          if (linkPrompt) void openExternalUrl(linkPrompt.url);
+          setLinkPrompt(null);
+        }}
+        onCancel={() => setLinkPrompt(null)}
       />
     </div>
   );

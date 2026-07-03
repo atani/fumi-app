@@ -67,7 +67,9 @@
     "followUpTitle": "Follow-up reminder",
     "followUpBody": "No reply yet: {{subject}}",
     "noSubject": "(No subject)",
-    "newMessages": "{{count}} new messages"
+    "newMessages": "{{count}} new messages",
+    "sendFailedTitle": "Message not sent",
+    "sendFailedBody": "Failed to send: {{subject}}"
   },
   "app": {
     "loading": "Loading…",
