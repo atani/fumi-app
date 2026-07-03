@@ -71,6 +71,11 @@
     "sendFailedTitle": "Message not sent",
     "sendFailedBody": "Failed to send: {{subject}}"
   },
+  "error": {
+    "title": "Something went wrong",
+    "description": "Fumi hit an unexpected error. Reloading usually fixes it — your mail and settings are safe on your device.",
+    "reload": "Reload Fumi"
+  },
   "app": {
     "loading": "Loading…",
     "unsentDraft": "You have an unsent draft",

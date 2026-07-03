@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { App } from "./App";
 import { ThreadWindow } from "./components/email/ThreadWindow";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { initLogForwarding } from "./services/logging";
 import "./i18n";
 import "./styles/globals.css";
@@ -28,6 +29,8 @@ function Root() {
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <Root />
+    <ErrorBoundary>
+      <Root />
+    </ErrorBoundary>
   </React.StrictMode>,
 );

@@ -120,3 +120,16 @@ test.describe("Accessibility smoke", () => {
     await expect(page).toHaveTitle("Fumi");
   });
 });
+
+test.describe("Licensing (browser mode)", () => {
+  // In browser mode there is no license, so the app resolves to the free trial
+  // and the trial banner is shown above every route (this is the revenue gate).
+  test("shows the trial banner with buy and enter-key actions", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await expect(page.getByTestId("trial-banner")).toBeVisible();
+    await expect(page.getByTestId("trial-buy-button")).toBeVisible();
+    await expect(page.getByTestId("trial-enter-key-button")).toBeVisible();
+  });
+});
