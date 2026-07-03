@@ -78,6 +78,7 @@
   },
   "labels": {
     "title": "Apply labels",
+    "bulkTitle": "Apply labels to {{count}} conversations",
     "noUserLabels": "No user labels found",
     "cancel": "Cancel",
     "saving": "Saving...",

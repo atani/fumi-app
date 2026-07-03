@@ -13,15 +13,19 @@ import { getDb } from "../../services/db/connection";
 interface MoveToLabelDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  threadId: string;
   accountId: string;
+  /** Single-thread label editor (adds/removes against the thread's labels). */
+  threadId?: string;
+  /** Bulk mode: adds the chosen labels to every selected thread (add-only). */
+  threadIds?: string[];
 }
 
 export function MoveToLabelDialog({
   isOpen,
   onClose,
-  threadId,
   accountId,
+  threadId,
+  threadIds,
 }: MoveToLabelDialogProps) {
   const { t } = useTranslation();
   const { userLabels } = useLabelStore();
@@ -30,15 +34,24 @@ export function MoveToLabelDialog({
   const [originalIds, setOriginalIds] = useState<Set<string>>(new Set());
   const [isSaving, setIsSaving] = useState(false);
 
+  const bulk = threadIds !== undefined;
+  const targetThreadIds = bulk ? threadIds : threadId ? [threadId] : [];
+
   useEffect(() => {
     if (!isOpen) return;
+    // Bulk mode starts with nothing checked — selecting a label adds it to all.
+    if (bulk || !threadId) {
+      setCheckedIds(new Set());
+      setOriginalIds(new Set());
+      return;
+    }
 
     void getThreadLabelIds(threadId, accountId).then((ids) => {
       const idSet = new Set(ids);
       setCheckedIds(idSet);
       setOriginalIds(idSet);
     });
-  }, [isOpen, threadId, accountId]);
+  }, [isOpen, threadId, accountId, bulk]);
 
   const toggleLabel = useCallback((labelId: string) => {
     setCheckedIds((prev) => {
@@ -54,35 +67,37 @@ export function MoveToLabelDialog({
 
   const handleApply = useCallback(async () => {
     const account = getActiveAccount();
-    if (!account) return;
+    if (!account || targetThreadIds.length === 0) return;
 
     setIsSaving(true);
     try {
       const db = await getDb();
 
-      // Determine labels to add and remove
+      // Bulk mode is add-only (originalIds is empty), so toRemove is naturally [].
       const toAdd = [...checkedIds].filter((id) => !originalIds.has(id));
       const toRemove = [...originalIds].filter((id) => !checkedIds.has(id));
 
-      // Apply changes via Gmail API and local DB in parallel
+      // Apply changes via Gmail API and local DB across every target thread.
       const apiCalls: Promise<void>[] = [];
-      for (const labelId of toAdd) {
-        apiCalls.push(addLabelToThread(account, threadId, labelId));
-        apiCalls.push(
-          db.execute(
-            "INSERT OR IGNORE INTO thread_labels (thread_id, label_id, account_id) VALUES ($1, $2, $3)",
-            [threadId, labelId, accountId],
-          ).then(() => undefined),
-        );
-      }
-      for (const labelId of toRemove) {
-        apiCalls.push(removeLabelFromThread(account, threadId, labelId));
-        apiCalls.push(
-          db.execute(
-            "DELETE FROM thread_labels WHERE thread_id = $1 AND label_id = $2 AND account_id = $3",
-            [threadId, labelId, accountId],
-          ).then(() => undefined),
-        );
+      for (const tid of targetThreadIds) {
+        for (const labelId of toAdd) {
+          apiCalls.push(addLabelToThread(account, tid, labelId));
+          apiCalls.push(
+            db.execute(
+              "INSERT OR IGNORE INTO thread_labels (thread_id, label_id, account_id) VALUES ($1, $2, $3)",
+              [tid, labelId, accountId],
+            ).then(() => undefined),
+          );
+        }
+        for (const labelId of toRemove) {
+          apiCalls.push(removeLabelFromThread(account, tid, labelId));
+          apiCalls.push(
+            db.execute(
+              "DELETE FROM thread_labels WHERE thread_id = $1 AND label_id = $2 AND account_id = $3",
+              [tid, labelId, accountId],
+            ).then(() => undefined),
+          );
+        }
       }
 
       await Promise.all(apiCalls);
@@ -92,7 +107,7 @@ export function MoveToLabelDialog({
     } finally {
       setIsSaving(false);
     }
-  }, [checkedIds, originalIds, threadId, accountId, getActiveAccount, onClose]);
+  }, [checkedIds, originalIds, targetThreadIds, accountId, getActiveAccount, onClose]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -124,7 +139,9 @@ export function MoveToLabelDialog({
       >
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-semibold text-text-primary">
-            {t("email.labels.title")}
+            {bulk
+              ? t("email.labels.bulkTitle", { count: targetThreadIds.length })
+              : t("email.labels.title")}
           </h3>
           <button
             onClick={onClose}
