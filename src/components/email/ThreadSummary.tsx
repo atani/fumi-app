@@ -3,6 +3,8 @@ import { useTranslation } from "react-i18next";
 import { Sparkles, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import type { Message } from "../../types";
 import { summarizeThread } from "../../services/ai/aiService";
+import { AiNotConfiguredError } from "../../services/ai/errors";
+import { AiSetupPrompt } from "../ai/AiSetupPrompt";
 
 interface ThreadSummaryProps {
   messages: Message[];
@@ -20,6 +22,7 @@ export function ThreadSummary({
   const [isLoading, setIsLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [needsAiSetup, setNeedsAiSetup] = useState(false);
 
   const handleSummarize = useCallback(async () => {
     if (summary) {
@@ -29,14 +32,19 @@ export function ThreadSummary({
 
     setIsLoading(true);
     setError(null);
+    setNeedsAiSetup(false);
     try {
       const result = await summarizeThread(messages, threadId, accountId);
       setSummary(result);
       setIsExpanded(true);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : t("email.summary.generateFailed"),
-      );
+      if (err instanceof AiNotConfiguredError) {
+        setNeedsAiSetup(true);
+      } else {
+        setError(
+          err instanceof Error ? err.message : t("email.summary.generateFailed"),
+        );
+      }
     } finally {
       setIsLoading(false);
     }
@@ -63,6 +71,8 @@ export function ThreadSummary({
             <ChevronDown className="h-3 w-3" />
           ))}
       </button>
+
+      {needsAiSetup && <AiSetupPrompt />}
 
       {error && (
         <div className="mt-2 rounded-lg border border-danger/30 bg-danger/10 px-4 py-2 text-sm text-danger">

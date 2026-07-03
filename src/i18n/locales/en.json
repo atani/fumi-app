@@ -71,6 +71,11 @@
     "sendFailedTitle": "Message not sent",
     "sendFailedBody": "Failed to send: {{subject}}"
   },
+  "ai": {
+    "setupTitle": "Turn on AI features",
+    "setupDescription": "Add your own API key (Anthropic, OpenAI, or Google) in Settings to use summaries, smart replies, and Ask Inbox.",
+    "setupButton": "Set up AI"
+  },
   "error": {
     "title": "Something went wrong",
     "description": "Fumi hit an unexpected error. Reloading usually fixes it — your mail and settings are safe on your device.",

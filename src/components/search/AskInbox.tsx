@@ -2,6 +2,8 @@ import { useState, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Loader2, Sparkles } from "lucide-react";
 import { askInbox } from "../../services/ai/askInbox";
+import { AiNotConfiguredError } from "../../services/ai/errors";
+import { AiSetupPrompt } from "../ai/AiSetupPrompt";
 import { useAccountStore } from "../../stores/accountStore";
 
 interface AskInboxProps {
@@ -13,6 +15,7 @@ export function AskInbox({ query }: AskInboxProps) {
   const [answer, setAnswer] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [needsAiSetup, setNeedsAiSetup] = useState(false);
   const lastQuery = useRef<string>("");
   const { getActiveAccount } = useAccountStore();
 
@@ -29,6 +32,7 @@ export function AskInbox({ query }: AskInboxProps) {
 
     setIsLoading(true);
     setError(null);
+    setNeedsAiSetup(false);
     setAnswer(null);
     lastQuery.current = trimmed;
 
@@ -36,9 +40,11 @@ export function AskInbox({ query }: AskInboxProps) {
       const result = await askInbox(account, trimmed);
       setAnswer(result);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : t("search.askError"),
-      );
+      if (err instanceof AiNotConfiguredError) {
+        setNeedsAiSetup(true);
+      } else {
+        setError(err instanceof Error ? err.message : t("search.askError"));
+      }
     } finally {
       setIsLoading(false);
     }
@@ -46,7 +52,13 @@ export function AskInbox({ query }: AskInboxProps) {
 
   return (
     <div className="max-h-80 overflow-y-auto" data-testid="ask-inbox-panel">
-      {!answer && !isLoading && !error && (
+      {needsAiSetup && (
+        <div className="px-4 py-4">
+          <AiSetupPrompt />
+        </div>
+      )}
+
+      {!answer && !isLoading && !error && !needsAiSetup && (
         <div className="px-4 py-6 text-center">
           <button
             onClick={() => void handleAsk()}
