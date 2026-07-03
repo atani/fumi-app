@@ -8,6 +8,7 @@ import { DndProvider } from "../dnd/DndProvider";
 import { Composer } from "../composer/Composer";
 import { CommandPalette } from "../search/CommandPalette";
 import { ShortcutsHelp } from "../search/ShortcutsHelp";
+import { WelcomeHint } from "../onboarding/WelcomeHint";
 import { OfflineBanner } from "../ui/OfflineBanner";
 import { EmptyState } from "../ui/EmptyState";
 import { ReadingPaneIllustration } from "../ui/illustrations";
@@ -275,6 +276,7 @@ export function MailLayout() {
         isOpen={isShortcutsHelpOpen}
         onClose={() => setIsShortcutsHelpOpen(false)}
       />
+      <WelcomeHint />
       {selectedThreadId && activeAccountId && (
         <AiTaskExtractDialog
           isOpen={isTaskExtractOpen}

@@ -1,6 +1,7 @@
 import type { Account } from "../../types";
 import { getDb } from "../db/connection";
 import { callAI, getAIConfig } from "./providerManager";
+import { AiNotConfiguredError } from "./errors";
 
 /**
  * Ask a natural language question about the user's inbox.
@@ -13,7 +14,7 @@ export async function askInbox(
 ): Promise<string> {
   const config = await getAIConfig();
   if (!config) {
-    throw new Error("AI is not configured. Set an API key in Settings.");
+    throw new AiNotConfiguredError();
   }
 
   const db = await getDb();
