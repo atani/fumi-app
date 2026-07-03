@@ -71,6 +71,11 @@
     "sendFailedTitle": "メールを送信できませんでした",
     "sendFailedBody": "送信に失敗しました: {{subject}}"
   },
+  "error": {
+    "title": "問題が発生しました",
+    "description": "予期しないエラーが発生しました。多くの場合は再読み込みで解消します。メールと設定は端末内に安全に保存されています。",
+    "reload": "Fumi を再読み込み"
+  },
   "app": {
     "loading": "読み込み中…",
     "unsentDraft": "未送信の下書きがあります",

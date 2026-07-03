@@ -71,6 +71,11 @@
     "sendFailedTitle": "Nachricht nicht gesendet",
     "sendFailedBody": "Senden fehlgeschlagen: {{subject}}"
   },
+  "error": {
+    "title": "Etwas ist schiefgelaufen",
+    "description": "In Fumi ist ein unerwarteter Fehler aufgetreten. Ein Neuladen behebt das meist — deine E-Mails und Einstellungen bleiben sicher auf deinem Gerät.",
+    "reload": "Fumi neu laden"
+  },
   "app": {
     "loading": "Wird geladen…",
     "unsentDraft": "Du hast einen ungesendeten Entwurf",
