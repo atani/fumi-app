@@ -203,4 +203,38 @@ describe("tokenManager", () => {
       expect(apiCall).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe("concurrent refresh dedup", () => {
+    it("shares a single refresh across concurrent getValidAccessToken calls", async () => {
+      // Expired token → both callers need a refresh.
+      const account = makeAccount({ token_expiry: 1 });
+
+      let resolveRefresh: (v: {
+        access_token: string;
+        refresh_token: string | null;
+        expires_in: number;
+      }) => void = () => {};
+      mockRefreshAccessToken.mockReturnValue(
+        new Promise((resolve) => {
+          resolveRefresh = resolve;
+        }),
+      );
+
+      const p1 = getValidAccessToken(account);
+      const p2 = getValidAccessToken(account);
+
+      resolveRefresh({
+        access_token: "shared-token",
+        refresh_token: null,
+        expires_in: 3600,
+      });
+
+      const [t1, t2] = await Promise.all([p1, p2]);
+
+      // Racing refreshes make Google invalidate the refresh token → sign-out.
+      expect(mockRefreshAccessToken).toHaveBeenCalledTimes(1);
+      expect(t1).toBe("shared-token");
+      expect(t2).toBe("shared-token");
+    });
+  });
 });

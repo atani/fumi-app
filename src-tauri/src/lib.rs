@@ -66,8 +66,13 @@ async fn start_oauth_server(app: tauri::AppHandle) -> Result<u16, String> {
             Ok(server) => {
                 let app_handle = app.clone();
                 std::thread::spawn(move || {
-                    if let Some(request) = server.incoming_requests().next() {
+                    // Keep serving until the real OAuth callback arrives. A first
+                    // hit that isn't the callback (favicon, a browser probe, or a
+                    // consent-denied redirect without code) must not drop the
+                    // server, or the actual callback would hang until timeout.
+                    for request in server.incoming_requests() {
                         let url_str = format!("http://localhost{}", request.url());
+
                         if let Ok(parsed) = url::Url::parse(&url_str) {
                             let params: std::collections::HashMap<_, _> =
                                 parsed.query_pairs().into_owned().collect();
@@ -91,8 +96,12 @@ async fn start_oauth_server(app: tauri::AppHandle) -> Result<u16, String> {
                                         state: state.clone(),
                                     },
                                 );
+                                break;
                             }
                         }
+
+                        // Not the callback — acknowledge and keep waiting.
+                        let _ = request.respond(tiny_http::Response::empty(204));
                     }
                 });
                 return Ok(port);
