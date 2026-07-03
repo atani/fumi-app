@@ -1,6 +1,7 @@
 import type { Message } from "../../types";
 import { getDb } from "../db/connection";
 import { callAI, getAIConfig } from "./providerManager";
+import { AiNotConfiguredError } from "./errors";
 
 export type ThreadCategory =
   | "Primary"
@@ -58,7 +59,7 @@ export async function summarizeThread(
   if (cached) return cached;
 
   const config = await getAIConfig();
-  if (!config) throw new Error("AI is not configured. Set an API key in Settings.");
+  if (!config) throw new AiNotConfiguredError();
 
   const systemPrompt =
     "You are an email assistant. Summarize the email thread in 2-3 concise sentences. Focus on the key points and any action items. Do not use markdown formatting.";
@@ -90,7 +91,7 @@ export async function suggestReplies(
   }
 
   const config = await getAIConfig();
-  if (!config) throw new Error("AI is not configured. Set an API key in Settings.");
+  if (!config) throw new AiNotConfiguredError();
 
   const systemPrompt =
     "You are an email assistant. Based on the email thread, suggest 3 short reply options. Each reply should be 1-2 sentences. Return ONLY a JSON array of 3 strings, no other text.";
@@ -130,7 +131,7 @@ export async function categorizeThread(
   if (cached) return cached as ThreadCategory;
 
   const config = await getAIConfig();
-  if (!config) throw new Error("AI is not configured. Set an API key in Settings.");
+  if (!config) throw new AiNotConfiguredError();
 
   const systemPrompt =
     "You are an email categorizer. Classify the email thread into exactly one of these categories: Primary, Updates, Promotions, Social, Newsletters. Return ONLY the category name, nothing else.";
@@ -187,7 +188,7 @@ export async function extractTasksFromThread(
   }
 
   const config = await getAIConfig();
-  if (!config) throw new Error("AI is not configured. Set an API key in Settings.");
+  if (!config) throw new AiNotConfiguredError();
 
   const systemPrompt =
     "You are a task extraction assistant. Analyze the email thread and extract actionable tasks. Return ONLY a JSON array of objects with these fields: title (string, concise action item), description (string or null, brief context), priority (\"high\", \"medium\", or \"low\"), due_date (ISO date string or null if no deadline mentioned). If there are no tasks, return an empty array [].";
