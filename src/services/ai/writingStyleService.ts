@@ -1,6 +1,7 @@
 import type { Account, Message, WritingStyleProfile } from "../../types";
 import { getDb } from "../db/connection";
 import { callAI, getAIConfig } from "./providerManager";
+import { AiNotConfiguredError } from "./errors";
 
 /**
  * Fetch the cached writing style profile for an account, or null if none exists.
@@ -26,7 +27,7 @@ export async function analyzeWritingStyle(
 ): Promise<WritingStyleProfile> {
   const config = await getAIConfig();
   if (!config) {
-    throw new Error("AI is not configured. Set an API key in Settings.");
+    throw new AiNotConfiguredError();
   }
 
   const db = await getDb();
@@ -118,7 +119,7 @@ export async function generateAutoReply(
 ): Promise<string> {
   const config = await getAIConfig();
   if (!config) {
-    throw new Error("AI is not configured. Set an API key in Settings.");
+    throw new AiNotConfiguredError();
   }
 
   // Try to load the writing style profile
