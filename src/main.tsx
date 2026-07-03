@@ -3,8 +3,12 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { App } from "./App";
 import { ThreadWindow } from "./components/email/ThreadWindow";
+import { initLogForwarding } from "./services/logging";
 import "./i18n";
 import "./styles/globals.css";
+
+// Persist console.warn/error to the log file so support can diagnose issues.
+void initLogForwarding();
 
 function Root() {
   const params = new URLSearchParams(window.location.search);

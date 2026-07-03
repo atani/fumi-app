@@ -597,6 +597,22 @@ const MIGRATIONS = [
         ON smart_label_rules(account_id, enabled);
     `,
   },
+  {
+    version: 29,
+    // Hot-path indexes: the message list (opening a thread), the thread list
+    // (every navigation + 60s post-sync), and its ordering all scanned full
+    // tables because the primary keys are id/thread_id-leading.
+    sql: `
+      CREATE INDEX IF NOT EXISTS idx_messages_thread
+        ON messages(account_id, thread_id, date);
+
+      CREATE INDEX IF NOT EXISTS idx_thread_labels_label
+        ON thread_labels(account_id, label_id, thread_id);
+
+      CREATE INDEX IF NOT EXISTS idx_threads_account_recent
+        ON threads(account_id, last_message_at);
+    `,
+  },
 ];
 
 export async function runMigrations(): Promise<void> {

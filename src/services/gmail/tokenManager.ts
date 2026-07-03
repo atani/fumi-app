@@ -82,12 +82,13 @@ async function doRefresh(account: Account): Promise<string> {
  * it refreshes the token, updates the DB and store, then returns the new token.
  * Concurrent calls for the same account share a single refresh request.
  */
-export async function getValidAccessToken(account: Account): Promise<string> {
-  if (account.access_token && !isTokenExpiringSoon(account)) {
-    return account.access_token;
-  }
-
-  // Deduplicate concurrent refresh attempts for the same account
+/**
+ * Refresh the token, sharing a single in-flight request per account. All callers
+ * (proactive expiry refresh AND 401 retry) must go through this so concurrent
+ * failures can't fire multiple racing refreshes — Google invalidates the refresh
+ * token when it sees parallel refreshes, which signs the user out.
+ */
+function dedupedRefresh(account: Account): Promise<string> {
   const existing = pendingRefreshes.get(account.id);
   if (existing) {
     return existing;
@@ -98,6 +99,13 @@ export async function getValidAccessToken(account: Account): Promise<string> {
   });
   pendingRefreshes.set(account.id, refreshPromise);
   return refreshPromise;
+}
+
+export async function getValidAccessToken(account: Account): Promise<string> {
+  if (account.access_token && !isTokenExpiringSoon(account)) {
+    return account.access_token;
+  }
+  return dedupedRefresh(account);
 }
 
 /**
@@ -112,10 +120,10 @@ export async function withTokenRefresh<T>(
   try {
     return await apiCall(token);
   } catch (error) {
-    // Retry once on 401
+    // Retry once on 401 — through the shared dedup so concurrent 401s don't
+    // trigger racing refreshes.
     if (error instanceof Error && error.message.includes("(401)")) {
-      // Force a fresh refresh by treating the current token as expired
-      const freshToken = await doRefresh(account);
+      const freshToken = await dedupedRefresh(account);
       return apiCall(freshToken);
     }
     throw error;

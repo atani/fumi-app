@@ -1,6 +1,6 @@
 # Fumi
 
-A fast, local-first desktop email client for Gmail and IMAP — built with Tauri v2, React 19, and TypeScript. Your mail stays on your device. English and 日本語 included.
+A fast, local-first desktop email client for Gmail and IMAP — built with Tauri v2, React 19, and TypeScript. Your mail stays on your device. English, 日本語, and Deutsch included.
 
 ## Features
 

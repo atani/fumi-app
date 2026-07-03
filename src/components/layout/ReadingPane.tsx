@@ -174,6 +174,17 @@ export function ReadingPane({ onBack, showBackButton }: ReadingPaneProps = {}) {
     return () => document.removeEventListener("keydown", handler);
   }, [selectedThreadId, activeAccountId]);
 
+  // The thread context menu and keyboard shortcuts request the move-to-label
+  // dialog via this event after selecting a thread. Without this listener those
+  // "Move to label" actions silently did nothing.
+  useEffect(() => {
+    const openMoveDialog = () => {
+      if (selectedThreadId && activeAccountId) setIsMoveDialogOpen(true);
+    };
+    window.addEventListener("velo-move-to-folder", openMoveDialog);
+    return () => window.removeEventListener("velo-move-to-folder", openMoveDialog);
+  }, [selectedThreadId, activeAccountId]);
+
   const handleRemoveLabel = useCallback(
     async (labelId: string) => {
       if (!account || !selectedThreadId) return;

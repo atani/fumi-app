@@ -96,9 +96,17 @@ export function MailLayout() {
     [emailListWidth],
   );
 
+  // True while a sync is in flight, to prevent overlapping runs.
+  const syncingRef = useRef(false);
+
   const doSync = useCallback(async () => {
     const account = getActiveAccount();
     if (!account?.access_token && !account?.refresh_token) return;
+
+    // Guard against overlapping syncs: the 60s interval, tray "check mail", and
+    // account changes can all trigger doSync while a slow sync is still running.
+    if (syncingRef.current) return;
+    syncingRef.current = true;
 
     setSyncing(true);
     setSyncError(null);
@@ -119,6 +127,7 @@ export function MailLayout() {
       console.error("Sync error:", msg);
       setSyncError(msg);
     } finally {
+      syncingRef.current = false;
       setSyncing(false);
     }
   }, [getActiveAccount, activeAccountId, loadThreads, setThreads, setSyncing]);

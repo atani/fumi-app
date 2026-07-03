@@ -8,11 +8,13 @@ vi.mock("../db/accounts", () => ({
 
 const mockGetDueScheduledEmails = vi.fn();
 const mockUpdateScheduledEmailStatus = vi.fn();
+const mockClaimScheduledEmail = vi.fn();
 
 vi.mock("../db/scheduledEmails", () => ({
   getDueScheduledEmails: () => mockGetDueScheduledEmails(),
   updateScheduledEmailStatus: (...args: unknown[]) =>
     mockUpdateScheduledEmailStatus(...args),
+  claimScheduledEmail: (...args: unknown[]) => mockClaimScheduledEmail(...args),
 }));
 
 const mockSendEmail = vi.fn();
@@ -44,6 +46,8 @@ describe("scheduledSendChecker", () => {
     vi.useFakeTimers();
     mockGetDueScheduledEmails.mockResolvedValue([]);
     mockUpdateScheduledEmailStatus.mockResolvedValue(undefined);
+    // Default: the row is successfully claimed for sending.
+    mockClaimScheduledEmail.mockResolvedValue(true);
   });
 
   afterEach(() => {
@@ -194,5 +198,63 @@ describe("scheduledSendChecker", () => {
     expect(mockGetAccount).not.toHaveBeenCalled();
     expect(mockSendEmail).not.toHaveBeenCalled();
     expect(mockUpdateScheduledEmailStatus).not.toHaveBeenCalled();
+  });
+
+  it("does not send when the row is already claimed (double-send guard)", async () => {
+    mockGetDueScheduledEmails.mockResolvedValue([
+      {
+        id: "se-dup",
+        account_id: "acc-1",
+        to_addresses: "d@example.com",
+        cc: null,
+        bcc: null,
+        subject: "Dup",
+        body: "body",
+        attachments: null,
+        scheduled_at: "2024-01-01T09:00:00Z",
+        status: "pending",
+        error: null,
+        created_at: "2024-01-01T00:00:00Z",
+      },
+    ]);
+    // Another run already claimed this row.
+    mockClaimScheduledEmail.mockResolvedValue(false);
+
+    startScheduledSendChecker();
+    await vi.advanceTimersByTimeAsync(60_000);
+
+    expect(mockGetAccount).not.toHaveBeenCalled();
+    expect(mockSendEmail).not.toHaveBeenCalled();
+  });
+
+  it("marks failed on malformed attachments instead of sending without them", async () => {
+    const account = makeAccount();
+    mockGetDueScheduledEmails.mockResolvedValue([
+      {
+        id: "se-bad",
+        account_id: "acc-1",
+        to_addresses: "b@example.com",
+        cc: null,
+        bcc: null,
+        subject: "Bad attachment",
+        body: "body",
+        attachments: "{not valid json",
+        scheduled_at: "2024-01-01T09:00:00Z",
+        status: "pending",
+        error: null,
+        created_at: "2024-01-01T00:00:00Z",
+      },
+    ]);
+    mockGetAccount.mockResolvedValue(account);
+
+    startScheduledSendChecker();
+    await vi.advanceTimersByTimeAsync(60_000);
+
+    expect(mockSendEmail).not.toHaveBeenCalled();
+    expect(mockUpdateScheduledEmailStatus).toHaveBeenCalledWith(
+      "se-bad",
+      "failed",
+      "Malformed attachment data",
+    );
   });
 });

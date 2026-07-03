@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { useThreadStore } from "../../stores/threadStore";
+import { useUIStore } from "../../stores/uiStore";
 
 const mockExecute = vi.fn().mockResolvedValue({ rowsAffected: 0 });
 const mockSelect = vi.fn().mockResolvedValue([]);
@@ -15,6 +16,12 @@ const mockAuthenticatedFetch = vi.fn().mockResolvedValue({});
 
 vi.mock("../gmail/api", () => ({
   authenticatedFetch: (...args: unknown[]) => mockAuthenticatedFetch(...args),
+}));
+
+const mockEnqueueOperation = vi.fn().mockResolvedValue(undefined);
+
+vi.mock("../queue/queueProcessor", () => ({
+  enqueueOperation: (...args: unknown[]) => mockEnqueueOperation(...args),
 }));
 
 const { snoozeThread, checkSnoozedThreads } = await import(
@@ -58,6 +65,10 @@ describe("snoozeService", () => {
     });
   });
 
+  beforeEach(() => {
+    useUIStore.setState({ isOnline: true });
+  });
+
   describe("snoozeThread", () => {
     it("removes thread from store optimistically", async () => {
       const account = makeAccount();
@@ -66,6 +77,41 @@ describe("snoozeService", () => {
 
       const threads = useThreadStore.getState().threads;
       expect(threads.find((t) => t.id === "thread-1")).toBeUndefined();
+    });
+
+    it("enqueues the label change instead of calling the API when offline", async () => {
+      useUIStore.setState({ isOnline: false });
+      const account = makeAccount();
+
+      await snoozeThread(account, "thread-1", "2025-01-01T09:00:00Z");
+
+      // Offline snooze must be queued (not sent directly) so it isn't lost, and
+      // the local snooze state is still written.
+      expect(mockEnqueueOperation).toHaveBeenCalledWith("acc-1", "modifyLabels", {
+        threadId: "thread-1",
+        addLabelIds: [],
+        removeLabelIds: ["INBOX"],
+      });
+      expect(mockAuthenticatedFetch).not.toHaveBeenCalled();
+      expect(mockExecute).toHaveBeenCalledWith(
+        expect.stringContaining("UPDATE threads SET snoozed_until"),
+        ["2025-01-01T09:00:00Z", "thread-1", "acc-1"],
+      );
+    });
+
+    it("reverts the optimistic removal when the label change fails", async () => {
+      mockAuthenticatedFetch.mockRejectedValueOnce(new Error("api down"));
+      const account = makeAccount();
+
+      await expect(
+        snoozeThread(account, "thread-1", "2025-01-01T09:00:00Z"),
+      ).rejects.toThrow("api down");
+
+      // Regression: without revert the thread stays hidden while Gmail still has
+      // it in INBOX, so it reappears on next sync ("snoozed but back in inbox").
+      expect(
+        useThreadStore.getState().threads.find((t) => t.id === "thread-1"),
+      ).toBeDefined();
     });
 
     it("calls Gmail API to remove INBOX label", async () => {

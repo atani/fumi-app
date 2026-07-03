@@ -7,8 +7,11 @@ import { enqueueOperation } from "./queue/queueProcessor";
 
 /**
  * Modify a Gmail thread's labels via the API, or enqueue if offline.
+ *
+ * Shared so every "move between labels" action (archive, trash, mute, snooze)
+ * goes through the same offline-queue path instead of calling the API directly.
  */
-async function modifyThreadLabels(
+export async function modifyThreadLabels(
   account: Account,
   threadId: string,
   addLabelIds: string[] = [],
