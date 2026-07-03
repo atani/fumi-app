@@ -636,7 +636,22 @@ export async function runMigrations(): Promise<void> {
     const statements = splitStatements(migration.sql);
 
     for (const statement of statements) {
-      await db.execute(statement);
+      try {
+        await db.execute(statement);
+      } catch (err) {
+        // tauri-plugin-sql runs each execute on a pooled connection, so a
+        // multi-statement transaction across execute() calls isn't reliable.
+        // Instead we make re-runs safe: if the app crashed mid-migration, the
+        // version was never recorded, so this migration re-runs on next launch.
+        // Statements that already succeeded then throw "already exists" /
+        // "duplicate column" — those are safe to skip so the migration can
+        // finish. Any other error is a real failure and must propagate.
+        const message = err instanceof Error ? err.message : String(err);
+        if (/already exists|duplicate column/i.test(message)) {
+          continue;
+        }
+        throw err;
+      }
     }
 
     await db.execute("INSERT INTO _migrations (version) VALUES ($1)", [

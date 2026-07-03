@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, lazy, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAccountStore } from "./stores/accountStore";
@@ -10,12 +10,26 @@ import { LoginPage } from "./components/auth/LoginPage";
 import { ActivationPage } from "./components/license/ActivationPage";
 import { TrialBanner } from "./components/license/TrialBanner";
 import { MailLayout } from "./components/layout/MailLayout";
-import { SettingsPage } from "./components/settings/SettingsPage";
-import { CalendarPage } from "./components/calendar/CalendarPage";
-import { TasksPage } from "./components/tasks/TasksPage";
-import { HelpPage } from "./components/help/HelpPage";
-import { AttachmentLibrary } from "./components/attachments/AttachmentLibrary";
 import { runMigrations } from "./services/db/migrations";
+
+// Secondary routes are code-split so they stay out of the initial bundle.
+const SettingsPage = lazy(() =>
+  import("./components/settings/SettingsPage").then((m) => ({ default: m.SettingsPage })),
+);
+const CalendarPage = lazy(() =>
+  import("./components/calendar/CalendarPage").then((m) => ({ default: m.CalendarPage })),
+);
+const TasksPage = lazy(() =>
+  import("./components/tasks/TasksPage").then((m) => ({ default: m.TasksPage })),
+);
+const HelpPage = lazy(() =>
+  import("./components/help/HelpPage").then((m) => ({ default: m.HelpPage })),
+);
+const AttachmentLibrary = lazy(() =>
+  import("./components/attachments/AttachmentLibrary").then((m) => ({
+    default: m.AttachmentLibrary,
+  })),
+);
 import { loadDrafts, deleteDraft } from "./services/composer/draftAutoSave";
 import type { LocalDraft } from "./services/composer/draftAutoSave";
 import type { ComposerMode } from "./stores/composerStore";
@@ -128,33 +142,35 @@ export function App() {
           </button>
         </div>
       )}
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route
-          path="/tasks"
-          element={isAuthenticated ? <TasksPage /> : <Navigate to="/login" />}
-        />
-        <Route
-          path="/calendar"
-          element={isAuthenticated ? <CalendarPage /> : <Navigate to="/login" />}
-        />
-        <Route
-          path="/settings"
-          element={isAuthenticated ? <SettingsPage /> : <Navigate to="/login" />}
-        />
-        <Route
-          path="/attachments"
-          element={isAuthenticated ? <AttachmentLibrary /> : <Navigate to="/login" />}
-        />
-        <Route
-          path="/help/:topic?"
-          element={isAuthenticated ? <HelpPage /> : <Navigate to="/login" />}
-        />
-        <Route
-          path="/*"
-          element={isAuthenticated ? <MailLayout /> : <Navigate to="/login" />}
-        />
-      </Routes>
+      <Suspense fallback={null}>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route
+            path="/tasks"
+            element={isAuthenticated ? <TasksPage /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/calendar"
+            element={isAuthenticated ? <CalendarPage /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/settings"
+            element={isAuthenticated ? <SettingsPage /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/attachments"
+            element={isAuthenticated ? <AttachmentLibrary /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/help/:topic?"
+            element={isAuthenticated ? <HelpPage /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/*"
+            element={isAuthenticated ? <MailLayout /> : <Navigate to="/login" />}
+          />
+        </Routes>
+      </Suspense>
     </>
   );
 }

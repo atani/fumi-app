@@ -23,8 +23,8 @@ async function getClientSecret(): Promise<string | null> {
 
 function isTokenExpiringSoon(account: Account): boolean {
   if (!account.token_expiry) return true;
-  // token_expiry may be stored as epoch ms (from LoginPage) or epoch seconds (from doRefresh)
-  // If value > 1e12 it's milliseconds, otherwise seconds
+  // New writes store epoch seconds. Values > 1e12 are legacy epoch-ms rows from
+  // older builds — normalize them so both keep working.
   const expiryMs =
     account.token_expiry > 1e12
       ? account.token_expiry

@@ -100,7 +100,9 @@ export function LoginPage() {
         provider: "gmail_api",
         access_token: tokens.access_token,
         refresh_token: tokens.refresh_token ?? null,
-        token_expiry: Date.now() + tokens.expires_in * 1000,
+        // Store as epoch seconds to match doRefresh (tokenManager). Keeping one
+        // unit avoids the ms/seconds ambiguity that the heuristic there guards.
+        token_expiry: Math.floor(Date.now() / 1000) + tokens.expires_in,
       };
 
       await addAccount(account);
