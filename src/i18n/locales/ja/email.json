@@ -78,6 +78,7 @@
   },
   "labels": {
     "title": "ラベルを適用",
+    "bulkTitle": "{{count}} 件の会話にラベルを適用",
     "noUserLabels": "ユーザーラベルがありません",
     "cancel": "キャンセル",
     "saving": "保存中...",

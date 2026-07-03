@@ -78,6 +78,7 @@
   },
   "labels": {
     "title": "Labels anwenden",
+    "bulkTitle": "Labels auf {{count}} Konversationen anwenden",
     "noUserLabels": "Keine eigenen Labels gefunden",
     "cancel": "Abbrechen",
     "saving": "Wird gespeichert...",

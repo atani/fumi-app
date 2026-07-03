@@ -1,4 +1,4 @@
-import { useCallback, useMemo, memo } from "react";
+import { useCallback, useMemo, memo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDraggable } from "@dnd-kit/core";
 import { useThreadStore } from "../../stores/threadStore";
@@ -6,6 +6,7 @@ import { useAccountStore } from "../../stores/accountStore";
 import { useUIStore } from "../../stores/uiStore";
 import { useContextMenuStore } from "../../stores/contextMenuStore";
 import { CategoryTabs } from "../email/CategoryTabs";
+import { MoveToLabelDialog } from "../email/MoveToLabelDialog";
 import {
   RefreshCw,
   Star,
@@ -192,6 +193,7 @@ export function ThreadList({ onOpenSearch }: ThreadListProps) {
 
   const isInbox = activeLabel === "INBOX";
   const isMultiSelect = selectedThreadIds.size > 0;
+  const [isBulkMoveOpen, setIsBulkMoveOpen] = useState(false);
 
   const filteredThreads = useMemo(() => {
     if (!isInbox || activeCategory === null) return threads;
@@ -442,10 +444,11 @@ export function ThreadList({ onOpenSearch }: ThreadListProps) {
             <Mail className="h-4 w-4" />
           </button>
           <button
-            onClick={() => window.dispatchEvent(new CustomEvent("velo-move-to-folder"))}
+            onClick={() => setIsBulkMoveOpen(true)}
             className="rounded p-1.5 text-text-secondary hover:bg-bg-hover hover:text-text-primary"
             aria-label={t("layout.labelSelected")}
             title={t("layout.moveToLabel")}
+            data-testid="bulk-move-to-label"
           >
             <Tag className="h-4 w-4" />
           </button>
@@ -493,6 +496,18 @@ export function ThreadList({ onOpenSearch }: ThreadListProps) {
           ))
         )}
       </div>
+
+      {activeAccountId && (
+        <MoveToLabelDialog
+          isOpen={isBulkMoveOpen}
+          onClose={() => {
+            setIsBulkMoveOpen(false);
+            clearSelection();
+          }}
+          accountId={activeAccountId}
+          threadIds={Array.from(selectedThreadIds)}
+        />
+      )}
     </div>
   );
 }
