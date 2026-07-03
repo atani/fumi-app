@@ -76,6 +76,12 @@
     "setupDescription": "Füge in den Einstellungen deinen eigenen API-Schlüssel (Anthropic, OpenAI oder Google) hinzu, um Zusammenfassungen, smarte Antworten und Ask Inbox zu nutzen.",
     "setupButton": "KI einrichten"
   },
+  "welcome": {
+    "title": "Willkommen bei Fumi",
+    "searchLabel": "Suchen und zu allem springen",
+    "shortcutsLabel": "Alle Tastenkürzel ansehen",
+    "dismiss": "Verstanden"
+  },
   "error": {
     "title": "Etwas ist schiefgelaufen",
     "description": "In Fumi ist ein unerwarteter Fehler aufgetreten. Ein Neuladen behebt das meist — deine E-Mails und Einstellungen bleiben sicher auf deinem Gerät.",

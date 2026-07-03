@@ -76,6 +76,12 @@
     "setupDescription": "設定でご自身の API キー（Anthropic・OpenAI・Google）を追加すると、要約・スマート返信・受信トレイへの質問が使えます。",
     "setupButton": "AI を設定"
   },
+  "welcome": {
+    "title": "Fumi へようこそ",
+    "searchLabel": "検索してどこへでも移動",
+    "shortcutsLabel": "キーボードショートカット一覧",
+    "dismiss": "OK"
+  },
   "error": {
     "title": "問題が発生しました",
     "description": "予期しないエラーが発生しました。多くの場合は再読み込みで解消します。メールと設定は端末内に安全に保存されています。",

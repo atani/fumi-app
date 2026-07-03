@@ -76,6 +76,12 @@
     "setupDescription": "Add your own API key (Anthropic, OpenAI, or Google) in Settings to use summaries, smart replies, and Ask Inbox.",
     "setupButton": "Set up AI"
   },
+  "welcome": {
+    "title": "Welcome to Fumi",
+    "searchLabel": "Search and jump to anything",
+    "shortcutsLabel": "See all keyboard shortcuts",
+    "dismiss": "Got it"
+  },
   "error": {
     "title": "Something went wrong",
     "description": "Fumi hit an unexpected error. Reloading usually fixes it — your mail and settings are safe on your device.",
